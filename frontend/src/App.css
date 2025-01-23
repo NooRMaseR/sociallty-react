@@ -1,0 +1,141 @@
+:root {
+  --post-bg-color: #fbfbfb;
+  --text-color: #000;
+  --link-color: #4c2273;
+  --btn-bg-color: rgb(69 115 171);
+  --main-color: rgb(58 121 197);
+  --color-transition: background-color .5s ease-in-out, color .5s ease-in-out;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+button, input[type=submit], .btn {
+  cursor: pointer;
+}
+
+textarea {
+  resize: none;
+  outline: none;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+body {
+  box-sizing: border-box;
+  margin: 0;
+  font-size: medium;
+  font-family: inherit;
+  background-color: #c7c7c7;
+  transition: var(--color-transition);
+}
+
+.body-dark-mode {
+  background-color: #212020;
+  color: #fff;
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #8b8b8b;
+  border-radius: 10px;
+}
+
+#back-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(7px);
+  transform: scale(0);
+  transition: transform .5s ease-in-out;
+  z-index: 7;
+  border: none;
+}
+
+.open-back-bg {
+  transform: scale(1) !important;
+}
+
+#loading-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 500ms ease-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid;
+  width: 90%;
+  height: 200px;
+  gap: 1rem;
+  background-color: var(--post-bg-color);
+
+  & #loading-ring {
+      border: 5px solid rgb(57, 57, 252);
+      border-left: 5px solid transparent;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      transition: transform 4s ease;
+      animation: loading 1s linear 0s infinite;
+      animation-play-state: paused;
+  }
+
+  & #loading-title {
+      color: var(--text-color);
+  }
+
+}
+
+.MuiFormLabel-asterisk {
+  color: red;
+}
+
+@keyframes loading {
+  0% {
+      transform: rotate(-360deg);
+  }
+}
+
+/*
+instant change theme the the theme changes for mobile 
+Light mode 
+*/
+/* make it light */
+@media (prefers-color-scheme: light) {
+  :root {
+      --post-bg-color: #fbfbfb;
+      --text-color: #000;
+      --main-color: rgb(58 121 197);
+      --link-color: #4c2273;
+  }
+
+  body {
+      background-color: #c7c7c7;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+      --post-bg-color: #353535;
+      --text-color: #fff;
+      --main-color: rgb(61 61 61);
+      --link-color: #fff;
+  }
+
+  body {
+      background-color: #212020 !important;
+  }
+}

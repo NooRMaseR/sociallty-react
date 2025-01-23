@@ -1,0 +1,25 @@
+#picker-main-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    & #picker-container {
+        position: relative;
+        border: 2px dashed #b9b9b9;
+        width: 90%;
+        height: 200px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+
+        &>input {
+            visibility: hidden;
+        }
+
+        & p {
+            position: absolute;
+            color: var(--text-color);
+        }
+    }
+}

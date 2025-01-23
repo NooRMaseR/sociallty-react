@@ -1,0 +1,47 @@
+
+#bottom-sheet {
+    position: fixed;
+    bottom: -200%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #292929;
+    border-radius: 10px 10px 0 0;
+    color: #fff;
+    padding: 20px;
+    transition: all .7s ease-in-out;
+    z-index: 8;
+    width: fit-content;
+
+
+    &>div {
+        width: 10rem;
+    }
+}
+
+#sheet-title {
+    text-align: center;
+    font-size: x-large;
+}
+
+#options {
+    display: flex;
+    align-items: start;
+    flex-direction: column;
+
+    & div.sheet-btn {
+        margin: 5px;
+        font-size: large;
+        border: 1px solid transparent;
+        border-radius: 7px;
+        border-bottom-color: #5a5555;
+        background-color: transparent;
+        width: 100%;
+        color: #fff;
+        padding: 5px;
+        cursor: pointer;
+
+        &:hover {
+            background-color: #616161;
+        }
+    }
+}

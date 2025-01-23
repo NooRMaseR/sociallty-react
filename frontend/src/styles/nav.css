@@ -1,0 +1,202 @@
+header {
+    position: sticky;
+    top: -1px;
+    left: 0;
+    background-color: var(--main-color);
+    width: 100%;
+    color: #fff;
+    font-size: 1.3rem;
+    padding: 1rem 0 2rem;
+    margin: 0 0 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5;
+    overflow: hidden;
+}
+
+#title {
+    text-align: center;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: rgb(255, 255, 255);
+    position: relative;
+    transition: opacity .7s ease;
+    cursor: pointer;
+    display: inline;
+}
+
+nav {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-inline: 20px;
+    transition: height .3s ease;
+
+    & i {
+        transition: transform 1s ease;
+        text-align: start;
+    }
+}
+
+.label-for {
+    display: none;
+}
+
+nav>ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+}
+
+.nav-link::before{
+    content: '';
+    position: absolute;
+    height: 2px;
+    width: 0;
+    background-color: #fff;
+    bottom: -20%;
+    left: 0;
+    transition: width .5s ease;
+}
+
+.nav-link:hover::before, 
+.active-head::before {
+    width: 100%;
+}
+
+.not-auth {
+    background-color: #1df33945;
+    border: 2px solid green;
+    color: #fff;
+    padding: .5rem;
+    transition: background-color .3s ease, color .3s ease;
+
+    &:hover {
+        background-color: green;
+        color: #fff;
+    }
+}
+
+/* humburger menu */
+
+.ham {
+    display: none;
+    position: absolute;
+    transform: scale(.7);
+    top: -1.5rem;
+    right: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 400ms;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.ham.active {
+    transform: rotate(45deg);
+}
+
+.line {
+    fill: none;
+    transition: stroke-dasharray 400ms, stroke-dashoffset 400ms;
+    stroke: #fff;
+    stroke-width: 5.5;
+    stroke-linecap: round;
+}
+
+.ham8 .top {
+    stroke-dasharray: 40 160;
+}
+
+.ham8 .middle {
+    stroke-dasharray: 40 142;
+    transform-origin: 50%;
+    transition: transform 400ms;
+}
+
+.ham8 .bottom {
+    stroke-dasharray: 40 85;
+    transform-origin: 50%;
+    transition: transform 400ms, stroke-dashoffset 400ms;
+}
+
+.ham8.active .top {
+    stroke-dashoffset: -64px;
+}
+
+.ham8.active .middle {
+    transform: rotate(90deg);
+}
+
+.ham8.active .bottom {
+    stroke-dashoffset: -64px;
+}
+
+/* end humburger menue */
+
+
+#btn-mode {
+    background-color: transparent;
+    color: #fff;
+    border: none;
+    font-size: large;
+    padding: 0;
+    cursor: pointer;
+}
+
+@media (max-width: 835px) {
+
+    nav,
+    nav>ul {
+        align-items: start;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    nav > ul {
+        padding-left: 1rem;
+    }
+
+    nav {
+        height: 1rem;
+
+        & i {
+            width: 27px;
+        }
+    }
+
+    .nav-link {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    #menu {
+        display: block;
+    }
+
+    .show {
+        opacity: 1;
+        pointer-events: painted;
+    }
+
+    nav>ul:last-child {
+        margin-top: 1.2rem;
+    }
+
+    .show-nav {
+        height: 24.5rem;
+    }
+    
+    .label-for {
+        display: inline;
+    }
+}

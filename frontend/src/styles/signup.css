@@ -1,0 +1,132 @@
+
+#container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-block: 5rem;
+}
+
+#main-profile-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+    & #profile-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+}
+
+#profile-img {
+    border-radius: 50%;
+    width: 7rem;
+    height: 7rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    border: 2px solid rgb(78, 78, 78);
+    margin: 2rem 0;
+    cursor: pointer;
+}
+
+form {
+    transition: var(--color-transition);
+    display: flex;
+    flex-direction: column;
+    background-color: var(--post-bg-color);
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 2rem;
+    gap: 1.5rem;
+    width: 40%;
+
+    & textarea {
+        width: 100%;
+        height: 7rem;
+        font-size: large;
+        font-family: auto;
+        border-radius: 12px;
+        padding: 10px;
+    }
+}
+
+#user-name-info {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    gap: 1rem;
+}
+
+.field {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+}
+
+input {
+    width: 100%;
+    height: 4rem;
+    border-radius: 1rem;
+    border: 1px solid silver;
+    outline: none;
+    font-size: larger;
+    padding: 1rem;
+}
+
+input[type="submit"], .btn {
+    /* cursor: pointer;
+    width: 100%;
+    height: 4rem;
+    border: none;
+    border-radius: 1.5rem;
+    outline: none;
+    font-size: larger;
+    padding: 1rem;
+    background-color: var(--btn-bg-color);
+    color: #fff; */
+    transition: transform .5s ease-in-out;
+
+    /* &:hover {
+        transform: scale(.9);
+    } */
+} 
+
+label,
+i {
+    color: var(--text-color);
+}
+
+.link {
+    color: var(--link-color);
+}
+
+
+@media (max-width: 1230px) {
+    form {
+        width: 50%;
+    }
+}
+
+
+@media (max-width: 920px) {
+    form {
+        width: 70%;
+    }
+}
+
+
+@media (max-width: 660px) {
+    form {
+        width: 90%;
+    }
+
+    input, .btn {
+        padding: .5rem;
+        height: 3rem !important;
+    }
+}

@@ -1,0 +1,99 @@
+.cards-holder {
+    display: grid;
+    grid-auto-rows: 100px;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 2rem;
+    margin: 0 1rem 1rem;
+}
+
+.card {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--post-bg-color);
+    border-radius: 15px;
+    padding-inline: 10px;
+    transition: transform .3s ease;
+
+    &:hover {
+        transform: scale(1.05);
+    }
+}
+
+
+.left {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+}
+
+.username > a {
+    cursor: pointer;
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.re {
+    background-color: rgb(72, 72, 252) !important;
+}
+
+.right{
+    background-color: rgb(100, 100, 100);
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: .5rem;
+    transition: var(--color-transition);
+}
+
+
+img[alt="profile picture"] {
+    border-radius: 50%;
+    aspect-ratio: 1 / 1;
+}
+
+
+@media (min-width: 2000px) {
+    .cards-holder {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+@media (max-width: 1800px) {
+    .cards-holder {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 1295px) {
+    .cards-holder {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 890px) {
+    .cards-holder {
+        grid-template-columns: repeat(1, 1fr);
+    }
+}
+
+@media (max-width: 435px) {
+    .cards-holder {
+        grid-template-columns: repeat(1, 1fr);
+        /* margin: 0; */
+        font-size: small;
+    }
+
+    .left {
+        gap: 1rem;
+    }
+
+    .card {
+        gap: 1rem;
+    }
+
+    .right > button {
+        font-size: small;
+    }
+}

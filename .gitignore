@@ -1,0 +1,12 @@
+.vscode
+__pycache__
+
+media
+static_files
+users.txt
+.env
+.venv
+db.sqlite3
+test.rest
+test.py
+log.log
