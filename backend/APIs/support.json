@@ -1,0 +1,30 @@
+{
+    "questions": {
+        "hi": "hi, how can i Assist you ?",
+        "who are you?": "i'm your Social Assistant, how can i help you ?",
+        "do you collect data?": "the data we collect is only what you enter from informations like first name, last name, etc.., these data might not be in our database for long because the devaloper does't have a place yet to store large data",
+        "What kind of information do you collect from me?": "the data we collect is only what you enter from informations like first name, last name, etc.., these data might not be in our database for long because the devaloper does't have a place yet to store large data",
+        "Do you have access to any of my personal information?": "No, i don't have access to any  personal information, i'm only designed for answering only",
+        "Can you delete my data if I request it?": "No, i can't delete your data, but, you have to ask it from the developer of this Website",
+        "How can I correct any data?": "you can edit your information from the profile page, you can see the edit icon above your name, click on it and edit your informations",
+        "how can i edit my data?": "you can edit your information from the profile page, you can see the edit icon above your name, click on it and edit your informations",
+        "how can i edit my informations?": "you can edit your information from the profile page, you can see the edit icon above your name, click on it and edit your informations",
+        "How can I request the deletion of my data?": "you can request the deletion of your data from the developer of this Website at this email address: 'wnenoor@gmail.com'",
+        "How do I sign up for an account?": "you can Sign up for an account at the bottom of the form, you should see a link with text 'don't have an account?' in the login page, then fill the form and click on the get started button",
+        "How can I change my profile picture or cover photo?": "you can edit your information from the profile page incuding your profile photo, you can see the edit icon above your name, click on it and edit your informations",
+        "How can I edit my profile?": "you can edit your profile from the profile page, you can see the edit icon above your name, click on it and edit your profile",
+        "How can I control who sees my posts?": "you can't for now, however, when you create your post you can set the vsibility of the post before posting and you still can edit it after getting posted",
+        "How can I change the visibility of my posts?": "when you create your post you can set the visibility of the post before posting and you still can edit it after getting posted from the 3 dots below the post",
+        "how can i edit my post?": "you can edit your post from the 3 dots of the post, click on it and edit your post",
+        "How do I add friends": "you can add friends from the add friends page, click on it and click on the add friend icon and enjoy",
+        "how do i create a post?": "you can create a post from the home page when you log in, you should see the post icon below you card click on it and create your post",
+        "How do I like a comment?": "you can like a comment by clicking on the 3 dots at the top right of the comment and click like",
+        "How do I share a post link?": "you can share a post link by clicking on the 3 dots below the post if it's your post, otherwise, you can see the shre button click on it and it will copy the post link to your clipboard",
+        "How do I send a private message?": "sorry, it's not avilable for now and it will be added soon",
+        "how can i create an account": "you can create an account at the bottom of the form, you should see a link with text 'don't have an account?' in the login page, then fill the form and click on the get started button",
+        "what is sociallty website?": "sociallty website is a Website for Social purpuses, it's a place where every one post and update their status to let the friends know about there friends and making new friends, be Sociable",
+        "tell me about this website?": "sociallty website is a Website for Social purpuses, it's a place where every one post and update their status to let the friends know about there friends and making new friends, be Sociable",
+        "how can i change the theme color?": "To change the theme color by default it's set to system, if you want to change it you can login first and then at the top right you can see the settings icon, click on it and change the theme, if the theme didn't change then refresh the page",
+        "thank you": "your welcome"
+    }
+}

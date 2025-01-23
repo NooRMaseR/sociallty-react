@@ -1,0 +1,54 @@
+{% load static %}
+<c-body>
+    <c-nav></c-nav>
+    <c-dialog></c-dialog>
+    <div id="container">
+        <form method="PUT" enctype="multipart/form-data" id="user-form">
+            {% csrf_token %}
+            <div id="profile-container">
+                <label for="profile-img" id="pic-label">Choose profile picture</label>
+                {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" id="profile-img" alt="user" width="120rem">
+                    <input type="file" name="profile_picture" id="pic-picker" value="{{ user.profile_picture.url }}" accept="image/*" style="display: none;">
+                {% else %}
+                    <img src="{% static 'icons/unknown.png' %}" id="profile-img" alt="user" width="120rem">
+                    <input type="file" name="profile_picture" id="pic-picker" value="{% static 'icons/unknown.png' %}" accept="image/*" style="display: none;">
+                {% endif %}
+            </div>
+            <input type="hidden" name="email" value="{{user.email}}">
+            <div class="field">
+                <i class="fa-solid fa-user"></i>
+                <div id="user-name-info">
+                    <input type="text" name="first_name" id="firstname-f" placeholder="First Name..." value="{{user.first_name}}" autocomplete="cc-given-name"
+                    required>
+                    <input type="text" name="last_name" id="lastname-f" placeholder="Last Name..." value="{{user.last_name}}" autocomplete="family-name" required>
+                </div>
+            </div>
+            <div class="field">
+                <i class="fa-solid fa-user"></i>
+                <input type="text" name="username" id="username-f" placeholder="User Name..." value="{{user.username}}" autocomplete="username" required>
+            </div>
+            <div class="field">
+                <i class="fa-solid fa-cake-candles"></i>
+                <input type="date" name="birth" id="birth-f" value="{{user.birth|date:'Y-m-d'}}" title="birth day..." required>
+            </div>
+            <div class="field">
+                <i class="fa-solid fa-phone"></i>
+                <input type="tel" inputmode="tel" name="phone" id="phone-f" maxlength="16" value="{{user.phone}}" autocomplete="tel" placeholder="phone number..."
+                required>
+            </div>
+            <div class="field">
+                <i class="fa-solid fa-file-contract"></i>
+                <textarea name="bio" id="bio-f" placeholder="i'm a Social Person 😊😁....">{{user.bio}}</textarea>
+            </div>
+            <div class="field">
+                <i class="fa-solid fa-key"></i>
+                <input type="password" name="password" id="password-f" placeholder="Confirm Password..." autocomplete="current-password" required>
+            </div>
+            <div id="btns">
+                <input type="submit" class="btn" value="Complete Edit">
+                <a href="{% url 'home' %}" class="btn">Cancel</a>
+            </div>
+        </form>
+    </div>
+</c-body>

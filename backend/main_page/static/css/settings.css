@@ -1,0 +1,24 @@
+#container {
+    display: flex;
+    align-items: start;
+    flex-direction: column;
+    margin-block: 1rem;
+    gap: 2rem;
+}
+
+#acc-delete {
+    background-color: #f31d1d45;
+    border: 2px solid red;
+    color: red;
+    padding: .5rem;
+    transition: background-color .3s ease, color .3s ease;
+
+    &:hover {
+        background-color: red;
+        color: #fff;
+    }
+}
+
+label {
+    color: var(--text-color);
+}

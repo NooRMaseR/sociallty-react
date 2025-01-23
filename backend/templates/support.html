@@ -1,0 +1,34 @@
+{% load static %}
+<c-body>
+    <div id="chat">
+        <h1 id="welcome-msg">Social Assistant</h1>
+        <input type="hidden" value="{{ user.username }}" id="none">
+    </div>
+
+    <footer id="footer-chat">
+        <div>
+            <textarea class="form-control" name="question" id="question-area" placeholder="Ask me...." spellcheck="true"></textarea>
+
+            <label class="switch" title="Enable Voice" style="margin-left: 5px;">
+                <input type="checkbox" id="voice-switch">
+                <span class="slider"></span>
+            </label>
+
+            <button type="button" class="btn" id="submit" title="Send">
+                <img src="{% static 'icons/send-black.svg' %}" alt="send" style="width: 20px; height: 20px;">
+            </button>
+
+            <div id="customContextMenu" class="">
+                <ul>
+                    <li onclick="Search()">Search</li>
+                    <li onclick="copy()">Copy</li>
+                    <li>Like</li>
+                </ul>
+            </div>
+
+            <div id="msg-copied">
+                Text Copied
+            </div>
+        </div>
+    </footer>
+</c-body>

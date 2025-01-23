@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+
+            & div {
+                width: 17rem;
+                font-size: 2rem;
+                width: max-content;
+
+                & > div {
+                    display: flex;
+                    justify-content: center;
+                    align-items: start;
+                    flex-direction: column;
+                    margin-left: 2rem;
+                }
+            }
+
+        }
+
+        p {
+            margin: 0;
+            margin-bottom: 26px;
+        }
+
+        button {
+            background-color: #3592df;
+            color: #fff;
+            border: none;
+            outline: none;
+            padding: 1rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: background-color .3s ease;
+
+            &:hover {
+                background-color: #2074b9;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div>
+            <h1>Opps......</h1>
+            <p>Wrong Direction 😁😁</p>
+            {% if exception != "Resolver404" %}
+                <p>{{ exception }}</p>
+            {% endif %}
+        </div>
+        <button type="button" onclick="window.history.back();">Go Back!!!</button>
+    </div>
+</body>
+</html>
