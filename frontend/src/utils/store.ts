@@ -1,6 +1,6 @@
 import { createSlice, configureStore } from "@reduxjs/toolkit";
-import { ACCESS } from "./constants";
 import { Media, PostProps } from "../components/post";
+import { ACCESS } from "./constants";
 
 
 const hasTokenSlice = createSlice({
@@ -108,6 +108,18 @@ const postContentSliderSlice = createSlice({
     }
 })
 
+const forgetPaasswordSlice = createSlice({
+    name: 'forget_password',
+    initialState: {
+        email: '',
+    },
+    reducers: {
+        setEmail: (state, action: { payload: string, type: string }) => {
+            state.email = action.payload;
+        }
+    }
+})
+
 const store = configureStore({
     reducer: {
         hasToken: hasTokenSlice.reducer,
@@ -116,7 +128,8 @@ const store = configureStore({
         bottomSheetState: bottomSheetSlice.reducer,
         postsState: postsSlice.reducer,
         back_bg_state: backBgSlice.reducer,
-        post_content_slider: postContentSliderSlice.reducer
+        post_content_slider: postContentSliderSlice.reducer,
+        forget_password: forgetPaasswordSlice.reducer,
     }
 })
 
@@ -125,6 +138,7 @@ export const { setPostContentSlider } = postContentSliderSlice.actions;
 export const { set_current_active_route } = currentRouteSlice.actions;
 export const { setSliderOpen } = commentSliderStateSlice.actions;
 export const { setBottomSheetOpen } = bottomSheetSlice.actions;
-export const { setHasToken } = hasTokenSlice.actions;;
+export const { setEmail } = forgetPaasswordSlice.actions;
+export const { setHasToken } = hasTokenSlice.actions;
 export const { setBackBg } = backBgSlice.actions;
 export default store;

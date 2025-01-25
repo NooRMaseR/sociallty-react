@@ -10,7 +10,7 @@ def get_fake_user_data() -> dict[str, str]:
         "email": "ali@gmail.com",
         "password": "ali111213",
         "birth": "2005-2-13",
-        "phone": "+211033337509",
+        "phone": "+201038794407",
     }
 
 
@@ -30,5 +30,9 @@ def get_random_fake_user_data(password_length: int = 8) -> dict[str, str]:
 
 
 def create_user(**user_data) -> SocialUser:
-    return SocialUser.objects.create(**user_data)
+    user = SocialUser.objects.create(**user_data)
+    user.set_password(user_data['password'])
+    user.save()
+    return user
 
+authorization_header = lambda token: {'Authorization': f'Bearer {token}'}

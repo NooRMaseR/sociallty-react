@@ -1,16 +1,3 @@
-.textarea {
-    width: 100%;
-    height: 7rem;
-    border: none;
-    margin-block: 7px;
-    outline: none;
-    font-size: large;
-    font-family: auto;
-    resize: vertical;
-    background-color: transparent;
-    color: var(--text-color);
-}
-
 
 .media-container {
     position: relative;

@@ -2,26 +2,27 @@ import api from "../utils/api";
 import Comment from "./comment";
 import { useEffect, useState } from "react";
 import SendIcon from '@mui/icons-material/Send';
-import { CommentProps } from "../utils/constants";
 import { useSelector, useDispatch } from "react-redux";
+import FloatingLabelInput from "./floating_input_label";
 import { setSliderOpen, UpdatePostCommentsCount } from "../utils/store";
+import { ApiUrls, CommentProps, commentSliderType } from "../utils/constants";
 
 export default function CommentsSlider() {
     const dispatch = useDispatch();
     const [comment, setComment] = useState<string>('');
     const [comments, setComments] = useState<CommentProps[]>([]);
     const opened = useSelector(
-        (state: { comment_slider_state: { value: boolean } }) => state.comment_slider_state.value
+        (state: commentSliderType) => state.comment_slider_state.value
     );
     const last_post_id= useSelector(
-        (state: { comment_slider_state: { last_post_id: number} }) => state.comment_slider_state.last_post_id
+        (state: commentSliderType) => state.comment_slider_state.last_post_id
     );
 
     useEffect(() => {
         const getComments = async () => {
             setComment('');
             try {
-                const res = await api.get(`/api/post-comment/${last_post_id}`);
+                const res = await api.get(ApiUrls.post_comment + last_post_id.toString());
             
                 if (res.status === 200) {
                     setComments(res.data.comments);
@@ -38,7 +39,7 @@ export default function CommentsSlider() {
 
     
     const sendComment = async () => {
-        const res = await api.post<CommentProps>(`/api/post-comment/${last_post_id}`, { comment });
+        const res = await api.post<CommentProps>(ApiUrls.post_comment + last_post_id.toString(), { comment });
         
         if (res.status === 201) {
             setComment('');
@@ -46,6 +47,9 @@ export default function CommentsSlider() {
             dispatch(UpdatePostCommentsCount({postID: last_post_id, count: comments.length + 1 }))
         }
     };
+
+    const closeSlide = () => dispatch(setSliderOpen({ last_post_id: -1, value: false }));
+    
     
     return (
         <div id="slide-bar-comments" className={opened ? 'slide-opened' : ''}>
@@ -53,7 +57,7 @@ export default function CommentsSlider() {
             <hr />
             <div id="close-slide-container">
                 <p id="close-comments-slider"
-                    onClick={() => dispatch(setSliderOpen({value: false, last_post_id: -1}))}
+                    onClick={closeSlide}
                     style={{ color: 'var(--text-color)', cursor: 'pointer' }}>X</p>
             </div>
 
@@ -62,7 +66,7 @@ export default function CommentsSlider() {
             </div>
 
             <div id="div-send">
-                <input type="text" id="comment-field" placeholder="new comment..." onChange={(e) => setComment(e.target.value)} value={comment} />
+                <FloatingLabelInput variant="outlined" label="Add Comment" type="text" updater={(value) => setComment(value)} inputProps={{value: comment, multiline: true, maxRows: 6}}/>
                 <button type="button" id="send-comment" onClick={sendComment} title="Send Comment">
                     <SendIcon  />
                 </button>

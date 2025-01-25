@@ -3,12 +3,11 @@ import { Provider } from "react-redux";
 import store from "./utils/store.ts";
 // import { StrictMode } from "react";
 import App from "./App.tsx";
-import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   // <StrictMode>
-    <Provider store={store}>
-      <App />
-    </Provider>
+  <Provider store={store}>
+    <App />
+  </Provider>
   // {/* </StrictMode> */}
 );

@@ -102,6 +102,10 @@ body {
   color: red;
 }
 
+.Mui-disabled {
+  color: rgb(133 133 133) !important;
+}
+
 @keyframes loading {
   0% {
       transform: rotate(-360deg);

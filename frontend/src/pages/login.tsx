@@ -1,17 +1,17 @@
-import { Avatar, Box, Button, CircularProgress } from "@mui/material";
+import { ACCESS, ApiUrls, REFRESH, TokenResponse } from "../utils/constants";
 import FloatingLabelInput from "../components/floating_input_label";
-import { ACCESS, REFRESH, TokenResponse } from "../utils/constants";
 import { Link, useNavigate } from "react-router-dom";
+import { Avatar, Box, Button } from "@mui/material";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
 import { setHasToken } from "../utils/store";
 import { FormEvent, useState } from "react";
 import { useDispatch } from "react-redux";
+import { Helmet } from "react-helmet";
 import api from "../utils/api";
 import "../styles/login.css";
 
 export default function Login() {
-  document.title = "Login";
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [errors, setErrors] = useState<string[]>([]);
@@ -24,7 +24,7 @@ export default function Login() {
     setLoading(true);
     setErrors([]);
     try {
-      const res = await api.post<TokenResponse>("/api/user/", {
+      const res = await api.post<TokenResponse>(ApiUrls.user_log_sign, {
         email,
         password,
       });
@@ -52,6 +52,10 @@ export default function Login() {
 
   return (
     <div id="container">
+      <Helmet>
+        <title>Sociallty Login</title>
+        <meta name="description" content="Log in To be Social and be with commounty of sociallty" />
+      </Helmet>
       <form onSubmit={handelOnSubmit}>
         <Box id="header">
           <h1 id="pic-label">Welcome</h1>
@@ -97,8 +101,9 @@ export default function Login() {
             placeItems: "center",
           }}
         >
-          {loading && <CircularProgress size={50} />}
           <Button
+            loading={loading}
+            loadingPosition="start"
             variant="contained"
             type="submit"
             disabled={loading}
@@ -108,14 +113,10 @@ export default function Login() {
           </Button>
         </Box>
         <div id="links">
-          <Link to="/signup" className="link" id="signup-btn">
+          <Link to="/signup" className="link">
             Dont have Account ?
           </Link>
-          <Link
-            to="{% url 'forget-password' %}"
-            className="link"
-            id="forget-btn"
-          >
+          <Link to="/user/forgot-password" className="link">
             Forget Your Password ?
           </Link>
         </div>

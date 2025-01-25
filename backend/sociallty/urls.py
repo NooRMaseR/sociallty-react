@@ -24,14 +24,13 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("users/", include("users.urls")),
-    path("api/", include("APIs.urls"), name="api"),
     path("", include("main_page.urls"), name="home"),
+    path("api/", include("APIs.urls"), name="api"),
+    path("user/", include("users.urls")),
     path("user/token/", TokenObtainPairView.as_view()),
     path("user/refresh/", TokenRefreshView.as_view()),
-    
-    #! remove in production
-] + debug_toolbar_urls()
+]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += debug_toolbar_urls()

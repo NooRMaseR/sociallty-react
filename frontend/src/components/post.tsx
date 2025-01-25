@@ -4,14 +4,20 @@ import {
   setPostContentSlider,
   setSliderOpen,
 } from "../utils/store";
+import {
+  API_URL,
+  ApiUrls,
+  PostsStateType,
+  User,
+  Visibility,
+} from "../utils/constants";
 import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
-import { API_URL, User, Visibility } from "../utils/constants";
+import { formatNumbers, share } from "../utils/functions";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { useInView } from "react-intersection-observer";
 import { useDispatch, useSelector } from "react-redux";
 import ShareIcon from "@mui/icons-material/Share";
-import { handleShare } from "../utils/functions";
-import { Avatar, Box } from "@mui/material";
+import { Avatar, Box, SvgIcon } from "@mui/material";
 import { ReactNode, useState } from "react";
 import PostSkelaton from "./post_skelaton";
 import { Link } from "react-router-dom";
@@ -39,7 +45,7 @@ export interface PostProps {
 
 export default function Post({ post }: { post: PostProps }) {
   const comments_count = useSelector(
-    (state: { postsState: { value: PostProps[] } }) =>
+    (state: PostsStateType) =>
       state.postsState.value.find((po) => po.id === post.id)?.comments_count ??
       post.comments_count
   );
@@ -55,7 +61,7 @@ export default function Post({ post }: { post: PostProps }) {
   }
 
   const handelLikes = async () => {
-    const res = await api.post(`/api/add-post-like/${post.id}`);
+    const res = await api.post(ApiUrls.add_post_like + post.id.toString());
 
     if (res.status === 201) {
       setLiked(true);
@@ -72,7 +78,7 @@ export default function Post({ post }: { post: PostProps }) {
 
   const handelOpenContent = (id: number) => {
     setPhotoID((preID) => (preID != id ? id : -1));
-    dispatch(setBackBg(id != photoID));
+    dispatch(setBackBg(id !== photoID));
   };
 
   const UserButtonsManager = () => {
@@ -92,11 +98,7 @@ export default function Post({ post }: { post: PostProps }) {
     } else {
       // add share button instead
       return (
-        <div
-          className="share"
-          onClick={() => handleShare(post.id)}
-          title="Share"
-        >
+        <div className="share" onClick={() => share(post.id)} title="Share">
           <ShareIcon sx={{ width: "1.9rem", height: "1.9rem" }} />
         </div>
       );
@@ -118,7 +120,7 @@ export default function Post({ post }: { post: PostProps }) {
                 src={`${API_URL}${current_media.content}`}
                 preload="none"
                 controlsList="nodownload"
-                poster={current_media.poster}
+                poster={`${API_URL}${current_media.poster}`}
                 className="content-post"
                 controls
                 key={i}
@@ -167,11 +169,7 @@ export default function Post({ post }: { post: PostProps }) {
         <>
           <div className="post-profile">
             <Avatar
-              src={
-                post.user.profile_picture
-                  ? `${API_URL}${post.user.profile_picture}`
-                  : "/unknown.png"
-              }
+              src={`${API_URL}${post.user.profile_picture}`}
               alt="profile pic"
               slotProps={{
                 img: {
@@ -186,7 +184,7 @@ export default function Post({ post }: { post: PostProps }) {
               </p>
               <Link
                 to={{
-                  pathname: `/profile/social-user`,
+                  pathname: `/social-user-profile`,
                   search: `?username=${post.user.username}&id=${post.user.id}`,
                 }}
               >
@@ -215,9 +213,12 @@ export default function Post({ post }: { post: PostProps }) {
               title="Likes"
               onClick={handelLikes}
             >
-              <ThumbUpOutlinedIcon sx={{ width: "1.9rem", height: "1.9rem" }} />
+              <ThumbUpOutlinedIcon
+                sx={{ width: "1.9rem", height: "1.9rem" }}
+                className="likes-svg"
+              />
               <p id={`likes-${post.id}`} className="counter">
-                {likes_count}
+                {formatNumbers(likes_count)}
               </p>
             </div>
             <div
@@ -227,9 +228,11 @@ export default function Post({ post }: { post: PostProps }) {
               }
               title="Comments"
             >
-              <i className="fa-regular fa-comment fa-xl"></i>
+              <SvgIcon xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path d="M123.6 391.3c12.9-9.4 29.6-11.8 44.6-6.4c26.5 9.6 56.2 15.1 87.8 15.1c124.7 0 208-80.5 208-160s-83.3-160-208-160S48 160.5 48 240c0 32 12.4 62.8 35.7 89.2c8.6 9.7 12.8 22.5 11.8 35.5c-1.4 18.1-5.7 34.7-11.3 49.4c17-7.9 31.1-16.7 39.4-22.7zM21.2 431.9c1.8-2.7 3.5-5.4 5.1-8.1c10-16.6 19.5-38.4 21.4-62.9C17.7 326.8 0 285.1 0 240C0 125.1 114.6 32 256 32s256 93.1 256 208s-114.6 208-256 208c-37.1 0-72.3-6.4-104.1-17.9c-11.9 8.7-31.3 20.6-54.3 30.6c-15.1 6.6-32.3 12.6-50.1 16.1c-.8 .2-1.6 .3-2.4 .5c-4.4 .8-8.7 1.5-13.2 1.9c-.2 0-.5 .1-.7 .1c-5.1 .5-10.2 .8-15.3 .8c-6.5 0-12.3-3.9-14.8-9.9c-2.5-6-1.1-12.8 3.4-17.4c4.1-4.2 7.8-8.7 11.3-13.5c1.7-2.3 3.3-4.6 4.8-6.9l.3-.5z" />
+              </SvgIcon>
               <p id={`comments-${post.id}`} className="counter">
-                {comments_count}
+                {formatNumbers(comments_count)}
               </p>
             </div>
             <UserButtonsManager />

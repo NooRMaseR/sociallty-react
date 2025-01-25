@@ -81,16 +81,6 @@
     gap: 10px;
     width: auto;
 
-    & input {
-        border-radius: 10px;
-        border: 1px solid #a9a9a9;
-        background-color: #fff;
-        font-size: large;
-        outline: none;
-        width: auto;
-        padding: 7px;
-    }
-
     & button {
         font-size: large;
         border: none;

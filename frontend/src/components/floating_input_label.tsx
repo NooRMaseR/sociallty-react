@@ -12,6 +12,7 @@ interface FloatingLabelInputProps {
   required?: boolean;
   inputProps?: object;
   slotProps?: object;
+  children?: react.ReactNode[];
 }
 
 export default function FloatingLabelInput({
@@ -25,6 +26,7 @@ export default function FloatingLabelInput({
   autoComplete,
   inputProps,
   slotProps,
+  children,
 }: FloatingLabelInputProps) {
   return (
     <Box className="d-flex align-items-center gap-2">
@@ -40,18 +42,32 @@ export default function FloatingLabelInput({
         onChange={(e) => updater && updater(e.target.value)}
         slotProps={slotProps}
         sx={{
-          "& .MuiFormLabel-root": {
+          ".MuiFormLabel-root": {
             color: "#ababab",
           },
-          "& .MuiFormLabel-root.Mui-focused": {
+          ".MuiFormLabel-root.Mui-focused": {
             color: "#1976d2",
           },
-          "& .MuiFilledInput-root": {
+          ".MuiFilledInput-root": {
             color: "#fff",
+          },
+          ".MuiOutlinedInput-root": {
+            color: "#fff",
+          },
+          ".MuiInput-root": {
+            color: "#fff",
+          },
+          ".MuiInput-root::before": {
+            borderBottom: "1px solid rgb(173 173 173 / 42%); !important",
+          },
+          ".MuiInput-root:hover::before": {
+            borderBottom: "1px solid rgb(213 213 213 / 87%); !important",
           },
         }}
         required={required}
-      />
+      >
+        {children}
+      </TextField>
     </Box>
   );
 }

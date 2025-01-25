@@ -1,11 +1,11 @@
-import { API_URL, ACCESS, REFRESH } from "./constants";
+import { API_URL, ACCESS, REFRESH, ApiUrls } from "./constants";
 import axios, { AxiosError } from "axios";
 
-async function refresh_token() {
+export async function refresh_token() {
   const refresh = localStorage.getItem(REFRESH);
   if (!refresh) return false;
   try {
-    const res = await api.post("/user/refresh/", {
+    const res = await api.post(ApiUrls.user_refresh_token, {
       refresh,
     });
 
@@ -15,7 +15,6 @@ async function refresh_token() {
     }
     return false;
   } catch (error) {
-    console.log("error in api");
     return Promise.reject(error);
   }
 }

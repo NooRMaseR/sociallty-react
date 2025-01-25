@@ -1,8 +1,8 @@
 import os
 from typing import Any
 from django.db import models
-from django.db.models import Q
 from django.dispatch import receiver
+from django.db.models import Q, signals
 from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth.models import AbstractBaseUser, UserManager, PermissionsMixin
 # Create your models here.
@@ -23,7 +23,7 @@ class CustomUserManager(UserManager):
         user.save()
         return user
 
-    def create_superuser(self, username, email, password=None, **extra_fields):
+    def create_superuser(self, username, email, password=None, **extra_fields) -> Any:
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
 
@@ -85,7 +85,7 @@ class SocialUser(AbstractBaseUser, PermissionsMixin):
 
     objects = CustomUserManager()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.username
 
 
@@ -94,17 +94,38 @@ class Friend(models.Model):
     friend = models.ForeignKey(SocialUser, on_delete=models.CASCADE, related_name="friend")
     friends_since = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.user.username} friend of {self.friend.username}"
 
+class UserCode(models.Model):
+    user = models.OneToOneField(SocialUser, on_delete=models.CASCADE)
+    code = models.SmallIntegerField(unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-@receiver(models.signals.post_delete, sender=SocialUser)
-def auto_delete_profile_pic(sender, instance, **kwargs):
+    def __str__(self) -> str:
+        return f"{self.user.username} code is {self.code}"
+
+class SocialUserSettings(models.Model):
+    user = models.OneToOneField(SocialUser, on_delete=models.CASCADE, related_name="settings")
+    is_private_account = models.BooleanField(default=False)
+    
+    def __str__(self) -> str:
+        return f"{self.user} Settings"
+    
+@receiver(signals.post_delete, sender=SocialUser)
+def auto_delete_profile_pic(sender, instance, **kwargs) -> None:
     "Deletes the user profile picture when the Account is deleted"
 
     if instance.profile_picture:
         if (os.path.isfile(instance.profile_picture.path) and instance.profile_picture != "profile_pictures/unknown.png"):
             os.remove(instance.profile_picture.path)
-            
-    for friend in instance.friend.all():
-        Friend.objects.get(Q(user=friend) | Q(friend=friend)).delete()
+    
+    Friend.objects.filter(Q(user=instance) | Q(friend=instance)).delete()
+    UserCode.objects.filter(user=instance).delete()
+    instance.settings.delete()
+
+@receiver(signals.post_save, sender=SocialUser)
+def create_user_settings(sender, instance, created, **kwargs) -> None:
+    
+    if created:
+        SocialUserSettings.objects.create(user=instance)

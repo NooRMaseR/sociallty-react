@@ -1,17 +1,14 @@
+import { API_URL, PostContentSliderStateType } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { setPostContentSlider } from "../utils/store";
 import { ReactNode, useEffect } from "react";
-import { API_URL } from "../utils/constants";
-import { Media } from "./post";
 
 export default function RestPostMedia() {
   const media = useSelector(
-    (state: { post_content_slider: { media: Media[] } }) =>
-      state.post_content_slider.media
+    (state: PostContentSliderStateType) => state.post_content_slider.media
   );
   const isOpen = useSelector(
-    (state: { post_content_slider: { value: boolean } }) =>
-      state.post_content_slider.value
+    (state: PostContentSliderStateType) => state.post_content_slider.value
   );
   const dispatch = useDispatch();
 

@@ -7,6 +7,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import LoginIcon from '@mui/icons-material/Login';
 import HomeIcon from '@mui/icons-material/Home';
 
+import { CurrentActiveRouteStateType, HasTokenStateType } from '../utils/constants';
 import { set_current_active_route } from "../utils/store";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
@@ -18,10 +19,10 @@ export default function Header() {
     const dispatch = useDispatch();
     const location = useLocation();
     const isAuthed = useSelector(
-        (state: { hasToken: { value: boolean } }) => state.hasToken.value
+        (state: HasTokenStateType) => state.hasToken.value
     );
     const current_route = useSelector(
-        (state: { current_active_route: { value: string } }) => state.current_active_route.value
+        (state: CurrentActiveRouteStateType) => state.current_active_route.value
     );
 
     useEffect(() => {
@@ -41,7 +42,7 @@ export default function Header() {
                             </Link>
                         </li>
                         <li>
-                            <Link to="/profile" className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/profile" ? 'active-head' : ''} d-flex gap-2`} title="Profile">
+                            <Link to="/social-user-profile" className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/social-user-profile" ? 'active-head' : ''} d-flex gap-2`} title="Profile">
                                 <PersonIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
                                 <p className="label-for m-0">My Profile</p>
                             </Link>
@@ -67,7 +68,7 @@ export default function Header() {
                             </Link>
                         </li>
                         <li>
-                            <Link to="/settings" className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/settings" ? 'active-head' : ''} d-flex gap-2`} title="Settings">
+                            <Link to="/user/settings" className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/user/settings" ? 'active-head' : ''} d-flex gap-2`} title="Settings">
                                 <SettingsIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
                                 <p className="label-for m-0">Settings</p>
                             </Link>

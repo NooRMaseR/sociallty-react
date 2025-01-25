@@ -1,18 +1,17 @@
+import { ACCESS, HasTokenStateType} from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
-import { ACCESS, REFRESH } from "../utils/constants";
 import { CircularProgress } from "@mui/material";
 import { ReactNode, useEffect } from "react";
+import { refresh_token } from "../utils/api";
 import { setHasToken } from "../utils/store";
 import { Navigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import api from "../utils/api";
 
 
 export default function ProtectedView({ children }: { children: ReactNode }) {
     
-    // const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
     const isAuthed = useSelector(
-        (state: { hasToken: { value: boolean } }) => state.hasToken.value
+        (state: HasTokenStateType) => state.hasToken.value
     );
     const dispatch = useDispatch();
 
@@ -38,7 +37,12 @@ export default function ProtectedView({ children }: { children: ReactNode }) {
             }
             
             if (exp < timeNow) {
-                await refresh_token();
+                try {
+                    if (await refresh_token()) dispatch(setHasToken(true));
+                    else dispatch(setHasToken(false));
+                } catch {
+                    dispatch(setHasToken(false));
+                }
             } else {
                 dispatch(setHasToken(true));
             }
@@ -46,25 +50,6 @@ export default function ProtectedView({ children }: { children: ReactNode }) {
             dispatch(setHasToken(false));
         }
         
-    };
-
-    const refresh_token = async () => {
-        const refresh = localStorage.getItem(REFRESH);
-        try {
-            const res = await api.post('/user/refresh/', {
-                refresh
-            });
-            
-            if (res.status == 200) {
-                localStorage.setItem(ACCESS, res.data.access);
-                dispatch(setHasToken(true));
-                return;
-            }
-            
-            dispatch(setHasToken(false));
-        } catch {
-            dispatch(setHasToken(false));
-        }
     };
 
     if (isAuthed === null) {

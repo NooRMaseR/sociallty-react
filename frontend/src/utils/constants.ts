@@ -1,4 +1,4 @@
-import { PostProps } from "../components/post";
+import { Media, PostProps } from "../components/post";
 
 export const ACCESS: string = "access";
 export const REFRESH: string = "refresh";
@@ -17,15 +17,23 @@ export interface User {
   readonly profile_picture: string;
 }
 
+export interface UserSettings {
+  is_private_account: boolean;
+}
+
 export interface FullUser {
   readonly id: number;
   readonly username: string;
+  readonly email?: string;
+  readonly password?: string;
   readonly profile_picture: string;
   readonly first_name: string;
   readonly last_name: string;
   readonly bio: string;
   readonly birth: string;
+  readonly phone?: string;
   readonly friends_count?: number;
+  settings?: UserSettings;
 }
 
 export interface UserProfileResponse {
@@ -39,6 +47,24 @@ export enum Visibility {
   public = "public",
   private = "private",
   friends_only = "friends only",
+}
+
+export enum ApiUrls {
+  user_log_sign = "/user/",
+  api = "/api/",
+
+  user_refresh_token = `${user_log_sign}refresh/`,
+  see_user_friends = "/see-user-friends/?list=",
+  edit_user = `${user_log_sign}edit-user/`,
+  forget_password = `${user_log_sign}forget-password/`,
+  settings = `${user_log_sign}settings/`,
+  posts_today = "/today-posts/?page=",
+  post = `${api}post/`,
+  post_edit = "post-edit/",
+  add_post_like = `${api}add-post-like/`,
+  post_comment = `${api}post-comment/`,
+  add_comment_like = `${api}add-comment-like/`,
+  social_users = "/social-users/",
 }
 
 export interface PostFormProps {
@@ -55,3 +81,55 @@ export interface CommentProps {
   comment_likes: number;
 }
 
+// store data types
+
+export type HasTokenStateType = {
+  hasToken: {
+    value: boolean;
+  };
+};
+
+export type PostsStateType = {
+  postsState: {
+    value: PostProps[];
+  };
+};
+
+export type commentSliderType = {
+  comment_slider_state: {
+    last_post_id: number;
+    value: boolean;
+  };
+};
+
+export type BottomSheetStateType = {
+  bottomSheetState: {
+    last_post_id: number;
+    open: boolean;
+  };
+};
+
+export type CurrentActiveRouteStateType = {
+  current_active_route: {
+    value: string;
+  };
+};
+
+export type BackBgStateType = {
+  back_bg_state: {
+    value: boolean;
+  };
+};
+
+export type PostContentSliderStateType = {
+  post_content_slider: {
+    value: boolean;
+    media: Media[];
+  };
+};
+
+export type ForgetPasswordStateType = {
+  forget_password: {
+    email: string;
+  };
+};

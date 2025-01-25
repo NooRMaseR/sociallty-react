@@ -1,3 +1,4 @@
+import { ApiUrls, PostsStateType } from "../utils/constants";
 import CommentsSlider from "../components/comments_slider";
 import RestPostMedia from "../components/rest_post_media";
 import { useCallback, useEffect, useState } from "react"
@@ -6,6 +7,7 @@ import PostSkelaton from "../components/post_skelaton";
 import Post, { PostProps } from "../components/post";
 import { useParams } from "react-router-dom";
 import { setPosts } from "../utils/store";
+import { Helmet } from "react-helmet";
 import { Box } from "@mui/material";
 import api from "../utils/api";
 
@@ -17,12 +19,12 @@ export default function SharedPostPage() {
     const dispatch = useDispatch();
     
     const post = useSelector(
-        (state: { postsState: { value: PostProps[] } }) => state.postsState.value
+        (state: PostsStateType) => state.postsState.value
     );
 
     const getPost = useCallback(async () => {
         try {
-            const res = await api.get<PostProps>(`/api/post/${id}`);
+            const res = await api.get<PostProps>(ApiUrls.post + id?.toString());
             if (res?.status === 200) {
                 dispatch(setPosts([res.data]));
                 setIsLoaded(true);
@@ -40,6 +42,10 @@ export default function SharedPostPage() {
 
     return (
         <Box id="posts">
+            <Helmet>
+                <title>Sociallty</title>
+                <meta name="description" content="Check Out This Post From This Link, Check it out Now" />
+            </Helmet>
             <RestPostMedia />
             <CommentsSlider />
             {isLoaded ? post.map((po) => <Post post={po} key={po.id}/>) : errorType === 404 ? <h1 className="text-white">Something went Wrong....</h1> :<PostSkelaton />}

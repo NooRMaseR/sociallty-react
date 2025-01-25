@@ -1,6 +1,6 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin
-from .models import SocialUser, Friend
+from .models import SocialUser, Friend, SocialUserSettings
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 
@@ -60,3 +60,11 @@ class FriendClass(ModelAdmin):
     )
 
     list_per_page = 20
+    
+@admin.register(SocialUserSettings)
+class SocialUserSettingsClass(ModelAdmin):
+    search_fields = ('user__username',)
+    search_fields_help_text = "search by username"
+    list_filter = ("is_private_account",)
+    list_per_page = 20
+    

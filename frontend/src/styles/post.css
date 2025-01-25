@@ -1,18 +1,14 @@
 
 #post-btn {
     transition: all .3s ease-in-out;
-    gap: 1rem;
     position: relative;
 
-    & > div {
-        
-        & > i {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            transition: left .3s ease-in-out;
-        }
+    & > svg {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        transition: left .3s ease-in-out;
     }
 
     & span {
@@ -22,13 +18,12 @@
 
     &:hover {
 
-        & > div > i {
-            left: 15%;
+        & > svg {
+            left: 10%;
         }
 
         & span {
             opacity: 1;
-            width: 200px;
         }
     }
 }
@@ -143,7 +138,7 @@
         display: flex;
         cursor: pointer;
 
-        & > svg {
+        & > svg.likes-svg {
             transition: transform 500ms ease-in-out;
         }
     }

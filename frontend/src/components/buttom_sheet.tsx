@@ -1,31 +1,35 @@
+import { ApiUrls, BackBgStateType, BottomSheetStateType } from "../utils/constants";
 import { removePost, setBottomSheetOpen } from "../utils/store";
+import { disablePageScroll, share } from "../utils/functions";
 import { useDispatch, useSelector } from "react-redux";
-import { handleShare } from "../utils/functions";
 import { useNavigate } from "react-router-dom";
 import "../styles/bottom-sheet.css";
 import { useEffect } from "react";
 import api from "../utils/api";
 
 export default function ButtomSheet() {
-  const opened = useSelector(
-    (state: { bottomSheetState: { open: boolean } }) =>
-      state.bottomSheetState.open
+  const buttom_opened = useSelector(
+    (state: BottomSheetStateType) => state.bottomSheetState.open
   );
+  
   const last_post_id = useSelector(
-    (state: { bottomSheetState: { last_post_id: number } }) =>
-      state.bottomSheetState.last_post_id
+    (state: BottomSheetStateType) => state.bottomSheetState.last_post_id
+  );
+
+  const back_opened = useSelector(
+    (state: BackBgStateType) => state.back_bg_state.value
   );
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleShareButton = () => {
-    handleShare(last_post_id);
+    share(last_post_id);
     dispatch(setBottomSheetOpen({ open: false, last_post_id: -1 }));
   };
 
   const handelDeleteButton = async () => {
-    const res = await api.delete("/api/post/", {
+    const res = await api.delete(ApiUrls.post, {
       data: { postID: last_post_id },
     });
 
@@ -40,21 +44,22 @@ export default function ButtomSheet() {
     dispatch(setBottomSheetOpen({ open: false, last_post_id: -1 }));
   };
 
+  const closeBottomSheet = () => dispatch(setBottomSheetOpen({ last_post_id: -1, open: false }));
+
   useEffect(() => {
-    document.body.style.overflow = opened ? "hidden" : "initial";
-  }, [opened]);
+    disablePageScroll(buttom_opened || back_opened);
+  }, [buttom_opened, back_opened]);
 
   return (
     <>
-      <div id="back-bg" className={opened ? "open-back-bg" : ""} onClick={() => dispatch(setBottomSheetOpen({last_post_id: -1, open: false}))}></div>
-      <div id="bottom-sheet" style={{ bottom: opened ? 0 : "-100%" }}>
+      <div id="back-bg" className={(buttom_opened || back_opened) ? "open-back-bg" : ""} onClick={closeBottomSheet}></div>
+      <div id="bottom-sheet" style={{ bottom: buttom_opened ? 0 : "-100%" }}>
         <div>
           <p id="sheet-title">Options</p>
           <hr />
           <div id="options">
             <div
               className="sheet-btn"
-              id="sheet-share-btn"
               onClick={handleShareButton}
             >
               Share
@@ -64,7 +69,6 @@ export default function ButtomSheet() {
             </div>
             <div
               className="sheet-btn"
-              id="sheet-delete-btn"
               onClick={handelDeleteButton}
               style={{ color: "red" }}
             >
@@ -72,10 +76,7 @@ export default function ButtomSheet() {
             </div>
             <div
               className="sheet-btn"
-              id="sheet-cancel-btn"
-              onClick={() =>
-                dispatch(setBottomSheetOpen({ open: false, last_post_id: -1 }))
-              }
+              onClick={closeBottomSheet}
             >
               Cancel
             </div>

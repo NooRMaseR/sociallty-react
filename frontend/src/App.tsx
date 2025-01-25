@@ -2,17 +2,22 @@ import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
+import VerifyForgetPasswordPage from "./pages/verify_forget_password";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SeeUserFriendsPage from "./pages/see_user_friends";
+import ForgetPasswordPage from "./pages/forget_password";
 import ProtectedView from "./components/protected_view";
 import SocialFriendsPage from "./pages/social_friends";
 import SharedPostPage from "./pages/shared_post_page";
 import MakePostPage from "./pages/make_post";
 import EditPostPage from "./pages/edit_post";
+import EditUserPage from "./pages/edit_user";
+import SettingsPage from "./pages/settings";
 import ProfilePage from "./pages/profile";
 import Header from "./components/header";
 import Logout from "./pages/logout";
 import Signup from "./pages/signup";
+import Page404 from "./pages/404";
 import Login from "./pages/login";
 import Home from "./pages/home";
 
@@ -34,6 +39,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/logout" element={<Logout />} />
+        <Route path="/user/forgot-password" element={<ForgetPasswordPage />} />
+        <Route path="/user/verify-code" element={<VerifyForgetPasswordPage />} />
 
         <Route
           path="/make-post"
@@ -76,7 +83,7 @@ function App() {
           }
         />
         <Route
-          path="/profile"
+          path="/social-user-profile"
           element={
             <ProtectedView>
               <ProfilePage />
@@ -84,13 +91,22 @@ function App() {
           }
         />
         <Route
-          path="/profile/social-user"
+          path="/user/edit"
           element={
             <ProtectedView>
-              <ProfilePage />
+              <EditUserPage />
             </ProtectedView>
           }
         />
+        <Route
+          path="/user/settings"
+          element={
+            <ProtectedView>
+              <SettingsPage />
+            </ProtectedView>
+          }
+        />
+        <Route path="*" element={<Page404 />} />
       </Routes>
     </BrowserRouter>
   );

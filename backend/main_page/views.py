@@ -1,16 +1,14 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, render
-from django.views.decorators.http import require_GET
-from django.http import HttpRequest, HttpResponse
-from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
-from rest_framework.request import Request
-from rest_framework.views import APIView
 from django.db.models import Q, Count
 from django.db import transaction
+
+from rest_framework.response import Response
+from rest_framework.request import Request
+from rest_framework.views import APIView
 from rest_framework import status
 
-from APIs.serializers import PostSerializer, SocialUserOnlySerializer, UserProfileSerializer
+from APIs.serializers import PostSerializer, SocialUserOnlySerializer
 from users.models import SocialUser, Friend
 from .models import Post
 
@@ -35,6 +33,7 @@ from .models import Post
 # Create your views here.
 
 class PostsApi(APIView):
+    "`restAPi` used for home page to paginate the posts"
     
     def get(self, request: Request) -> Response:
         # getting all user friends usernames
@@ -43,13 +42,15 @@ class PostsApi(APIView):
             .select_related("friend")
             .only('friend__username')
             .filter(Q(user=request.user) | Q(friend=request.user))
+            .values_list("friend__username", flat=True)
+            .iterator(10)
         )
 
         # getting the posts of the user, the posts must be public or friends only
         posts = Post.objects.select_related("user").prefetch_related("likes", "media", "comments").filter(
             Q(visibility="public")  # get all posts with visibillty public or
             | Q(user=request.user)  # get the user itself posts or
-            | (Q(user__username__in=friends_usernames) & Q(visibility="friends only"))  # get the friends posts and check if the visibility is friends only, the public posts is already defined
+            | (Q(user__username__in=friends_usernames) & Q(visibility=Post.PostVisibility.FRIENDS_ONLY))  # get the friends posts and check if the visibility is friends only, the public posts is already defined
         ).annotate(
             comments_count=Count('comments'),
             likes_count=Count('likes')
@@ -65,6 +66,7 @@ class PostsApi(APIView):
 
 
 class PostApi(APIView):
+    "`restApi` used for grtting one post only"
     
     def get(self, _: Request, postID: int) -> Response:
         POST: Post = get_object_or_404(Post.objects.select_related("user").prefetch_related("media", "likes", "comments"), id=postID)
@@ -158,70 +160,3 @@ class SocialUsersApi(APIView):
         friend = get_object_or_404(SocialUser.objects.only('id'), id=friendID)
         Friend.objects.filter(Q(user=request.user, friend=friend) | Q(user=friend, friend=request.user)).delete()
         return Response(status=200)
-
-
-class UserApi(APIView):
-    
-    def get(self, request: Request, username: str, id: int) -> Response:
-        user = get_object_or_404((
-            SocialUser
-            .objects
-            .prefetch_related("posts", "posts__likes", "posts__media", "posts__comments")
-            .annotate(friends_count=Count('friend'))
-        ), id=id, username=username)
-        
-        posts = user.posts.annotate( # type: ignore
-            comments_count=Count('comments'),
-            likes_count=Count('likes')
-        ).order_by("-created_at")
-        
-        paginator = Paginator(posts, '10')
-        post_page = paginator.get_page(request.GET.get('page', 1))
-        
-        is_friend = user.friend.filter(user=request.user).exists() # type: ignore
-        
-        user_serializer = UserProfileSerializer(user)
-        post_serializer = PostSerializer(post_page, many=True)
-        
-        return Response({
-            "user": user_serializer.data,
-            "posts": post_serializer.data,
-            "is_friend": is_friend,
-            "has_next": post_page.has_next()
-        }, status=status.HTTP_200_OK)
-
-
-@require_GET
-@login_required
-def edit_user_profile_page(requset: HttpRequest) -> HttpResponse:
-    "a `view` for allowing the user to edit his profile"
-    return render(
-        requset,
-        "edit-user-profile.html",
-        {
-            "jss": ["signup", "dialog", "edit-user-profile"],
-            "csss": ["signup", "edit-user-profile", "nav", "dialog"],
-        },
-    )
-
-
-@require_GET
-def support_view(requset: HttpRequest) -> HttpResponse:
-    "a `View` for AI support"
-    return render(requset, "support.html", {"csss": ["support"], "jss": ["support"]})
-
-
-@require_GET
-@login_required
-def settings(request: HttpRequest) -> HttpResponse:
-    "A `View` for user settings options"
-
-    return render(
-        request,
-        "settings.html",
-        {
-            "title": "Settings",
-            "csss": ["settings", "nav", "dialog"],
-            "jss": ["settings", "dialog"],
-        },
-    )

@@ -1,6 +1,6 @@
-import { useDispatch } from "react-redux";
 import { setHasToken } from "../utils/store";
 import { Navigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 
 export default function Logout() {
     const dispatch = useDispatch();

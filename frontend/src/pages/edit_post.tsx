@@ -1,15 +1,19 @@
+import FloatingLabelInput from "../components/floating_input_label";
 import { FormEvent, ReactNode, useEffect, useState } from "react";
+import { API_URL, ApiUrls, Visibility } from "../utils/constants";
 import { useNavigate, useParams } from "react-router-dom";
-import { API_URL, Visibility } from "../utils/constants";
+import PostSkelaton from "../components/post_skelaton";
 import styles from "../styles/edit-post.module.css";
 import FilePicker from "../components/file_picker";
+import { Button, MenuItem } from "@mui/material";
 import { PostProps } from "../components/post";
+import { Helmet } from "react-helmet";
 import api from "../utils/api";
 
 export default function EditPostPage() {
-  document.title = "Edit Post";
   const { id } = useParams();
   const [checked, setChecked] = useState<number[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [post, setPost] = useState<PostProps | null>({} as PostProps);
   const [visibility, setVisibility] = useState(
     post?.visibility || Visibility.public
@@ -21,6 +25,7 @@ export default function EditPostPage() {
 
   const submitForm = async (e: FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     const formData = new FormData();
 
     formData.append("postID", `${post?.id}`);
@@ -35,6 +40,7 @@ export default function EditPostPage() {
     if (res.status === 200) {
       navigate("/");
     }
+    setLoading(false);
   };
 
   const handleFiles = (event: FileList) => {
@@ -141,7 +147,9 @@ export default function EditPostPage() {
   useEffect(() => {
     const getPost = async () => {
       try {
-        const res = await api.get<PostProps>(`post-edit/${id}/`);
+        const res = await api.get<PostProps>(
+          ApiUrls.post_edit + id?.toString()
+        );
 
         if (res.status === 200) {
           setPost(res.data);
@@ -158,72 +166,88 @@ export default function EditPostPage() {
     getPost();
   }, [id]);
 
-  return post === undefined ? (
-    <h1 className="text-white">Loading...</h1>
-  ) : post === null ? (
-    <h1 className="text-white">Post Not found!</h1>
-  ) : (
+  return (
     <>
-      <div className={styles["post-container"]}>
-        <form
-          className={styles["post-form"]}
-          encType="multipart/form-data"
-          onSubmit={submitForm}
-        >
-          <div className="post-profile">
-            <img
-              src={`${API_URL}${post.user?.profile_picture}`}
-              alt="profile pic"
-              loading="lazy"
-              width="50rem"
-              className="profile-pic"
-            />
-            <a href="{% url 'profile' username=post.user.username %}{{post.user.id}}">
-              {post.user?.username || "ali"}
-            </a>
-            <select
-              name="visibility"
-              id="visibility"
-              onChange={(e) => setVisibility(e.target.value as Visibility)}
-              value={visibility}
+      <Helmet>
+        <title>Edit Post</title>
+      </Helmet>
+      {post === undefined ? (
+        <PostSkelaton animationType="wave" />
+      ) : post === null ? (
+        <h1 className="text-white">Post Not found!</h1>
+      ) : (
+        <>
+          <div className={styles["post-container"]}>
+            <form
+              className={styles["post-form"]}
+              encType="multipart/form-data"
+              onSubmit={submitForm}
             >
-              <option value="public">Public</option>
-              <option value="private">Private</option>
-              <option value="friends only">Friends only</option>
-            </select>
+              <div className="post-profile">
+                <img
+                  src={`${API_URL}${post.user?.profile_picture}`}
+                  alt="profile pic"
+                  loading="lazy"
+                  width="50rem"
+                  className="profile-pic"
+                />
+                <p className="text-white">{post.user?.username || "ali"}</p>
+                <FloatingLabelInput
+                  inputProps={{ select: true, value: visibility }}
+                  variant="standard"
+                  name="visibility"
+                  updater={(value) => setVisibility(value as Visibility)}
+                >
+                  <MenuItem value={Visibility.public}>Public</MenuItem>
+                  <MenuItem value={Visibility.private}>Private</MenuItem>
+                  <MenuItem value={Visibility.friends_only}>
+                    Friends only
+                  </MenuItem>
+                </FloatingLabelInput>
+              </div>
+              <div className="desc">
+                <FloatingLabelInput
+                  name="desc"
+                  label="Description"
+                  updater={(value) => setDesc(value)}
+                  inputProps={{
+                    multiline: true,
+                    placeholder: "Description....",
+                    value: desc,
+                    minRows: 3,
+                  }}
+                />
+              </div>
+              <FilePicker
+                onChangeMethod={(e) =>
+                  e.target.files && handleFiles(e.target.files)
+                }
+              />
+              <div className={styles["post-content"]}>
+                <PostMedia />
+              </div>
+              <div className={styles["btns"]}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  loading={loading}
+                  loadingPosition="start"
+                >
+                  {loading ? "Please wait..." : "Save"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="contained"
+                  color="warning"
+                  onClick={() => navigate("/")}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
           </div>
-          <div className="desc">
-            <textarea
-              name="desc"
-              placeholder="Description...."
-              className={styles.textarea}
-              onChange={(e) => setDesc(e.target.value)}
-              value={desc}
-            ></textarea>
-          </div>
-          {/* <c-files_picker :adding="True" add_to=".post-content"></c-files_picker> */}
-          <FilePicker
-            onChangeMethod={(e) =>
-              e.target.files && handleFiles(e.target.files)
-            }
-          />
-          <div className={styles["post-content"]}>
-            <PostMedia />
-          </div>
-          <div className={styles["btns"]}>
-            <button type="submit" className="btn btn-primary">
-              Save
-            </button>
-            <button
-              type="button"
-              className="btn btn-warning"
-              onClick={() => navigate("/")}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
+        </>
+      )}
     </>
   );
 }

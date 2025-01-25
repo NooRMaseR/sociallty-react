@@ -1,10 +1,10 @@
 from django.urls import path
 from . import views
 
-urlpatterns = [
-    # path("login/", views.login, name="login-page"),
-    # path("logout/", views.logout, name="logout"),
-    # path("signup/", views.signup_view, name="signup-page"),
-    # path("forget-password/", views.forget_password_view, name="forget-password"),
-    # path("change-user-password/<str:email>/<int:id>/<secure>", views.change_password_view, name="change-user-password"),
-]
+urlpatterns = (
+    path("", views.UserAuthAPI.as_view(), name='user-auth'), 
+    path('<str:username>/<int:id>/', views.UserApi.as_view(), name='user-api'),
+    path("settings/", views.UserSettingsApi.as_view(), name='user-settings'),
+    path("edit-user/", views.EditUserApi.as_view(), name='user-edit'),
+    path("forget-password/", views.UserForgotPasswordApi.as_view(), name='user-forget-password'),
+)

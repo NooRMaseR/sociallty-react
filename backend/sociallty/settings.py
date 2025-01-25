@@ -52,7 +52,6 @@ INSTALLED_APPS = (
     "main_page",
     "whitenoise",
     "phonenumber_field",
-    'django_cotton',
     'django_extensions',
     
     #! remove in production
@@ -93,21 +92,8 @@ TEMPLATES = (
         "DIRS": (
             BASE_DIR / "templates",
         ),
-        "APP_DIRS": False,
+        "APP_DIRS": True,
         "OPTIONS": {
-            "loaders": (
-                (
-                    "django.template.loaders.cached.Loader",
-                    (
-                        "django_cotton.cotton_loader.Loader",
-                        "django.template.loaders.filesystem.Loader",
-                        "django.template.loaders.app_directories.Loader",
-                    ),
-                ),
-            ),
-            "builtins": [
-                "django_cotton.templatetags.cotton"
-            ],
             "context_processors": (
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
@@ -119,7 +105,7 @@ TEMPLATES = (
 )
 
 WSGI_APPLICATION = 'sociallty.wsgi.application'
-
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -135,7 +121,7 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = [
+AUTH_PASSWORD_VALIDATORS = (
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
@@ -148,7 +134,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
-]
+)
 
 
 # Internationalization
@@ -162,12 +148,15 @@ USE_I18N = True
 
 USE_TZ = False
 
-INTERNAL_IPS = [
+INTERNAL_IPS = (
     "127.0.0.1",
-]
+)
 
 CORS_ALLOWED_ORIGINS = (
     "http://localhost:5173",
+    "http://localhost:4173",
+    "http://192.168.1.4:5173",
+    "http://192.168.1.4:4173",
 )
 CORS_ALLOW_CREDENTIALS = True
 
@@ -181,7 +170,7 @@ SIMPLE_JWT = {
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "static_files"
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = (BASE_DIR / "static",)
 
 LOGIN_URL = "login-page"
 LOGIN_REDIRECT_URL = "/"
@@ -209,14 +198,14 @@ UNFOLD = {
     "SITE_URL": "/",
     "SITE_ICON": lambda _: static("favicon.png"),
     "SITE_LOGO": lambda _: static("favicon.png"),
-    "SITE_FAVICONS": [
+    "SITE_FAVICONS": (
         {
             "rel": "icon",
             "sizes": "32x32",
-            "type": "image/svg+xml",
+            "type": "image/png",
             "href": lambda _: static("favicon.png"),
         },
-    ],
+    ),
 }
 
 # configs

@@ -1,10 +1,11 @@
-import { ACCESS, REFRESH, TokenResponse } from "../utils/constants";
+import { ACCESS, ApiUrls, REFRESH, TokenResponse } from "../utils/constants";
 import FloatingLabelInput from "../components/floating_input_label";
 import { ChangeEvent, FormEvent, useRef, useState } from "react";
-import { Avatar, CircularProgress } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
+import { Avatar, Button } from "@mui/material";
 import { setHasToken } from "../utils/store";
 import { useDispatch } from "react-redux";
+import { Helmet } from "react-helmet";
 import api from "../utils/api";
 
 import Person2Icon from "@mui/icons-material/Person2";
@@ -18,7 +19,6 @@ import LockIcon from "@mui/icons-material/Lock";
 import '../styles/signup.css';
 
 export default function Signup() {
-    document.title = "Signup";
     const [errors, setErrors] = useState<string[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const filePickerRef = useRef<HTMLInputElement>(null);
@@ -39,16 +39,13 @@ export default function Signup() {
         setErrors([]);
         const formData = new FormData(e.target as HTMLFormElement);
         try {
-            const res = await api.post<TokenResponse>("/api/user/", formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
+            const res = await api.put<TokenResponse>(ApiUrls.user_log_sign, formData);
 
             if (res.status === 200) {
                 localStorage.setItem(ACCESS, res.data.access);
                 localStorage.setItem(REFRESH, res.data.refresh);
                 localStorage.setItem('id', res.data.id.toString());
+                localStorage.setItem('username', res.data.username);
                 dispatch(setHasToken(true));
                 navigate('/');
             }
@@ -66,6 +63,10 @@ export default function Signup() {
 
     return (
         <div id="container">
+            <Helmet>
+                <title>Sign Up</title>
+                <meta name="description" content="Don't Have Account? Create One Now and Join Social commounty" />
+            </Helmet>
             <form onSubmit={handelOnSubmit}>
                 <div id="main-profile-container">
                     <label htmlFor="pic-picker" id="pic-label">Choose profile picture</label>
@@ -139,19 +140,22 @@ export default function Signup() {
                     inputProps={{inputMode: 'tel'}}
                     required
                 />
-
-                <div className="field">
-                    <InfoIcon sx={{ color: '#fff' }} />
-                    <textarea name="bio" id="bio-f" placeholder="my bio is a Social Person 😊😁...." style={{backgroundColor: "#323232", border: 'none', color: '#fff'}}></textarea>
-                </div>
+                <FloatingLabelInput
+                    name="bio"
+                    label="Bio"
+                    suffexIcon={<InfoIcon sx={{ color: '#fff' }} />}
+                    inputProps={{multiline: true, placeholder:"i'm a Social Person 😊😁...."}}
+                />
                 {errors &&
                     <ul>
                         {errors.map((value, index) => <li style={{ color: 'red' }} key={index}>{value}</li>)}
                     </ul>
                 }
-                {loading && <CircularProgress />}
+                {/* {loading && <CircularProgress />} */}
 
-                <input type="submit" value={loading ? 'Please wait....' : "Get Started"} disabled={loading} />
+                <Button type="submit" variant="contained" loading={loading} loadingPosition="start">
+                    {loading ? 'Please wait....' : "Get Started"}
+                </Button>
                 <Link to="/login" className="link" id="login-btn">Already Have Account ?</Link>
             </form>
         </div>

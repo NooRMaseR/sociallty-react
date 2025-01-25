@@ -1,13 +1,20 @@
 from main_page.models import Comment, Post, PostContent
+from users.models import SocialUser, SocialUserSettings
 from rest_framework import serializers
-from users.models import SocialUser
-from django.db.models import Count
 
 
 class SocialUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = SocialUser
         fields = "__all__"
+        
+        
+class SocialUserSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SocialUserSettings
+        fields = (
+            "is_private_account",
+        )
 
 
 class SocialUserBasicSerializer(serializers.ModelSerializer):
@@ -76,6 +83,7 @@ class PostSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     friends_count = serializers.IntegerField(read_only=True)
+    settings = SocialUserSettingsSerializer()
     class Meta:
         model = SocialUser
         fields = (
@@ -88,4 +96,5 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "profile_picture",
             "phone",
             'friends_count',
+            'settings',
         )

@@ -1,13 +1,12 @@
+import { memo, ReactNode, useCallback, useEffect, useState } from "react";
 import AccountCardSkelaton from "../components/account_card_skelaton";
-import { ReactNode, useCallback, useEffect, useState } from "react";
-import { Box, Button, CircularProgress } from "@mui/material";
+import { ApiUrls, FullUser } from "../utils/constants";
 import AccountCard from "../components/account_card";
-import { FullUser } from "../utils/constants";
+import { Box, Button } from "@mui/material";
+import { Helmet } from "react-helmet";
 import api from "../utils/api";
 
 export default function SocialFriendsPage() {
-    document.title = "Social Friends";
-
     const [users, setUsers] = useState<FullUser[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [buttonloading, setButtonLoading] = useState<boolean>(false);
@@ -16,7 +15,7 @@ export default function SocialFriendsPage() {
 
     const getAccounts = useCallback(async () => {
         setButtonLoading(true);
-        const res = await api.get<{users: FullUser[], has_next: boolean}>(`/social-users/?list=${list}`);
+        const res = await api.get<{users: FullUser[], has_next: boolean}>(ApiUrls.social_users + `?list=${list}`);
         if (res && res.status === 200) {
             setUsers((prev) => [...prev, ...res.data.users]);
             setLoading(false);
@@ -25,14 +24,14 @@ export default function SocialFriendsPage() {
         }
     }, [list]);
 
-    const CardsSkelaton = () => {
+    const CardsSkelaton = memo(() => {
         const cards: ReactNode[] = [];
         for (let i = 0; i < 15; i++) {
             cards.push(<AccountCardSkelaton key={i} />);
         };
 
         return cards;
-    }
+    });
 
     useEffect(() => {
         if (!buttonloading) getAccounts();
@@ -40,12 +39,17 @@ export default function SocialFriendsPage() {
 
     return (
         <>
+            <Helmet>
+                <title>Social Friends</title>
+                <meta name="description" content="Find and connect with Social Friends in Sociallty" />
+            </Helmet>
             <div className="cards-holder">
                 {loading ? <CardsSkelaton /> : users.map((user) => <AccountCard user={user} key={user.id} forFriends={false} />)}
             </div>
-            {hasNext && <Box sx={{display: 'flex', placeContent: 'center', marginBlock: '7rem'}}>
-                <Button variant="contained" disabled={buttonloading} onClick={() => setList((prev) => prev + 1)}>{buttonloading ? <CircularProgress size={50} /> : 'Load More'}</Button>
-            </Box>}
+            {hasNext ? <Box sx={{display: 'flex', placeContent: 'center', marginBlock: '7rem'}}>
+                <Button variant="contained" loading={buttonloading} loadingPosition="start" onClick={() => setList((prev) => prev + 1)}>
+                    {buttonloading ? 'Please wait...' : 'Load More'}</Button>
+            </Box> : <p>No More Users...</p>}
         </>
     );
 };
