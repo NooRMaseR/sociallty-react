@@ -1,11 +1,13 @@
 Django==5.1.2
 django-phonenumber-field==8.0.0
 djangorestframework==3.15.2
+djangorestframework-simplejwt==5.4.0
 python-dotenv==1.0.1
 whitenoise==6.7.0
 phonenumbers==8.13.47
 Pillow==11.0.0
 opencv-python==4.10.0.84
+opencv-python-headless==4.11.0.86
 faker==30.6.0
 django-debug-toolbar==4.4.6
 django-unfold==0.40.0
