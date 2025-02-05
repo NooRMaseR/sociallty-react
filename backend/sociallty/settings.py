@@ -103,7 +103,7 @@ TEMPLATES = (
 )
 
 WSGI_APPLICATION = 'sociallty.wsgi.application'
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -144,11 +144,11 @@ TIME_ZONE = 'Africa/Cairo'
 
 USE_I18N = True
 
-USE_TZ = False
+USE_TZ = True
 
-INTERNAL_IPS = (
-    "127.0.0.1",
-)
+# INTERNAL_IPS = (
+#    "127.0.0.1",
+# )
 
 # CORS_ALLOWED_ORIGINS = (
 #     "http://localhost:5173",
