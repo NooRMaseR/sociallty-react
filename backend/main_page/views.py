@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 
 from APIs.serializers import PostSerializer, SocialUserOnlySerializer
-from users.models import SocialUser, Friend
+from users.models import SocialUser, Friend, FriendRequest
 from .models import Post
 
 # from icecream import ic #! for debugging
@@ -58,11 +58,13 @@ class PostsApi(APIView):
             "-created_at"
         )  # order by created_at desc
         
+        friends_requests_count = FriendRequest.objects.filter(friend=request.user).count()
+        
         pagenator = Paginator(posts, 10)
         pagenator_data = pagenator.get_page(request.GET.get('page', 1))
         
         post_serialiizer = PostSerializer(pagenator_data, many=True)
-        return Response({"has_next": pagenator_data.has_next(), "posts": post_serialiizer.data})
+        return Response({"has_next": pagenator_data.has_next(),"friends_requests_count": friends_requests_count, "posts": post_serialiizer.data})
 
 
 class PostApi(APIView):
@@ -105,29 +107,6 @@ class SeeUserFirendsApi(APIView):
         friends_serializer = SocialUserOnlySerializer(friends_page, many=True)
         return Response({"users": friends_serializer.data, "has_next": friends_page.has_next()}, status=status.HTTP_200_OK)
     
-
-class SocialUsersApi(APIView):
-    
-    def get(self, request: Request) -> Response:
-        user_friends = (
-            Friend.objects
-            .select_related("friend")
-            .only("friend__username")
-            .filter(user=request.user)
-            .values_list("friend__username", flat=True)
-        )
-        users = SocialUser.objects.exclude(
-            Q(is_staff=True)
-            | Q(username__in=user_friends)
-            | Q(id=request.user.id)  # type: ignore
-        )
-        
-        paginator = Paginator(users, 10)
-        users_page = paginator.get_page(request.GET.get('list', 1))
-        
-        users_serializer = SocialUserOnlySerializer(users_page, many=True)
-        return Response({"users": users_serializer.data, "has_next": users_page.has_next()}, status=status.HTTP_200_OK)
-    
     @transaction.atomic
     def post(self, request: Request) -> Response:
         """
@@ -160,3 +139,114 @@ class SocialUsersApi(APIView):
         friend = get_object_or_404(SocialUser.objects.only('id'), id=friendID)
         Friend.objects.filter(Q(user=request.user, friend=friend) | Q(user=friend, friend=request.user)).delete()
         return Response(status=200)
+    
+
+class SeeFirendsRequestsApi(APIView):
+    
+    def get(self, request: Request) -> Response:
+        friends_requests = (
+            FriendRequest.objects
+            .select_related("friend")
+            .filter(
+                Q(friend__in = request.user.friend_request.all().values_list('friend', flat=True))
+            )
+        )
+        friends = (
+            SocialUser.objects
+            .filter(
+                user_request__in=friends_requests
+                # friend_request__in=friends_requests
+            )
+            .exclude(
+                id=request.user.id
+            )
+        )
+        paginator = Paginator(friends, 10)
+        friends_page = paginator.get_page(request.GET.get('list', 1))
+        friends_serializer = SocialUserOnlySerializer(friends_page, many=True)
+        return Response({"users": friends_serializer.data, "has_next": friends_page.has_next()}, status=status.HTTP_200_OK)
+    
+    @transaction.atomic
+    def delete(self, request: Request) -> Response:
+        "`(API)` for removing a friend request"
+        
+        friendID = request.data.get('friendID') # type: ignore
+
+        if not friendID:
+            return Response({"details": "friend ID was not provided"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        friend = get_object_or_404(SocialUser.objects.only('id'), id=friendID)
+        FriendRequest.objects.filter(Q(user=request.user, friend=friend) | Q(user=friend, friend=request.user)).delete()
+        return Response(status=200)
+    
+    @transaction.atomic
+    def put(self, request: Request) -> Response:
+        "`(API)` to confirm the accepted friend request"
+        
+        friendID = request.data.get('friendID') # type: ignore
+
+        if not friendID:
+            return Response({"details": "friend ID was not provided"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        friend = get_object_or_404(SocialUser.objects.only('id'), id=friendID)
+        
+        friends: tuple[Friend, Friend] = (Friend(user=request.user, friend=friend), Friend(user=friend, friend=request.user))
+        Friend.objects.bulk_create(friends, ignore_conflicts=True)
+        get_object_or_404(FriendRequest, user=friend, friend=request.user).delete()
+        
+        return Response(status=status.HTTP_202_ACCEPTED)
+    
+    @transaction.atomic
+    def post(self, request: Request) -> Response:
+        """
+        `(API)` for adding a friend
+        """
+        friendID = request.data.get('friendID') # type: ignore
+        
+        if not friendID:
+            return Response({"details": "friend ID was not provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        friend = get_object_or_404(SocialUser.objects.only('id'), id=friendID)
+        FriendRequest.objects.create(user=request.user, friend=friend)
+        return Response(status=status.HTTP_201_CREATED)
+    
+
+class SocialUsersApi(APIView):
+    
+    def get(self, request: Request) -> Response:
+        user_friends = (
+            Friend.objects
+            .select_related("friend")
+            .only('id', "friend__username")
+            .filter(user=request.user)
+            .values_list("friend__username", flat=True)
+        )
+        users = SocialUser.objects.exclude(
+            Q(is_staff=True)
+            | Q(username__in=user_friends)
+            | Q(id=request.user.id)  # type: ignore
+            | Q(friend_request__in = request.user.user_request.all())
+            | Q(user_request__in = request.user.friend_request.all())
+        )
+        
+        paginator = Paginator(users, 10)
+        users_page = paginator.get_page(request.GET.get('list', 1))
+        
+        users_serializer = SocialUserOnlySerializer(users_page, many=True)
+        return Response({"users": users_serializer.data, "has_next": users_page.has_next()}, status=status.HTTP_200_OK)
+    
+    @transaction.atomic
+    def post(self, request: Request) -> Response:
+        "`(API)` for adding a friend request"
+        
+        friendID = request.data.get('friendID') # type: ignore
+        
+        if not friendID:
+            return Response({"details": "friend ID was not provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        friend = get_object_or_404(SocialUser.objects.only('id'), id=friendID)
+        if not FriendRequest.objects.filter(user=request.user, friend=friend).exists():
+            FriendRequest.objects.create(user=request.user, friend=friend)
+            return Response(status=status.HTTP_201_CREATED)
+        
+        return Response({'details': 'friend request already sent'}, status=status.HTTP_400_BAD_REQUEST)

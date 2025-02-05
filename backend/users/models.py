@@ -3,6 +3,7 @@ from typing import Any
 from django.db import models
 from django.dispatch import receiver
 from django.db.models import Q, signals
+from django.core.validators import MinLengthValidator
 from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth.models import AbstractBaseUser, UserManager, PermissionsMixin
 # Create your models here.
@@ -65,7 +66,7 @@ class SocialUser(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
     username = models.CharField(max_length=150)
-    password = models.CharField(max_length=150)
+    password = models.CharField(max_length=255, validators=[MinLengthValidator(8)])
     email = models.EmailField(unique=True)
     birth = models.DateField(null=True)
     bio = models.TextField(max_length=150, null=True, blank=True)
@@ -97,6 +98,14 @@ class Friend(models.Model):
     def __str__(self) -> str:
         return f"{self.user.username} friend of {self.friend.username}"
 
+class FriendRequest(models.Model):
+    user = models.ForeignKey(SocialUser, on_delete=models.CASCADE, related_name="user_request")
+    friend = models.ForeignKey(SocialUser, on_delete=models.CASCADE, related_name="friend_request")
+    requested_since = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f"{self.user.username} friend request to {self.friend.username}"
+
 class UserCode(models.Model):
     user = models.OneToOneField(SocialUser, on_delete=models.CASCADE)
     code = models.SmallIntegerField(unique=True)
@@ -122,7 +131,6 @@ def auto_delete_profile_pic(sender, instance, **kwargs) -> None:
     
     Friend.objects.filter(Q(user=instance) | Q(friend=instance)).delete()
     UserCode.objects.filter(user=instance).delete()
-    instance.settings.delete()
 
 @receiver(signals.post_save, sender=SocialUser)
 def create_user_settings(sender, instance, created, **kwargs) -> None:

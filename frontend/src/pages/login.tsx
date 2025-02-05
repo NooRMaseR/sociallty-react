@@ -4,29 +4,32 @@ import { Link, useNavigate } from "react-router-dom";
 import { Avatar, Box, Button } from "@mui/material";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
+import { useCallback, useState } from "react";
 import { setHasToken } from "../utils/store";
-import { FormEvent, useState } from "react";
 import { useDispatch } from "react-redux";
+import { useForm } from "react-hook-form";
 import { Helmet } from "react-helmet";
 import api from "../utils/api";
 import "../styles/login.css";
 
+interface LoginProps {
+  email: string;
+  password: string;
+}
+
 export default function Login() {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
   const [errors, setErrors] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const { register, handleSubmit } = useForm<LoginProps>();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handelOnSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handelOnSubmit = useCallback(async (data: LoginProps) => {
     setLoading(true);
     setErrors([]);
     try {
       const res = await api.post<TokenResponse>(ApiUrls.user_log_sign, {
-        email,
-        password,
+        ...data
       });
 
       if (res && res.status == 200) {
@@ -40,7 +43,7 @@ export default function Login() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error(error);
-      if (error.response.status === 400) {
+      if (error?.response?.status === 400) {
         setErrors(Object.values(error.response.data));
       } else {
         setErrors(["Somthing went wrong, please try Again."]);
@@ -48,7 +51,7 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dispatch, navigate]);
 
   return (
     <div id="container">
@@ -56,27 +59,33 @@ export default function Login() {
         <title>Sociallty Login</title>
         <meta name="description" content="Log in To be Social and be with commounty of sociallty" />
       </Helmet>
-      <form onSubmit={handelOnSubmit}>
+      <form onSubmit={handleSubmit(handelOnSubmit)}>
         <Box id="header">
           <h1 id="pic-label">Welcome</h1>
-          <Avatar src="/favicon.png" sx={{ width: "10rem", height: "10rem" }} />
+          <Avatar src="/favicon.ico" sx={{ width: "10rem", height: "10rem" }} alt="Sociallty Icon" />
         </Box>
         <FloatingLabelInput
-          name="email"
           type="email"
           label="Email"
-          updater={setEmail}
-          suffexIcon={<EmailIcon sx={{ color: "#fff" }} />}
+          suffexIcon={<EmailIcon sx={{ color: "var(--text-color)" }} />}
+          inputProps={
+            {
+              ...register('email', {required: true})
+            }
+          }
           autoComplete="email"
           required
         />
         <FloatingLabelInput
-          name="password"
           type="password"
           label="Password"
-          updater={setPassword}
-          suffexIcon={<LockIcon sx={{ color: "#fff" }} />}
-          autoComplete="password"
+          suffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
+          inputProps={
+            {
+              ...register('password', {required: true})
+            }
+          }
+          autoComplete="current-password"
           slotProps={{
             htmlInput: {
               minLength: 8,
@@ -107,7 +116,7 @@ export default function Login() {
             variant="contained"
             type="submit"
             disabled={loading}
-            sx={{ width: "12rem", ":disabled": { color: "#fff" } }}
+            sx={{ width: "12rem", ":disabled": { color: "var(--text-color)" } }}
           >
             {loading ? "Please wait...." : "Login"}
           </Button>

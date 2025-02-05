@@ -1,19 +1,20 @@
 import { ApiUrls, PostFormProps, Visibility } from "../utils/constants";
 import FloatingLabelInput from "../components/floating_input_label";
+import { Box, Button, MenuItem } from "@mui/material";
+import { memo, useCallback, useState } from "react";
 import FilePicker from "../components/file_picker";
-import { Button, MenuItem } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Helmet } from "react-helmet";
-import { useState } from "react";
 import api from "../utils/api";
 
 export default function MakePostPage() {
   const { register, handleSubmit, setValue } = useForm<PostFormProps>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [media, setMedia] = useState<{type: string, src: string}[]>([]);
   const navigate = useNavigate();
 
-  const formSubmit = async (data: PostFormProps) => {
+  const formSubmit = useCallback(async (data: PostFormProps) => {
     setLoading(true);
     const form_data = new FormData();
     form_data.append("desc", data.desc);
@@ -31,7 +32,40 @@ export default function MakePostPage() {
       console.error(error);
     }
     setLoading(false);
-  };
+  }, [navigate]);
+
+  const handelFiles = useCallback((event: FileList) => {
+    const selectedMedia = Array.from(event || []);
+    setValue("files", selectedMedia);
+    const data: { type: string, src: string }[] = [];
+    let filesProcessed = 0;
+
+    selectedMedia.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target && e.target.result) {
+          data.push({
+            type: file.type,
+            src: e.target?.result as string
+          });
+        }
+        filesProcessed++;
+        if (filesProcessed === selectedMedia.length) {
+          setMedia(data);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }, [setValue])
+
+  const MediaComponent = memo(() => media.map((value) => {
+    if (value.type.includes('image')) {
+      return <img src={value.src} key={value.src} style={{maxWidth: '90%'}} />
+    } else if (value.type.includes('video')) {
+      return <video src={value.src} key={value.src} style={{maxWidth: '90%'}} controls></video>
+    }
+    
+  }))
 
   return (
     <div id="container">
@@ -45,10 +79,11 @@ export default function MakePostPage() {
         id="post-form"
       >
         <FilePicker
-          onChangeMethod={(e) =>
-            setValue("files", Array.from(e.target.files || []))
-          }
+          onChangeMethod={(e) => e.target.files && handelFiles(e.target.files)}
         />
+        <Box sx={{display: 'flex', placeItems: 'center', flexDirection: 'column', gap: '1rem'}}>
+          <MediaComponent />
+        </Box>
         <FloatingLabelInput
           label="Description"
           inputProps={{ multiline: true, ...register("desc") }}

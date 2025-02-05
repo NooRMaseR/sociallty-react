@@ -28,12 +28,6 @@
     }
 }
 
-
-#main-user-pic {
-    border-radius: 50%;
-    aspect-ratio: 1;
-}
-
 #posts {
     display: flex;
     justify-content: center;
@@ -65,14 +59,8 @@
     }
 }
 
-.profile-pic {
-    border-radius: 50%;
-    aspect-ratio: 1;
-}
-
 .desc {
     font-weight: bold;
-    color: var(--text-color);
 }
 
 .post-content {
@@ -131,7 +119,7 @@
         gap: 1rem;
         color: var(--text-color);
 
-        background-color: #292929;
+        background-color: var(--btn-bg-color);
         width: 5rem;
         height: 4rem;
         border-radius: 1rem;
@@ -141,17 +129,15 @@
         & > svg.likes-svg {
             transition: transform 500ms ease-in-out;
         }
+        & > svg {
+            color: var(--text-color)
+        }
     }
 
     & p {
         margin: 0;
     }
 }
-
-/* .open-reacts {
-    top: -4rem !important;
-    visibility: visible !important;
-} */
 
 @media (max-width: 725px) {
     .post-container {

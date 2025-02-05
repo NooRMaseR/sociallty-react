@@ -4,7 +4,7 @@ import { disablePageScroll, share } from "../utils/functions";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import "../styles/bottom-sheet.css";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import api from "../utils/api";
 
 export default function ButtomSheet() {
@@ -23,12 +23,12 @@ export default function ButtomSheet() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleShareButton = () => {
+  const handleShareButton = useCallback(() => {
     share(last_post_id);
     dispatch(setBottomSheetOpen({ open: false, last_post_id: -1 }));
-  };
+  }, [dispatch, last_post_id]);
 
-  const handelDeleteButton = async () => {
+  const handelDeleteButton = useCallback(async () => {
     const res = await api.delete(ApiUrls.post, {
       data: { postID: last_post_id },
     });
@@ -37,7 +37,7 @@ export default function ButtomSheet() {
       dispatch(removePost(last_post_id));
       dispatch(setBottomSheetOpen({ open: false, last_post_id: -1 }));
     }
-  };
+  }, [dispatch, last_post_id]);
 
   const handelEdit = () => {
     navigate(`/edit-post-page/${last_post_id}`);

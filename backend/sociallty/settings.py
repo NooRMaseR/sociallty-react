@@ -28,7 +28,7 @@ load_dotenv(BASE_DIR / ".env")
 SECRET_KEY = os.getenv("SOCIALLTY_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 AUTH_USER_MODEL = "users.SocialUser"
@@ -52,13 +52,12 @@ INSTALLED_APPS = (
     "main_page",
     "whitenoise",
     "phonenumber_field",
-    'django_extensions',
-    
-    #! remove in production
-    "debug_toolbar",
-    'django_seed',
-    'corsheaders',
+    'django_extensions',    
 )
+    #! remove in production
+    # "debug_toolbar",
+    # 'django_seed',
+    # 'corsheaders',
 
 
 REST_FRAMEWORK = {
@@ -70,19 +69,18 @@ REST_FRAMEWORK = {
     )
 }
 
-MIDDLEWARE = [
+MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    "corsheaders.middleware.CorsMiddleware",
+    # "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
-    
-]
+    # "debug_toolbar.middleware.DebugToolbarMiddleware",
+)
 
 ROOT_URLCONF = 'sociallty.urls'
 
@@ -152,17 +150,18 @@ INTERNAL_IPS = (
     "127.0.0.1",
 )
 
-CORS_ALLOWED_ORIGINS = (
-    "http://localhost:5173",
-    "http://localhost:4173",
-    "http://192.168.1.4:5173",
-    "http://192.168.1.4:4173",
-)
-CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOWED_ORIGINS = (
+#     "http://localhost:5173",
+#     "http://localhost:4173",
+#     "http://192.168.1.5:5173",
+#     "http://192.168.1.7:5173",
+#     "http://192.168.1.7:4173"
+# )
+# CORS_ALLOW_CREDENTIALS = True
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=2),
-    "REFRESH_TOEKN_LIFETIME": timedelta(minutes=5)
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=6),
+    "REFRESH_TOEKN_LIFETIME": timedelta(days=5)
 }
 
 # Static files (CSS, JavaScript, Images)
@@ -209,5 +208,12 @@ UNFOLD = {
 }
 
 # configs
-# CSRF_COOKIE_SECURE = True
-# SESSION_COOKIE_SECURE = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = True

@@ -1,5 +1,6 @@
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
@@ -7,11 +8,12 @@ import PeopleIcon from '@mui/icons-material/People';
 import LoginIcon from '@mui/icons-material/Login';
 import HomeIcon from '@mui/icons-material/Home';
 
-import { CurrentActiveRouteStateType, HasTokenStateType } from '../utils/constants';
+import { CurrentActiveRouteStateType, FriendsRequestsCountStateType, HasTokenStateType } from '../utils/constants';
 import { set_current_active_route } from "../utils/store";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
+import { Badge, Tooltip } from '@mui/material';
 import '../styles/nav.css'
 
 export default function Header() {
@@ -24,62 +26,87 @@ export default function Header() {
     const current_route = useSelector(
         (state: CurrentActiveRouteStateType) => state.current_active_route.value
     );
+    const friends_requests_count = useSelector(
+        (state: FriendsRequestsCountStateType) => state.friends_requests_count.count
+    );
 
     useEffect(() => {
         setMenuOpened(false);
         dispatch(set_current_active_route(location.pathname));
     }, [dispatch, location.pathname])
 
-    const CheckHead = () => {
+    const CheckHead = memo(() => {
         if (isAuthed) {
             return (
                 <>
                     <ul>
                         <li>
-                            <Link to="/" className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/" ? 'active-head' : ''} d-flex gap-2`} id="home-nav" title="Home">
-                                <HomeIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
-                                <p className="label-for m-0">Home</p>
-                            </Link>
+                            <Tooltip title='Home'>
+                                <Link to="/" className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/" ? 'active-head' : ''} d-flex gap-2`} id="home-nav">
+                                    <HomeIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
+                                    <p className="label-for m-0">Home</p>
+                                </Link>
+                            </Tooltip>
                         </li>
                         <li>
-                            <Link to="/social-user-profile" className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/social-user-profile" ? 'active-head' : ''} d-flex gap-2`} title="Profile">
-                                <PersonIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
-                                <p className="label-for m-0">My Profile</p>
-                            </Link>
+                            <Tooltip title="Profile">
+                                <Link to="/social-user-profile" className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/social-user-profile" ? 'active-head' : ''} d-flex gap-2`}>
+                                    <PersonIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
+                                    <p className="label-for m-0">My Profile</p>
+                                </Link>
+                            </Tooltip>
                         </li>
                         <li>
-                            <Link to="/see-user-friends" className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/see-user-friends" ? 'active-head' : ''} d-flex gap-2`} id="user-friends-nav" title="My Friends">
-                                <PeopleIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
-                                <p className="label-for m-0">My Firends</p>
-                            </Link>
+                            <Tooltip title="Friends Requests">
+                                <Link to="/see-friends-requests" className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/see-friends-requests" ? 'active-head' : ''} d-flex gap-2`} id="user-friends-nav">
+                                    <Badge badgeContent={friends_requests_count} color='primary'>
+                                        <GroupAddIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
+                                    </Badge>
+                                    <p className="label-for m-0">Firends Requests</p>
+                                </Link>
+                            </Tooltip>
                         </li>
                         <li>
-                            <Link to="/social-friends" id="add-fr" className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/social-friends" ? 'active-head' : ''} d-flex gap-2`} title="Add Friends">
-                                <PersonAddIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
-                                <p className="label-for m-0">Add Friends</p>
-                            </Link>
+                            <Tooltip title="My Friends">
+                                <Link to="/see-user-friends" className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/see-user-friends" ? 'active-head' : ''} d-flex gap-2`} id="user-friends-nav">
+                                    <PeopleIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
+                                    <p className="label-for m-0">My Firends</p>
+                                </Link>
+                            </Tooltip>
+                        </li>
+                        <li>
+                            <Tooltip title="Add Friends">
+                                <Link to="/social-friends" id="add-fr" className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/social-friends" ? 'active-head' : ''} d-flex gap-2`}>
+                                    <PersonAddIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
+                                    <p className="label-for m-0">Add Friends</p>
+                                </Link>
+                            </Tooltip>
                         </li>
                     </ul>
                     <ul>
                         <li>
-                            <Link to="/AI-view" className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/AI-view" ? 'active-head' : ''} d-flex gap-2`}>
-                                <SupportAgentIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
-                                <p className="label-for m-0">Support</p>
-                            </Link>
+                            <Tooltip title="Support">
+                                <Link to="/AI-view" className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/AI-view" ? 'active-head' : ''} d-flex gap-2`}>
+                                    <SupportAgentIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
+                                    <p className="label-for m-0">Support</p>
+                                </Link>
+                            </Tooltip>
                         </li>
                         <li>
-                            <Link to="/user/settings" className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/user/settings" ? 'active-head' : ''} d-flex gap-2`} title="Settings">
-                                <SettingsIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
-                                <p className="label-for m-0">Settings</p>
-                            </Link>
+                            <Tooltip title="Settings">
+                                <Link to="/user/settings" className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/user/settings" ? 'active-head' : ''} d-flex gap-2`}>
+                                    <SettingsIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
+                                    <p className="label-for m-0">Settings</p>
+                                </Link>
+                            </Tooltip>
                         </li>
                         <li>
-                            <Link
-                                    // onclick="open_dialog(true, 'Are you sure you want to logout ?', 'logout')"
-                                to='/logout' className={`nav-link ${menuOpened ? 'show' : ''}`} id="logout-nav" title="Logout">
-                                <LogoutIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
-                                <p className="label-for m-0">Logout</p>
-                            </Link>
+                            <Tooltip title="Logout">
+                                <Link to='/logout' className={`nav-link ${menuOpened ? 'show' : ''}`} id="logout-nav">
+                                    <LogoutIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
+                                    <p className="label-for m-0">Logout</p>
+                                </Link>
+                            </Tooltip>
                         </li>
                     </ul>
                 </>
@@ -88,21 +115,25 @@ export default function Header() {
             return (
                 <ul>
                     <li>
-                        <Link to="/login" className={`nav-link ${menuOpened ? 'show' : ''}`} title="Login">
-                            <LoginIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
-                            <p className="label-for m-0">Login</p>
-                        </Link>
+                        <Tooltip title="Login">
+                            <Link to="/login" className={`nav-link ${menuOpened ? 'show' : ''}`}>
+                                <LoginIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
+                                <p className="label-for m-0">Login</p>
+                            </Link>
+                        </Tooltip>
                     </li>
                     <li>
-                        <Link to="/signup" className={`nav-link ${menuOpened ? 'show' : ''}`} title="Signup">
-                            <i className="fa-solid fa-arrow-left"></i>
-                            <p className="label-for m-0">Signup</p>
-                        </Link>
+                        <Tooltip title="Signup">
+                            <Link to="/signup" className={`nav-link ${menuOpened ? 'show' : ''}`}>
+                                <i className="fa-solid fa-arrow-left"></i>
+                                <p className="label-for m-0">Signup</p>
+                            </Link>
+                        </Tooltip>
                     </li>
                 </ul>
             )
         }
-    }
+    });
 
     return (
         <header>

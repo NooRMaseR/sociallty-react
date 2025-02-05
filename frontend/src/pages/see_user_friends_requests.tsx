@@ -6,7 +6,7 @@ import { Box, Button } from "@mui/material";
 import { Helmet } from "react-helmet";
 import api from "../utils/api";
 
-export default function SeeUserFriendsPage() {
+export default function SeeUserFriendsRequestsPage() {
   const [users, setUsers] = useState<FullUser[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [buttonLoading, setButtonLoading] = useState<boolean>(false);
@@ -22,13 +22,13 @@ export default function SeeUserFriendsPage() {
 
     return cards;
   });
-
+  
   const getAccounts = useCallback(async () => {
     setButtonLoading(true);
     setError(null);
     try {
       const res = await api.get<{ users: FullUser[]; has_next: boolean }>(
-        ApiUrls.see_user_friends + pageNumber.toString()
+        ApiUrls.see_friends_requests + `?list=${pageNumber}`
       );
       if (res && res.status === 200) {
         setUsers((pre) => [...pre, ...res.data.users]);
@@ -52,7 +52,7 @@ export default function SeeUserFriendsPage() {
       <CardsSkelaton />
     ) : (
       users.map((user) => (
-        <AccountCard user={user} key={user.id} forFriends={true} />
+        <AccountCard user={user} key={user.id} forFriends forAcceptRequests />
       ))
     )
   );
@@ -60,10 +60,10 @@ export default function SeeUserFriendsPage() {
   return (
     <>
       <Helmet>
-        <title>My Friends</title>
+        <title>Friends Requests</title>
         <meta
           name="description"
-          content="see your Social friends via sociallty"
+          content="see your Social friends Requests via sociallty from here!!"
         />
       </Helmet>
       {error ? (
@@ -84,7 +84,7 @@ export default function SeeUserFriendsPage() {
                 {buttonLoading ? "Please wait..." : "Load More"}
               </Button>
             ) : (
-              <p>No More Friends...</p>
+              <p>No More Friend Requests...</p>
             )}
           </Box>
         </>

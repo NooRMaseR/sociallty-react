@@ -35,10 +35,6 @@
     text-decoration: none;
 }
 
-.re {
-    background-color: rgb(72, 72, 252) !important;
-}
-
 .right{
     background-color: rgb(100, 100, 100);
     color: #fff;
@@ -47,13 +43,6 @@
     padding: .5rem;
     transition: var(--color-transition);
 }
-
-
-img[alt="profile picture"] {
-    border-radius: 50%;
-    aspect-ratio: 1 / 1;
-}
-
 
 @media (min-width: 2000px) {
     .cards-holder {
@@ -81,7 +70,6 @@ img[alt="profile picture"] {
 @media (max-width: 435px) {
     .cards-holder {
         grid-template-columns: repeat(1, 1fr);
-        /* margin: 0; */
         font-size: small;
     }
 

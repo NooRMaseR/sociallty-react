@@ -15,10 +15,6 @@ export default function ProtectedView({ children }: { children: ReactNode }) {
     );
     const dispatch = useDispatch();
 
-    useEffect(() => {
-        auth();
-    })
-
     const auth = async () => {
         try {
             const token = localStorage.getItem(ACCESS);
@@ -51,6 +47,10 @@ export default function ProtectedView({ children }: { children: ReactNode }) {
         }
         
     };
+
+    useEffect(() => {
+        auth();
+    })
 
     if (isAuthed === null) {
         return <CircularProgress />

@@ -1,11 +1,11 @@
+import { FormEvent, memo, ReactNode, useCallback, useEffect, useState } from "react";
 import FloatingLabelInput from "../components/floating_input_label";
-import { FormEvent, ReactNode, useEffect, useState } from "react";
 import { API_URL, ApiUrls, Visibility } from "../utils/constants";
 import { useNavigate, useParams } from "react-router-dom";
 import PostSkelaton from "../components/post_skelaton";
+import { Box, Button, MenuItem } from "@mui/material";
 import styles from "../styles/edit-post.module.css";
 import FilePicker from "../components/file_picker";
-import { Button, MenuItem } from "@mui/material";
 import { PostProps } from "../components/post";
 import { Helmet } from "react-helmet";
 import api from "../utils/api";
@@ -43,7 +43,7 @@ export default function EditPostPage() {
     setLoading(false);
   };
 
-  const handleFiles = (event: FileList) => {
+  const handleFiles = useCallback((event: FileList) => {
     const selectedFiles = Array.from(event || []);
     setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
 
@@ -65,9 +65,9 @@ export default function EditPostPage() {
       };
       reader.readAsDataURL(file);
     });
-  };
+  }, []);
 
-  const PostMedia = () => {
+  const PostMedia = memo(() => {
     const mediaData: ReactNode[] = [];
     for (let i = 0; i < media.length; i++) {
       const postMedia = media[i];
@@ -142,29 +142,30 @@ export default function EditPostPage() {
         }
     }
     return mediaData;
-  };
+  });
+  
+  const getPost = useCallback(async () => {
+    try {
+      const res = await api.get<PostProps>(
+        ApiUrls.post_edit + id?.toString()
+      );
 
-  useEffect(() => {
-    const getPost = async () => {
-      try {
-        const res = await api.get<PostProps>(
-          ApiUrls.post_edit + id?.toString()
-        );
-
-        if (res.status === 200) {
-          setPost(res.data);
-          setVisibility(res.data.visibility);
-          setDesc(res.data.description);
-          setMedia(res.data.media);
-        } else {
-          setPost(null);
-        }
-      } catch {
+      if (res.status === 200) {
+        setPost(res.data);
+        setVisibility(res.data.visibility);
+        setDesc(res.data.description);
+        setMedia(res.data.media);
+      } else {
         setPost(null);
       }
-    };
-    getPost();
+    } catch {
+      setPost(null);
+    }
   }, [id]);
+
+  useEffect(() => {
+    getPost();
+  }, [getPost]);
 
   return (
     <>
@@ -174,7 +175,7 @@ export default function EditPostPage() {
       {post === undefined ? (
         <PostSkelaton animationType="wave" />
       ) : post === null ? (
-        <h1 className="text-white">Post Not found!</h1>
+        <h1>Post Not found!</h1>
       ) : (
         <>
           <div className={styles["post-container"]}>
@@ -191,8 +192,12 @@ export default function EditPostPage() {
                   width="50rem"
                   className="profile-pic"
                 />
-                <p className="text-white">{post.user?.username || "ali"}</p>
+                <p>{post.user?.username || "user"}</p>
+                <br />
+              </div>
+              <Box sx={{ width: "fit-content" }}>
                 <FloatingLabelInput
+                  label="Visibility"
                   inputProps={{ select: true, value: visibility }}
                   variant="standard"
                   name="visibility"
@@ -204,7 +209,7 @@ export default function EditPostPage() {
                     Friends only
                   </MenuItem>
                 </FloatingLabelInput>
-              </div>
+              </Box>
               <div className="desc">
                 <FloatingLabelInput
                   name="desc"

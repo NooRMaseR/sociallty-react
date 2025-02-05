@@ -15,7 +15,6 @@ dependencies = [
     "djangorestframework-simplejwt>=5.4.0",
     "djangorestframework==3.15.2",
     "faker==30.6.0",
-    "googletrans==3.0.0",
     "gtts==2.5.3",
     "opencv-python==4.10.0.84",
     "phonenumbers==8.13.47",

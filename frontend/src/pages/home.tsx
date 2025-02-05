@@ -1,8 +1,8 @@
-import { ReactNode, useCallback, useEffect, useState } from "react";
+import { memo, ReactNode, useCallback, useEffect, useState } from "react";
+import { appendPosts, setCount, setPosts } from "../utils/store";
 import { ApiUrls, PostsStateType } from "../utils/constants";
 import CommentsSlider from "../components/comments_slider";
 import RestPostMedia from "../components/rest_post_media";
-import { appendPosts, setPosts } from "../utils/store";
 import { useDispatch, useSelector } from "react-redux";
 import PostSkelaton from "../components/post_skelaton";
 import Post, { PostProps } from "../components/post";
@@ -15,9 +15,7 @@ import { Helmet } from "react-helmet";
 import api from "../utils/api";
 
 export default function Home() {
-  const posts = useSelector(
-    (state: PostsStateType) => state.postsState.value
-  );
+  const posts = useSelector((state: PostsStateType) => state.postsState.value);
   const [firstInit, setFirstInit] = useState(true);
   const [pageNumebr, setPageNumber] = useState<number>(1);
   const [hasNext, setHasNext] = useState<boolean | null>(null);
@@ -26,23 +24,26 @@ export default function Home() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const SkelatonPlaceHolders = () => {
+  const SkelatonPlaceHolders = memo(() => {
     const sks: ReactNode[] = [];
     for (let i = 0; i < 5; i++) {
       sks.push(<PostSkelaton key={i} />);
     }
     return sks;
-  };
+  });
 
   const getPosts = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get<{ posts: PostProps[]; has_next: boolean }>(
-        ApiUrls.posts_today + pageNumebr.toString()
-      );
+      const res = await api.get<{
+        posts: PostProps[];
+        has_next: boolean;
+        friends_requests_count: number;
+      }>(ApiUrls.posts_today + pageNumebr.toString());
       if (res.status === 200) {
         if (firstInit) {
           dispatch(setPosts(res.data.posts));
+          dispatch(setCount(res.data.friends_requests_count));
           setFirstInit(false);
           setLoaded(true);
         } else {
@@ -56,16 +57,23 @@ export default function Home() {
     setLoading(false);
   }, [pageNumebr, dispatch]);
 
+  const Posts = memo(() =>
+    posts.map((data) => <Post post={data} key={data.id} />)
+  );
+
   // fetch the posts
   useEffect(() => {
     getPosts();
-  }, [pageNumebr, getPosts]);
+  }, [getPosts]);
 
   return (
     <main>
       <Helmet>
         <title>Sociallty</title>
-        <meta name="description" content="Find and stay up to date for today's posts like, share, comment" />
+        <meta
+          name="description"
+          content="Find and stay up to date for today's posts like, share, comment"
+        />
       </Helmet>
       <ButtomSheet />
       <div className="d-flex justify-content-center align-items-center flex-direction-column mb-2">
@@ -92,9 +100,7 @@ export default function Home() {
           <SkelatonPlaceHolders />
         ) : (
           <>
-            {posts.map((data) => (
-              <Post post={data} key={data.id} />
-            ))}
+            <Posts />
             <div>
               {hasNext ? (
                 <Button
@@ -104,7 +110,7 @@ export default function Home() {
                   loadingPosition="start"
                   onClick={() => setPageNumber((prev) => prev + 1)}
                 >
-                  {loading ? 'Please wait...' : 'Load More'}
+                  {loading ? "Please wait..." : "Load More"}
                 </Button>
               ) : (
                 hasNext === false && <p>No More Posts...</p>

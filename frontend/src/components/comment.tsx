@@ -1,10 +1,11 @@
 import { API_URL, ApiUrls, CommentProps, PostsStateType } from "../utils/constants";
+import { SetStateAction, useCallback, useState } from "react";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { UpdatePostCommentsCount } from "../utils/store";
 import { useDispatch, useSelector } from "react-redux";
+import { Avatar, Card, Tooltip } from "@mui/material";
 import { formatNumbers } from "../utils/functions";
-import { SetStateAction, useState } from "react";
 import { Link } from "react-router-dom";
-import { Avatar } from "@mui/material";
 import api from "../utils/api";
 
 interface ICommentProps {
@@ -26,12 +27,12 @@ export default function Comment({
   );
   const dispatch = useDispatch();
 
-  const handelOpenOptions = () => {
+  const handelOpenOptions = useCallback(() => {
     setOptionsOpened((prev) => !prev);
-    setTimeout(() => setOptionsOpened(false), 7000);
-  };
+    setTimeout(() => setOptionsOpened(false), 5000);
+  }, []);
 
-  const deleteComment = async () => {
+  const deleteComment = useCallback(async () => {
     try {
       const res = await api.delete(
         ApiUrls.post_comment + comment.id.toString()
@@ -52,9 +53,16 @@ export default function Comment({
     } finally {
       setOptionsOpened(false);
     }
-  };
+  }, [
+    comment.comment_likes,
+    comment.id,
+    comments_Count,
+    dispatch,
+    postID,
+    setCommentsUpdater,
+  ]);
 
-  const addCommentLike = async () => {
+  const addCommentLike = useCallback(async () => {
     try {
       const res = await api.post(
         ApiUrls.add_comment_like + comment.id.toString()
@@ -69,11 +77,11 @@ export default function Comment({
     } finally {
       setOptionsOpened(false);
     }
-  };
+  }, [comment.id]);
 
   return (
     <>
-      <div className="user-comment">
+      <Card className="user-comment">
         <div
           className={`comment-container-options ${
             optionsOpened ? "options-opened" : ""
@@ -81,7 +89,7 @@ export default function Comment({
         >
           <div className="option" onClick={addCommentLike}>
             <p>Like</p>
-            <p>{formatNumbers(likes)}</p>
+            <p>{formatNumbers(likes ?? 0)}</p>
           </div>
           {/* check if the comment belong to the user or the post belong to the user */}
           {comment.user.id === +(localStorage.getItem("id") ?? 0) && (
@@ -91,11 +99,12 @@ export default function Comment({
           )}
         </div>
         <div className="comment-options-container">
-          <i
-            className="fa-solid fa-ellipsis fa-xl comment-options"
-            title="Options"
-            onClick={handelOpenOptions}
-          ></i>
+          <Tooltip title="Options">
+            <MoreHorizIcon
+              onClick={handelOpenOptions}
+              sx={{ color: "var(--text-color)", cursor: "pointer" }}
+            />
+          </Tooltip>
         </div>
         <div className="d-flex gap-2">
           <Avatar src={`${API_URL}${comment.user.profile_picture}`} />
@@ -115,7 +124,7 @@ export default function Comment({
             {new Date(comment.created_at).toLocaleString()}
           </p>
         </div>
-      </div>
+      </Card>
     </>
   );
 }

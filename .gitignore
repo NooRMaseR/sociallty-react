@@ -9,6 +9,9 @@ users.txt
 db.sqlite3
 test.rest
 test.py
+uv.lock
+.python-version
+pyproject.toml
 
 # Logs
 logs

@@ -108,15 +108,18 @@ const postContentSliderSlice = createSlice({
     }
 })
 
-const forgetPaasswordSlice = createSlice({
-    name: 'forget_password',
+const friendsRequestsCountSlice = createSlice({
+    name: 'friends_requests_count',
     initialState: {
-        email: '',
+        count: 0,
     },
     reducers: {
-        setEmail: (state, action: { payload: string, type: string }) => {
-            state.email = action.payload;
-        }
+        setCount: (state, action: { payload: number, type: string }) => {
+            state.count = action.payload;
+        },
+        decrementCount: (state) => {
+            --state.count
+        },
     }
 })
 
@@ -129,16 +132,16 @@ const store = configureStore({
         postsState: postsSlice.reducer,
         back_bg_state: backBgSlice.reducer,
         post_content_slider: postContentSliderSlice.reducer,
-        forget_password: forgetPaasswordSlice.reducer,
+        friends_requests_count: friendsRequestsCountSlice.reducer,
     }
 })
 
 export const { setPosts, appendPost, appendPosts, removePost, UpdatePostCommentsCount} = postsSlice.actions;
+export const { setCount, decrementCount } = friendsRequestsCountSlice.actions;
 export const { setPostContentSlider } = postContentSliderSlice.actions;
 export const { set_current_active_route } = currentRouteSlice.actions;
 export const { setSliderOpen } = commentSliderStateSlice.actions;
 export const { setBottomSheetOpen } = bottomSheetSlice.actions;
-export const { setEmail } = forgetPaasswordSlice.actions;
 export const { setHasToken } = hasTokenSlice.actions;
 export const { setBackBg } = backBgSlice.actions;
 export default store;

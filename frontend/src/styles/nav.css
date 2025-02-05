@@ -41,6 +41,9 @@ nav {
         transition: transform 1s ease;
         text-align: start;
     }
+    & p {
+        color: #fff !important;
+    }
 }
 
 .label-for {
@@ -142,16 +145,6 @@ nav>ul {
 }
 
 /* end humburger menue */
-
-
-#btn-mode {
-    background-color: transparent;
-    color: #fff;
-    border: none;
-    font-size: large;
-    padding: 0;
-    cursor: pointer;
-}
 
 @media (max-width: 835px) {
 

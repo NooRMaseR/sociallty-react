@@ -6,7 +6,7 @@ import {
   REFRESH,
   TokenResponse,
 } from "../utils/constants";
-import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import FloatingLabelInput from "../components/floating_input_label";
 import { Avatar, Box, Button, Skeleton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -35,14 +35,14 @@ export default function EditUserPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handelOnFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handelOnFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const imgSrc = URL.createObjectURL(e.target.files[0]);
       if (avatarRef.current) avatarRef.current.src = imgSrc;
     }
-  };
+  }, []);
 
-  const handelOnSubmit = async (e: FormEvent) => {
+  const handelOnSubmit = useCallback(async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErrors([]);
@@ -67,9 +67,9 @@ export default function EditUserPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dispatch, navigate]);
 
-  const getUserData = async () => {
+  const getUserData = useCallback(async () => {
     try {
       const res = await api.get<FullUser>(ApiUrls.edit_user);
 
@@ -81,11 +81,11 @@ export default function EditUserPage() {
     } catch (error: any) {
       setErrors(error.response.data);
     }
-  };
+  }, []);
 
   useEffect(() => {
     getUserData();
-  }, []);
+  }, [getUserData]);
 
   return (
     <div id="container">
@@ -134,7 +134,7 @@ export default function EditUserPage() {
               name="first_name"
               label="First Name"
               autoComplete="cc-given-name"
-              suffexIcon={<PersonIcon sx={{ color: "#fff" }} />}
+              suffexIcon={<PersonIcon sx={{ color: "var(--text-color)" }} />}
               inputProps={{ defaultValue: user?.first_name }}
               required
             />
@@ -143,7 +143,7 @@ export default function EditUserPage() {
               name="last_name"
               label="Last Name"
               autoComplete="family-name"
-              suffexIcon={<Person2Icon sx={{ color: "#fff" }} />}
+              suffexIcon={<Person2Icon sx={{ color: "var(--text-color)" }} />}
               inputProps={{ defaultValue: user?.last_name }}
               required
             />
@@ -154,7 +154,7 @@ export default function EditUserPage() {
           name="username"
           label="User Name"
           autoComplete="username"
-          suffexIcon={<Person3Icon sx={{ color: "#fff" }} />}
+          suffexIcon={<Person3Icon sx={{ color: "var(--text-color)" }} />}
           inputProps={{ defaultValue: user?.username }}
           required
         />
@@ -163,7 +163,7 @@ export default function EditUserPage() {
           name="email"
           label="Email"
           autoComplete="username"
-          suffexIcon={<EmailIcon sx={{ color: "#fff" }} />}
+          suffexIcon={<EmailIcon sx={{ color: "var(--text-color)" }} />}
           inputProps={{ inputMode: "email", defaultValue: user?.email }}
           required
         />
@@ -171,7 +171,7 @@ export default function EditUserPage() {
           name="password"
           type="password"
           label="Password"
-          suffexIcon={<LockIcon sx={{ color: "#fff" }} />}
+          suffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
           autoComplete="password"
           slotProps={{
             htmlInput: {
@@ -183,7 +183,7 @@ export default function EditUserPage() {
         <FloatingLabelInput
           type="date"
           name="birth"
-          suffexIcon={<CakeIcon sx={{ color: "#fff" }} />}
+          suffexIcon={<CakeIcon sx={{ color: "var(--text-color)" }} />}
           inputProps={{ defaultValue: user?.birth }}
           required
         />
@@ -192,14 +192,14 @@ export default function EditUserPage() {
           name="phone"
           label="Phone Number"
           autoComplete="tel"
-          suffexIcon={<PhoneIcon sx={{ color: "#fff" }} />}
+          suffexIcon={<PhoneIcon sx={{ color: "var(--text-color)" }} />}
           inputProps={{ inputMode: "tel", defaultValue: user?.phone }}
           required
         />
         <FloatingLabelInput
           name="bio"
           label="Bio"
-          suffexIcon={<InfoIcon sx={{ color: "#fff" }} />}
+          suffexIcon={<InfoIcon sx={{ color: "var(--text-color)" }} />}
           inputProps={{
             multiline: true,
             placeholder: "i'm a Social Person 😊😁....",

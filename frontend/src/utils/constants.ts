@@ -2,7 +2,8 @@ import { Media, PostProps } from "../components/post";
 
 export const ACCESS: string = "access";
 export const REFRESH: string = "refresh";
-export const API_URL: string = "http://127.0.0.1:8000";
+// export const API_URL: string = "http://127.0.0.1:8000";
+export const API_URL: string = import.meta.env.VITE.url || "http://192.168.1.7:8000";
 
 export interface TokenResponse {
   readonly id: number;
@@ -55,6 +56,7 @@ export enum ApiUrls {
 
   user_refresh_token = `${user_log_sign}refresh/`,
   see_user_friends = "/see-user-friends/?list=",
+  see_friends_requests = '/see-friends-request/',
   edit_user = `${user_log_sign}edit-user/`,
   forget_password = `${user_log_sign}forget-password/`,
   settings = `${user_log_sign}settings/`,
@@ -128,8 +130,8 @@ export type PostContentSliderStateType = {
   };
 };
 
-export type ForgetPasswordStateType = {
-  forget_password: {
-    email: string;
+export type FriendsRequestsCountStateType = {
+  friends_requests_count: {
+    count: number;
   };
 };

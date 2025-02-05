@@ -1,7 +1,19 @@
+import { Box, Dialog, easing, IconButton, Slide, Tooltip } from "@mui/material";
 import { API_URL, PostContentSliderStateType } from "../utils/constants";
+import { TransitionProps } from "@mui/material/transitions";
 import { useDispatch, useSelector } from "react-redux";
 import { setPostContentSlider } from "../utils/store";
-import { ReactNode, useEffect } from "react";
+import CloseIcon from "@mui/icons-material/Close";
+import React from "react";
+
+const Transition = React.forwardRef(function Transition(
+  props: TransitionProps & {
+    children: React.ReactElement<unknown>;
+  },
+  ref: React.Ref<unknown>
+) {
+  return <Slide ref={ref} {...props} direction="left" easing={easing.easeInOut} timeout={1000} />;
+});
 
 export default function RestPostMedia() {
   const media = useSelector(
@@ -12,12 +24,8 @@ export default function RestPostMedia() {
   );
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "auto";
-  }, [isOpen]);
-
-  const MediaContent = () => {
-    const data: ReactNode[] = [];
+  const MediaContent = React.memo(() => {
+    const data: React.ReactNode[] = [];
     for (const media_content of media) {
       switch (media_content.content_type) {
         case "image":
@@ -25,9 +33,8 @@ export default function RestPostMedia() {
             <img
               src={`${API_URL}${media_content.content}`}
               alt="post content"
-              className="media-content"
-              width="50rem"
               key={media_content.id}
+              style={{maxHeight: '50%'}}
             />
           );
           break;
@@ -38,7 +45,6 @@ export default function RestPostMedia() {
               preload="none"
               poster={`${API_URL}${media_content.poster}`}
               controlsList="nodownload"
-              className="media-content"
               controls
               width="50rem"
               key={media_content.id}
@@ -48,30 +54,27 @@ export default function RestPostMedia() {
       }
     }
     return data;
-  };
+  });
+
+  const closeSlider = React.useCallback(() => dispatch(setPostContentSlider({ value: false, media: [] })), [dispatch]);
 
   return (
-    <div
-      id="post-content-slider"
-      className={isOpen ? "post-content-slider-opened" : ""}
+    <Dialog
+      fullScreen
+      open={isOpen}
+      onClose={closeSlider}
+      TransitionComponent={Transition}
+      keepMounted
     >
-      <div
-        id="close-slide-container"
-        onClick={() =>
-          dispatch(setPostContentSlider({ value: false, media: [] }))
-        }
-      >
-        <p
-          id="close-content-slider"
-          style={{ color: "var(--text-color)", cursor: "pointer" }}
-        >
-          X
-        </p>
-      </div>
+      <Tooltip title="Close">
+        <IconButton type="button" onClick={closeSlider} sx={{ width: 'fit-content' }}>
+          <CloseIcon />
+        </IconButton>
+      </Tooltip>
 
-      <div id="content">
+      <Box sx={{ width: '100%', height: '100%', display: 'flex', placeItems: 'center', flexDirection: 'column' }}>
         <MediaContent />
-      </div>
-    </div>
+      </Box>
+    </Dialog>
   );
 }

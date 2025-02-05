@@ -2,7 +2,7 @@ import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
-import VerifyForgetPasswordPage from "./pages/verify_forget_password";
+import SeeUserFriendsRequestsPage from "./pages/see_user_friends_requests";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SeeUserFriendsPage from "./pages/see_user_friends";
 import ForgetPasswordPage from "./pages/forget_password";
@@ -40,7 +40,6 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/user/forgot-password" element={<ForgetPasswordPage />} />
-        <Route path="/user/verify-code" element={<VerifyForgetPasswordPage />} />
 
         <Route
           path="/make-post"
@@ -71,6 +70,14 @@ function App() {
           element={
             <ProtectedView>
               <SeeUserFriendsPage />
+            </ProtectedView>
+          }
+        />
+        <Route
+          path="/see-friends-requests"
+          element={
+            <ProtectedView>
+              <SeeUserFriendsRequestsPage />
             </ProtectedView>
           }
         />

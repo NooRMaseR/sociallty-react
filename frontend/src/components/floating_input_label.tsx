@@ -1,4 +1,4 @@
-import { Box, TextField, TextFieldVariants } from "@mui/material";
+import { Box, SxProps, TextField, TextFieldVariants } from "@mui/material";
 import react from "react";
 
 interface FloatingLabelInputProps {
@@ -13,6 +13,7 @@ interface FloatingLabelInputProps {
   inputProps?: object;
   slotProps?: object;
   children?: react.ReactNode[];
+  sx?: SxProps
 }
 
 export default function FloatingLabelInput({
@@ -27,6 +28,7 @@ export default function FloatingLabelInput({
   inputProps,
   slotProps,
   children,
+  sx,
 }: FloatingLabelInputProps) {
   return (
     <Box className="d-flex align-items-center gap-2">
@@ -41,30 +43,8 @@ export default function FloatingLabelInput({
         {...inputProps}
         onChange={(e) => updater && updater(e.target.value)}
         slotProps={slotProps}
-        sx={{
-          ".MuiFormLabel-root": {
-            color: "#ababab",
-          },
-          ".MuiFormLabel-root.Mui-focused": {
-            color: "#1976d2",
-          },
-          ".MuiFilledInput-root": {
-            color: "#fff",
-          },
-          ".MuiOutlinedInput-root": {
-            color: "#fff",
-          },
-          ".MuiInput-root": {
-            color: "#fff",
-          },
-          ".MuiInput-root::before": {
-            borderBottom: "1px solid rgb(173 173 173 / 42%); !important",
-          },
-          ".MuiInput-root:hover::before": {
-            borderBottom: "1px solid rgb(213 213 213 / 87%); !important",
-          },
-        }}
         required={required}
+        sx={{...sx}}
       >
         {children}
       </TextField>

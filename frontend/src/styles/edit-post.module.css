@@ -22,6 +22,7 @@
     transform: translate(-50%) scale(0);
     transition: transform .5s ease-in-out, top .5s ease-in-out;
     cursor: pointer;
+    -webkit-backdrop-filter: blur(7px);
     backdrop-filter: blur(3px);
     padding: .5rem;
     color: #ff206a;
@@ -46,6 +47,7 @@
 
 .post-container {
     display: flex;
+    place-content: center;
     margin-inline: 15rem;
 }
 

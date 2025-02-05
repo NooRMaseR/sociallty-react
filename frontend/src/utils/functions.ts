@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import api from "./api";
 import { ApiUrls } from "./constants";
 
@@ -5,6 +6,12 @@ interface ShareOptions {
   text?: string;
   title?: string;
   url?: string;
+}
+
+export type FriendRequest = {
+  success: boolean;
+  status: number;
+  data: {details: string};
 }
 
 /**
@@ -21,30 +28,74 @@ export async function share(postId?: number, options: ShareOptions = { title: 'P
       url: real_url,
     });
   } else {
-    (navigator as Navigator).clipboard.writeText(real_url);
+    await (navigator as Navigator).clipboard.writeText(real_url);
   }
 }
 
-export async function addFriend(friendID: number) {
+export async function addFriend(friendID: number): Promise<FriendRequest> {
   try {
-    const res = await api.post(ApiUrls.social_users, { friendID });
-    return res.status === 201;
-  } catch {
-    return false;
+    const res = await api.post(ApiUrls.see_friends_requests, { friendID });
+    return {
+      success: res.status === 201,
+      status: res.status,
+      data: res.data
+    };
+  } catch (error: any) {
+    return {
+      success: error.response.status === 201,
+      status: error.response.status,
+      data: error.response.data
+    };
   }
 };
 
-export async function removeFriend(friendID: number) {
+export async function removeFriend(friendID: number): Promise<FriendRequest> {
   try {
-    const res = await api.delete(ApiUrls.social_users, { data: { friendID } });
-    return res.status === 200;
-  } catch {
-    return false;
+    const res = await api.delete(ApiUrls.see_user_friends, { data: { friendID } });
+    return {
+      success: res.status === 200,
+      status: res.status,
+      data: res.data
+    };
+  } catch (error: any) {
+    return {
+      success: error.response.status === 200,
+      status: error.response.status,
+      data: error.response.data
+    };
   }
 };
+
+export async function deleteRequest(friendID: number): Promise<FriendRequest> {
+  
+  try {
+    const res = await api.delete(ApiUrls.see_friends_requests, { data: { friendID } });
+    
+    if (res.status === 200) {
+      return {
+        success: true,
+        status: res.status,
+        data: res.data
+      };
+    }
+    return {
+      success: false,
+      status: res.status,
+      data: res.data
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      status: error.response.status,
+      data: error.response.data
+    };
+    
+  }
+
+}
 
 export function disablePageScroll(disable: boolean = true) {
-  document.body.style.overflow = disable ? "hidden" : 'auto';
+  document.body.style.overflow = disable ? "hidden" : 'initial';
 };
 
 export function formatNumbers(value: number): string {

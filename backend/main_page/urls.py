@@ -7,5 +7,6 @@ urlpatterns = (
     path("post/<int:postID>/", views.PostApi.as_view(), name='post-info'),
     path("post-edit/<int:postID>/", views.EditPostAPI.as_view()),
     path("see-user-friends/", views.SeeUserFirendsApi.as_view()),
+    path("see-friends-request/", views.SeeFirendsRequestsApi.as_view()),
     path("social-users/", views.SocialUsersApi.as_view()),
 )

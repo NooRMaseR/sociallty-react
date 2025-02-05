@@ -24,7 +24,7 @@ from utils.main_utils import generate_verify_code
 from .models import SocialUser, UserCode
 
 
-class UserApi(APIView):
+class UserProfileApi(APIView):
     
     def get(self, request: Request, username: str, id: int) -> Response:
         user = get_object_or_404((
@@ -138,7 +138,13 @@ class EditUserApi(APIView):
         else:
             return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+    @transaction.atomic
+    def delete(self, request: Request) -> Response:
+        if request.user.check_password(request.data.get('password')): # type: ignore
+            request.user.delete()
+            return Response(status=status.HTTP_200_OK)
+        
+        return Response({'details': 'Wrong Password'}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserForgotPasswordApi(APIView):
     permission_classes = [AllowAny]
@@ -183,11 +189,11 @@ class UserForgotPasswordApi(APIView):
             user_code.delete()
             return Response({"verified": True}, status=200)
         except SocialUser.DoesNotExist:
-            return Response({"verified": False, "details": "user not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"verified": False, "detail": "user not found"}, status=status.HTTP_404_NOT_FOUND)
         except UserCode.DoesNotExist:
-            return Response({"verified": False, "details": "code not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"verified": False, "code": "Invalid Code"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return Response({"verified": False, "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"verified": False, "detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     @transaction.atomic
     def put(self, request: Request) -> Response:
@@ -198,7 +204,7 @@ class UserForgotPasswordApi(APIView):
         email = request.data.get("email") # type: ignore
         
         if password != confirm_password:
-            return Response({"details": "passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"passwordError": "passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             user: SocialUser = SocialUser.objects.get(email=email)

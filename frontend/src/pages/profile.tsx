@@ -1,5 +1,6 @@
 import {
   addFriend,
+  deleteRequest,
   disablePageScroll,
   formatNumbers,
   removeFriend,
@@ -11,9 +12,9 @@ import {
   UserProfileResponse,
 } from "../utils/constants";
 import { Backdrop, Box, Button, ButtonGroup, Skeleton } from "@mui/material";
+import { memo, ReactNode, useCallback, useEffect, useState } from "react";
 import CommentsSlider from "../components/comments_slider";
 import { Link, useSearchParams } from "react-router-dom";
-import { ReactNode, useEffect, useState } from "react";
 import PostSkelaton from "../components/post_skelaton";
 import Post, { PostProps } from "../components/post";
 import ButtomSheet from "../components/buttom_sheet";
@@ -33,64 +34,73 @@ export default function ProfilePage() {
   const [openQr, setOpenQr] = useState<boolean>(false);
   const [hasNext, setHasNext] = useState<boolean>(false);
   const [isFIrst, setIsFirst] = useState<boolean>(true);
+  const [requestSent, setRequestSent] = useState<boolean>(false);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [params] = useSearchParams();
 
   const isAuthor = user.id == +(localStorage.getItem("id") ?? -1);
 
-  const toggleFriend = async () => {
-    let success: boolean;
+  const toggleFriend = useCallback(async () => {
+    if (is_friend) {
+      await removeFriend(user.id);
+      setRequestSent(false);
+      setIsFriend(false);
+      
+    } else if (requestSent) {
+      await deleteRequest(user.id);
+      setRequestSent(false);
+      setIsFriend(false);
+      
+    } else {
+      await addFriend(user.id);
+      setRequestSent(true);
+    }
+  }, []);
 
-    if (is_friend) success = await removeFriend(user.id);
-    else success = await addFriend(user.id);
+  const fetchUser = useCallback(async () => {
+    document.documentElement.scrollTop = 0;
+    setError(null);
+    try {
+      const res = await api.get<UserProfileResponse>(
+        `${ApiUrls.user_log_sign}${
+          params.get("username") || localStorage.getItem("username")
+        }/${
+          params.get("id") || localStorage.getItem("id")
+        }/?page=${pageNumber}`
+      );
 
-    if (success) setIsFriend((pre) => !pre);
-  };
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      document.documentElement.scrollTop = 0;
-      setError(null);
-      try {
-        const res = await api.get<UserProfileResponse>(
-          `${ApiUrls.user_log_sign}${
-            params.get("username") || localStorage.getItem("username")
-          }/${
-            params.get("id") || localStorage.getItem("id")
-          }/?page=${pageNumber}`
-        );
-
-        if (isFIrst) {
-          setUser(res.data.user);
-          setIsFriend(res.data.is_friend);
-          setIsFirst(false);
-          setPosts(res.data.posts);
-        } else {
-          setPosts((pre) => [...pre, ...res.data.posts]);
-        }
-        setHasNext(res.data.has_next);
-        setLoaded(true);
-      } catch {
-        setError(
-          "User Not Found, Please Try To Refresh the page or contact us"
-        );
+      if (isFIrst) {
+        setUser(res.data.user);
+        setIsFriend(res.data.is_friend);
+        setIsFirst(false);
+        setPosts(res.data.posts);
+      } else {
+        setPosts((pre) => [...pre, ...res.data.posts]);
       }
-    };
-
-    fetchUser();
+      setHasNext(res.data.has_next);
+      setLoaded(true);
+    } catch {
+      setError(
+        "User Not Found, Please Try To Refresh the page or contact us"
+      );
+    }
   }, [pageNumber, params]);
 
-  const SkelatonPlaceHolders = () => {
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
+
+  const SkelatonPlaceHolders = memo(() => {
     const sks: ReactNode[] = [];
     for (let i = 0; i < 5; i++) {
       sks.push(<PostSkelaton key={i} />);
     }
     return sks;
-  };
+  });
 
   const AccountPosts = () => {
     if (user.settings?.is_private_account && !is_friend && !isAuthor)
-      return <h1 className="text-white">Private Account</h1>;
+      return <h1>Private Account</h1>;
     else
       return (
         <Box id="posts">
@@ -128,7 +138,7 @@ export default function ProfilePage() {
         <Skeleton
           variant="rounded"
           animation="wave"
-          sx={{ width: "80%", height: "20rem", bgcolor: "#292929", mb: "2rem" }}
+          sx={{ width: "80%", height: "20rem", mb: "2rem" }}
         />
       </div>
       <div id="info">
@@ -137,14 +147,14 @@ export default function ProfilePage() {
             <Skeleton
               variant="text"
               animation="wave"
-              sx={{ width: "7rem", height: "6rem", bgcolor: "#292929" }}
+              sx={{ width: "7rem", height: "6rem" }}
             />
           </div>
           <div>
             <Skeleton
               variant="text"
               animation="wave"
-              sx={{ width: "7rem", height: "6rem", bgcolor: "#292929" }}
+              sx={{ width: "7rem", height: "6rem" }}
             />
           </div>
         </div>
@@ -153,28 +163,28 @@ export default function ProfilePage() {
             <Skeleton
               variant="text"
               animation="wave"
-              sx={{ width: "6rem", height: "2rem", bgcolor: "#292929" }}
+              sx={{ width: "6rem", height: "2rem" }}
             />
             <Skeleton
               variant="text"
               animation="wave"
-              sx={{ width: "100%", height: "2rem", bgcolor: "#292929" }}
+              sx={{ width: "100%", height: "2rem" }}
             />
             <Skeleton
               variant="text"
               animation="wave"
-              sx={{ width: "60%", height: "2rem", bgcolor: "#292929" }}
+              sx={{ width: "60%", height: "2rem" }}
             />
             <Skeleton
               variant="text"
               animation="wave"
-              sx={{ width: "20%", height: "2rem", bgcolor: "#292929" }}
+              sx={{ width: "20%", height: "2rem" }}
             />
           </div>
           <Skeleton
             variant="rectangular"
             animation="wave"
-            sx={{ width: "7rem", height: "2rem", bgcolor: "#292929" }}
+            sx={{ width: "7rem", height: "2rem" }}
           />
         </div>
       </div>
@@ -267,6 +277,14 @@ export default function ProfilePage() {
                         Qr Code
                       </Button>
                     </ButtonGroup>
+                  ) : requestSent ? (
+                    <Button
+                      variant="contained"
+                      sx={{ backgroundColor: "#292929" }}
+                      onClick={toggleFriend}
+                    >
+                      Cancel
+                    </Button>
                   ) : (
                     <Button variant="contained" onClick={toggleFriend}>
                       Add Friend
