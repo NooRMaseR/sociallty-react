@@ -1,27 +1,40 @@
-import { memo, ReactNode, useCallback, useEffect, useState } from "react";
-import AccountCardSkelaton from "../components/account_card_skelaton";
+import React, {
+  memo,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { CardsSkelaton } from "../components/users_skelaton";
 import { ApiUrls, FullUser } from "../utils/constants";
-import AccountCard from "../components/account_card";
+import { useLoadingBar } from "react-top-loading-bar";
 import { Box, Button } from "@mui/material";
 import { Helmet } from "react-helmet";
 import api from "../utils/api";
+
+const LazyAccountCard = React.lazy(() => import("../components/account_card"));
+
+const Cards = memo(({ users }: { users: FullUser[] }) => {
+  const renderCards = useMemo(
+    () =>
+      users.map((user) => (
+        <LazyAccountCard user={user} key={user.id} forFriends={true} />
+      )),
+    [users]
+  );
+  return <Suspense fallback={<CardsSkelaton />}>{renderCards}</Suspense>;
+});
 
 export default function SeeUserFriendsPage() {
   const [users, setUsers] = useState<FullUser[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [buttonLoading, setButtonLoading] = useState<boolean>(false);
   const [hasNext, setHasNext] = useState<boolean>(false);
+  const [isFirst, setIsFirst] = useState<boolean>(true);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [error, setError] = useState<string | null>(null);
-
-  const CardsSkelaton = memo(() => {
-    const cards: ReactNode[] = [];
-    for (let i = 0; i < 10; i++) {
-      cards.push(<AccountCardSkelaton key={i} />);
-    }
-
-    return cards;
-  });
+  const { complete } = useLoadingBar();
 
   const getAccounts = useCallback(async () => {
     setButtonLoading(true);
@@ -34,6 +47,10 @@ export default function SeeUserFriendsPage() {
         setUsers((pre) => [...pre, ...res.data.users]);
         setHasNext(res.data.has_next);
         setLoading(false);
+        if (isFirst) {
+          setIsFirst(false);
+          complete();
+        }
       }
     } catch {
       setError(
@@ -41,21 +58,11 @@ export default function SeeUserFriendsPage() {
       );
     }
     setButtonLoading(false);
-  }, [pageNumber]);
+  }, [pageNumber, complete]);
 
   useEffect(() => {
     getAccounts();
   }, [getAccounts]);
-
-  const UsersCards = memo(() =>
-    loading ? (
-      <CardsSkelaton />
-    ) : (
-      users.map((user) => (
-        <AccountCard user={user} key={user.id} forFriends={true} />
-      ))
-    )
-  );
 
   return (
     <>
@@ -71,7 +78,7 @@ export default function SeeUserFriendsPage() {
       ) : (
         <>
           <div className="cards-holder">
-            <UsersCards />
+            {loading ? <CardsSkelaton /> : <Cards users={users} />}
           </div>
           <Box sx={{ display: "flex", placeContent: "center", mt: "7rem" }}>
             {hasNext ? (

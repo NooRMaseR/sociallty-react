@@ -1,14 +1,17 @@
-import { Avatar, Box, Button, Step, StepLabel, Stepper } from "@mui/material";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import { Box, Button, Step, StepLabel, Stepper } from "@mui/material";
 import FloatingLabelInput from "../components/floating_input_label";
+import { memo, useCallback, useEffect, useState } from "react";
 import { ApiUrls, TokenResponse } from "../utils/constants";
-import { memo, useCallback, useState } from "react";
+import { LazyAvatar } from "../components/media_skelatons";
+import { useLoadingBar } from "react-top-loading-bar";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Helmet } from "react-helmet";
 import api from "../utils/api";
+import "../styles/login.css";
 
 interface ChangePasswordStepsProps {
   email: string;
@@ -23,6 +26,7 @@ export default function ForgetPasswordPage() {
   const [activeStep, setActiveStep] = useState<number>(0);
   const { register, handleSubmit } = useForm<ChangePasswordStepsProps>();
   const navigate = useNavigate();
+  const { start, complete } = useLoadingBar();
 
   const handelOnEmailSubmit = useCallback(async (data: ChangePasswordStepsProps) => {
     setLoading(true);
@@ -102,6 +106,7 @@ export default function ForgetPasswordPage() {
       });
 
       if (res && res.status == 200) {
+        start();
         navigate("/login");
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -114,7 +119,11 @@ export default function ForgetPasswordPage() {
     } finally {
       setLoading(false);
     }
-  }, [navigate]);
+  }, [navigate, start]);
+
+  useEffect(() => {
+    complete();
+  }, [complete]);
 
   const ChangePasswordSteps = memo(() => {
     switch (activeStep) {
@@ -123,9 +132,10 @@ export default function ForgetPasswordPage() {
           <form onSubmit={handleSubmit(handelOnEmailSubmit)}>
             <Box id="header">
               <h1 id="pic-label">Forget Password</h1>
-              <Avatar
+              <LazyAvatar
                 src="/favicon.ico"
-                sx={{ width: "10rem", height: "10rem" }}
+                width="10rem"
+                height="10rem"
               />
             </Box>
             <FloatingLabelInput
@@ -163,9 +173,10 @@ export default function ForgetPasswordPage() {
             </Button>
             <Box id="header">
               <h1 id="pic-label">Confirm Email</h1>
-              <Avatar
+              <LazyAvatar
                 src="/favicon.ico"
-                sx={{ width: "10rem", height: "10rem" }}
+                width="10rem"
+                height="10rem"
               />
             </Box>
             <FloatingLabelInput
@@ -197,9 +208,10 @@ export default function ForgetPasswordPage() {
           <form onSubmit={handleSubmit(handelOnPasswordChangeSubmit)}>
             <Box id="header">
               <h1 id="pic-label">Change Password</h1>
-              <Avatar
+              <LazyAvatar
                 src="/favicon.ico"
-                sx={{ width: "10rem", height: "10rem" }}
+                width="10rem"
+                height="10rem"
               />
             </Box>
             <FloatingLabelInput

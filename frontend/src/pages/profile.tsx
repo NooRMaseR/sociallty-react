@@ -11,19 +11,46 @@ import {
   FullUser,
   UserProfileResponse,
 } from "../utils/constants";
-import { Backdrop, Box, Button, ButtonGroup, Skeleton } from "@mui/material";
-import { memo, ReactNode, useCallback, useEffect, useState } from "react";
-import CommentsSlider from "../components/comments_slider";
+import React, {
+  memo,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { Backdrop, Box, Button, ButtonGroup } from "@mui/material";
+import Profileskeleton from "../components/profile_page_skelaton";
 import { Link, useSearchParams } from "react-router-dom";
 import PostSkelaton from "../components/post_skelaton";
-import Post, { PostProps } from "../components/post";
-import ButtomSheet from "../components/buttom_sheet";
+import { useLoadingBar } from "react-top-loading-bar";
+import { Image } from "../components/media_skelatons";
 import QrCodeIcon from "@mui/icons-material/QrCode";
+import styles from "../styles/profile.module.css";
 import EditIcon from "@mui/icons-material/Edit";
+import { PostProps } from "../components/post";
 import { QRCodeCanvas } from "qrcode.react";
 import { Helmet } from "react-helmet";
 import api from "../utils/api";
-import "../styles/profile.css";
+
+const SkelatonPlaceHolders = memo(() => (
+  Array.from({ length: 5 }, (_, i) => <PostSkelaton key={i} />)
+));
+
+const LazyPost = React.lazy(() => import("../components/post"));
+const LazyBottomSheet = React.lazy(() => import("../components/buttom_sheet"));
+const LazyCommentsSlider = React.lazy(
+  () => import("../components/comments_slider")
+);
+
+const Posts = memo(({ posts }: { posts: PostProps[] }) => {
+  const renderPosts = useMemo(() =>
+    posts.map((data) => <LazyPost post={data} key={data.id} />), [posts]
+  );
+  return <Suspense fallback={<PostSkelaton />}>{renderPosts}</Suspense>;
+}
+);
+
 
 export default function ProfilePage() {
   const [user, setUser] = useState<FullUser>({} as FullUser);
@@ -36,6 +63,7 @@ export default function ProfilePage() {
   const [isFIrst, setIsFirst] = useState<boolean>(true);
   const [requestSent, setRequestSent] = useState<boolean>(false);
   const [pageNumber, setPageNumber] = useState<number>(1);
+  const { start, complete } = useLoadingBar();
   const [params] = useSearchParams();
 
   const isAuthor = user.id == +(localStorage.getItem("id") ?? -1);
@@ -45,12 +73,10 @@ export default function ProfilePage() {
       await removeFriend(user.id);
       setRequestSent(false);
       setIsFriend(false);
-      
     } else if (requestSent) {
       await deleteRequest(user.id);
       setRequestSent(false);
       setIsFriend(false);
-      
     } else {
       await addFriend(user.id);
       setRequestSent(true);
@@ -64,9 +90,7 @@ export default function ProfilePage() {
       const res = await api.get<UserProfileResponse>(
         `${ApiUrls.user_log_sign}${
           params.get("username") || localStorage.getItem("username")
-        }/${
-          params.get("id") || localStorage.getItem("id")
-        }/?page=${pageNumber}`
+        }/${params.get("id") || localStorage.getItem("id")}/?page=${pageNumber}`
       );
 
       if (isFIrst) {
@@ -74,122 +98,54 @@ export default function ProfilePage() {
         setIsFriend(res.data.is_friend);
         setIsFirst(false);
         setPosts(res.data.posts);
+        complete();
       } else {
         setPosts((pre) => [...pre, ...res.data.posts]);
       }
       setHasNext(res.data.has_next);
       setLoaded(true);
     } catch {
-      setError(
-        "User Not Found, Please Try To Refresh the page or contact us"
-      );
+      setError("User Not Found, Please Try To Refresh the page or contact us");
     }
-  }, [pageNumber, params]);
+  }, [pageNumber, params, complete]);
 
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
 
-  const SkelatonPlaceHolders = memo(() => {
-    const sks: ReactNode[] = [];
-    for (let i = 0; i < 5; i++) {
-      sks.push(<PostSkelaton key={i} />);
-    }
-    return sks;
-  });
-
-  const AccountPosts = () => {
+  const AccountPosts = memo(() => {
     if (user.settings?.is_private_account && !is_friend && !isAuthor)
       return <h1>Private Account</h1>;
     else
       return (
         <Box id="posts">
-          <ButtomSheet />
-          <CommentsSlider />
+          <LazyBottomSheet />
+          <LazyCommentsSlider />
           {!loaded ? (
             <SkelatonPlaceHolders />
           ) : (
             <>
-              {posts.map((data) => (
-                <Post post={data} key={data.id} />
-              ))}
-              <div>
-                {hasNext ? (
-                  <Button
-                    type="button"
-                    variant="contained"
-                    onClick={() => setPageNumber((prev) => prev + 1)}
-                  >
-                    Load More
-                  </Button>
-                ) : (
-                  <p>No More Posts...</p>
-                )}
-              </div>
+              <Suspense fallback={<PostSkelaton />}>
+                <Posts posts={posts} />
+                <div>
+                  {hasNext ? (
+                    <Button
+                      type="button"
+                      variant="contained"
+                      onClick={() => setPageNumber((prev) => prev + 1)}
+                    >
+                      Load More
+                    </Button>
+                  ) : (
+                    <p>No More Posts...</p>
+                  )}
+                </div>
+              </Suspense>
             </>
           )}
         </Box>
       );
-  };
-
-  const Profileskeleton = () => (
-    <>
-      <div id="user-profile-pic">
-        <Skeleton
-          variant="rounded"
-          animation="wave"
-          sx={{ width: "80%", height: "20rem", mb: "2rem" }}
-        />
-      </div>
-      <div id="info">
-        <div id="counters" className="d-flex gap-4">
-          <div>
-            <Skeleton
-              variant="text"
-              animation="wave"
-              sx={{ width: "7rem", height: "6rem" }}
-            />
-          </div>
-          <div>
-            <Skeleton
-              variant="text"
-              animation="wave"
-              sx={{ width: "7rem", height: "6rem" }}
-            />
-          </div>
-        </div>
-        <div id="user-info">
-          <div style={{ width: "100%" }}>
-            <Skeleton
-              variant="text"
-              animation="wave"
-              sx={{ width: "6rem", height: "2rem" }}
-            />
-            <Skeleton
-              variant="text"
-              animation="wave"
-              sx={{ width: "100%", height: "2rem" }}
-            />
-            <Skeleton
-              variant="text"
-              animation="wave"
-              sx={{ width: "60%", height: "2rem" }}
-            />
-            <Skeleton
-              variant="text"
-              animation="wave"
-              sx={{ width: "20%", height: "2rem" }}
-            />
-          </div>
-          <Skeleton
-            variant="rectangular"
-            animation="wave"
-            sx={{ width: "7rem", height: "2rem" }}
-          />
-        </div>
-      </div>
-    </>
-  );
+  });
 
   useEffect(() => {
     disablePageScroll(openQr);
@@ -224,14 +180,14 @@ export default function ProfilePage() {
                   size={320}
                 />
               </Backdrop>
-              <div id="user-profile-pic">
-                <img
+              <div id={styles["user-profile-pic"]}>
+                <Image
                   src={`${API_URL}${user.profile_picture}`}
                   alt="user profile pic"
                 />
               </div>
-              <div id="info">
-                <div id="counters" className="d-flex gap-4">
+              <div id={styles["info"]}>
+                <div id={styles["counters"]} className="d-flex gap-4">
                   <div>
                     <p>Friends</p>
                     <p>{formatNumbers(user.friends_count ?? 0)}</p>
@@ -241,7 +197,7 @@ export default function ProfilePage() {
                     <p>{formatNumbers(posts.length)}</p>
                   </div>
                 </div>
-                <div id="user-info">
+                <div id={styles["user-info"]}>
                   <div>
                     <h1>{user.username}</h1>
                     <p>{user.bio}</p>
@@ -253,7 +209,7 @@ export default function ProfilePage() {
                       className="d-flex gap-3"
                       sx={{ flexDirection: "row-reverse !important" }}
                     >
-                      <Link to="/user/edit" className="btn btn-primary">
+                      <Link to="/user/edit" onClick={() => start()} className="btn btn-primary">
                         <EditIcon />
                         Edit
                       </Link>

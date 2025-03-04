@@ -16,6 +16,7 @@ import {
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { ApiUrls, UserSettings } from "../utils/constants";
+import { useLoadingBar } from "react-top-loading-bar";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import api from "../utils/api";
@@ -32,6 +33,7 @@ export default function SettingsPage() {
   const [dlgAcceptedToDelete, setDlgAcceptedToDelete] = useState<boolean>(false);
   const [inputError, setInputError] = useState<string>("");
   const passwordInputRef = useRef<HTMLInputElement>(null);
+  const { complete } = useLoadingBar();
   const navigate = useNavigate();
 
   const getUserSettings = useCallback(async () => {
@@ -39,8 +41,9 @@ export default function SettingsPage() {
     if (res.status === 200) {
       setSettings(res.data);
       setSettingsLoaded(true);
+      complete();
     }
-  }, []);
+  }, [complete]);
 
   useEffect(() => {
     getUserSettings();

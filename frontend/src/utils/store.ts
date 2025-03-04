@@ -136,6 +136,7 @@ const store = configureStore({
     }
 })
 
+
 export const { setPosts, appendPost, appendPosts, removePost, UpdatePostCommentsCount} = postsSlice.actions;
 export const { setCount, decrementCount } = friendsRequestsCountSlice.actions;
 export const { setPostContentSlider } = postContentSliderSlice.actions;

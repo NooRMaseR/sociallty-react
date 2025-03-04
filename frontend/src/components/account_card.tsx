@@ -1,8 +1,8 @@
 import api from "../utils/api";
-import "../styles/account_card.css";
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { Avatar, Button } from "@mui/material";
+import { LazyAvatar } from "./media_skelatons";
+import { Button, Tooltip } from "@mui/material";
 import { decrementCount } from "../utils/store";
 import { memo, useCallback, useState } from "react";
 import { useInView } from "react-intersection-observer";
@@ -83,10 +83,14 @@ export default function AccountCard({
       if (accepted === null) {
         return (
           <div className="d-flex gap-2">
-            <Button variant="contained" loading={isLoading} loadingPosition="start" onClick={acceptRequest}>Accept</Button>
-            <Button variant="contained" sx={{backgroundColor: '#292929', color: 'var(--text-color)'}} loading={isLoading} loadingPosition="start" onClick={deleteRequestCom}>
-              Delete
-            </Button>
+            <Tooltip title="Accept the request">
+              <Button variant="contained" loading={isLoading} loadingPosition="start" onClick={acceptRequest}>Accept</Button>
+            </Tooltip>
+            <Tooltip title="Delete the request">
+              <Button variant="contained" sx={{backgroundColor: '#292929', color: 'var(--text-color)'}} loading={isLoading} loadingPosition="start" onClick={deleteRequestCom}>
+                Delete
+              </Button>
+            </Tooltip>
           </div>
         );
       } else if (accepted === false) {
@@ -97,25 +101,27 @@ export default function AccountCard({
     } else
       return (
         <>
-          <Button
-            onClick={handelSendRemoveFriend}
-            loading={isLoading}
-            loadingPosition="start"
-          >
-            {!toggleButton ? (
-              <PersonAddAlt1Icon
-                className="right re"
-                sx={{ width: "3rem", height: "3rem" }}
-                titleAccess="Add"
-              />
-            ) : (
-              <PersonRemoveIcon
-                className="right"
-                sx={{ width: "3rem", height: "3rem" }}
-                titleAccess="Remove"
-              />
-            )}
-          </Button>
+          <Tooltip title={!toggleButton ? "Add Friend" : "Remove Friend"}>
+            <Button
+              onClick={handelSendRemoveFriend}
+              loading={isLoading}
+              loadingPosition="start"
+              >
+              {!toggleButton ? (
+                <PersonAddAlt1Icon
+                  className="right re"
+                  sx={{ width: "3rem", height: "3rem", bgcolor: '#0169ff' }}
+                  titleAccess="Add"
+                />
+              ) : (
+                <PersonRemoveIcon
+                  className="right"
+                  sx={{ width: "3rem", height: "3rem" }}
+                  titleAccess="Remove"
+                />
+              )}
+            </Button>
+          </Tooltip>
         </>
       );
   });
@@ -126,11 +132,14 @@ export default function AccountCard({
         {Loaded ? (
           <>
             <div className="left">
-              <Avatar
-                src={`${API_URL}${user.profile_picture}`}
-                sx={{ width: "4rem", height: "4rem" }}
-                alt={`${user.first_name} ${user.last_name}`}
-              />
+              <Tooltip title={`${user.first_name} ${user.last_name}'s profile picture`}>
+                <LazyAvatar
+                  src={`${API_URL}${user.profile_picture}`}
+                  width="4rem"
+                  height="4rem"
+                  alt={`${user.first_name} ${user.last_name}`}
+                />
+              </Tooltip>
               <div className="username">
                 <Link
                   to={{

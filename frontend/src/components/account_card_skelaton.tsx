@@ -1,4 +1,5 @@
 import { Skeleton } from "@mui/material";
+import "../styles/account_card.css";
 
 export default function AccountCardSkelaton() {
     return (

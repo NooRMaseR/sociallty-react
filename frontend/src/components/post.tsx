@@ -11,13 +11,14 @@ import {
   User,
   Visibility,
 } from "../utils/constants";
+import { Box, ImageList, ImageListItem, SvgIcon, Tooltip } from "@mui/material";
 import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
 import { memo, ReactNode, useCallback, useState } from "react";
-import { Avatar, Box, SvgIcon, Tooltip } from "@mui/material";
 import { formatNumbers, share } from "../utils/functions";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { useInView } from "react-intersection-observer";
 import { useDispatch, useSelector } from "react-redux";
+import { Image, LazyAvatar } from "./media_skelatons";
 import ShareIcon from "@mui/icons-material/Share";
 import PostSkelaton from "./post_skelaton";
 import { Link } from "react-router-dom";
@@ -109,56 +110,64 @@ export default function Post({ post }: { post: PostProps }) {
     const posts_media: ReactNode[] = [];
     for (let i = 0; i < post.media.length; i++) {
       const current_media = post.media[i];
-      if (i < 2) {
+      if (i < 4) {
         const data = current_media.content.split("/");
         const imageName = data[data.length - 1];
         const imgAlt = imageName.split(".")[0];
         switch (current_media.content_type) {
           case "video":
             posts_media.push(
-              <video
-                src={`${API_URL}${current_media.content}`}
-                preload="none"
-                controlsList="nodownload"
-                poster={`${API_URL}${current_media.poster}`}
-                className="content-post"
-                controls
-                key={i}
-              ></video>
+              <ImageListItem key={current_media.id} sx={{ display: "flex", placeContent: 'center' }}>
+                <video
+                  src={`${API_URL}${current_media.content}`}
+                  preload="none"
+                  controlsList="nodownload"
+                  poster={`${API_URL}${current_media.poster}`}
+                  className="content-post"
+                  controls
+                  key={`${current_media.id}i`}
+                ></video>
+              </ImageListItem>
             );
             break;
           case "image":
             posts_media.push(
-              <img
-                src={`${API_URL}${current_media.content}`}
-                alt={imgAlt}
-                loading="lazy"
-                onClick={() => handelOpenContent(current_media.id)}
-                className={`content-post ${
-                  current_media.id == photoID ? "open" : ""
-                }`}
-                key={i}
-              />
+              <ImageListItem key={current_media.id} sx={{ display: "flex", placeContent: 'center' }}>
+                <Image
+                  src={`${API_URL}${current_media.content}`}
+                  alt={imgAlt}
+                  onClick={() => handelOpenContent(current_media.id)}
+                  className={`content-post ${current_media.id == photoID ? "open" : ""
+                  }`}
+                  key={`${current_media.id}i`}
+                />
+              </ImageListItem>
             );
             break;
         }
       } else {
         posts_media.push(
-          <div
-            className="post-hider"
-            key={"final"}
-            onClick={() =>
-              dispatch(setPostContentSlider({ value: true, media: post.media }))
-            }
-          >
-            <p className="posts-counter">+{post.media.length - 2}</p>
-          </div>
+          <ImageListItem key={current_media.id} sx={{ display: "flex", placeContent: 'center' }}>
+            <div
+              className="post-hider"
+              key={"final"}
+              onClick={() =>
+                dispatch(setPostContentSlider({ value: true, media: post.media }))
+              }
+              >
+              <p className="posts-counter">+{post.media.length - 4}</p>
+            </div >
+          </ImageListItem>
         );
         break;
       }
     }
 
-    return posts_media;
+    return (
+      <ImageList variant="masonry" cols={posts_media.length > 2 ? 2 : posts_media.length} gap={8} sx={{ width: '100%' }}>
+        {posts_media}
+      </ImageList>
+    )
   });
 
   return (
@@ -168,15 +177,9 @@ export default function Post({ post }: { post: PostProps }) {
       ) : (
         <>
           <div className="post-profile">
-            <Avatar
+            <LazyAvatar
               src={`${API_URL}${post.user.profile_picture}`}
               alt="profile pic"
-              slotProps={{
-                img: {
-                  loading: "lazy",
-                },
-              }}
-              sx={{ width: "3.5rem", height: "3.5rem" }}
             />
             <div className="profile-name" style={{ textAlign: "end" }}>
               <p style={{ color: "#8f8f8f" }}>

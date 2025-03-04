@@ -1,11 +1,13 @@
 import { ACCESS, ApiUrls, REFRESH, TokenResponse } from "../utils/constants";
 import FloatingLabelInput from "../components/floating_input_label";
+import { LazyAvatar } from "../components/media_skelatons";
+import { useCallback, useEffect, useState } from "react";
+import { useLoadingBar } from "react-top-loading-bar";
 import { Link, useNavigate } from "react-router-dom";
-import { Avatar, Box, Button } from "@mui/material";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
-import { useCallback, useState } from "react";
 import { setHasToken } from "../utils/store";
+import { Box, Button } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import { Helmet } from "react-helmet";
@@ -21,6 +23,7 @@ export default function Login() {
   const [errors, setErrors] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const { register, handleSubmit } = useForm<LoginProps>();
+  const { start, complete } = useLoadingBar();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -38,6 +41,7 @@ export default function Login() {
         localStorage.setItem("id", res.data.id.toString());
         localStorage.setItem("username", res.data.username);
         dispatch(setHasToken(true));
+        start();
         navigate("/");
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,7 +55,13 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
-  }, [dispatch, navigate]);
+  }, [dispatch, navigate, start]);
+
+  const startLoading = useCallback(() => start(), [start]);
+
+  useEffect(() => {
+    complete();
+  }, [complete]);
 
   return (
     <div id="container">
@@ -62,7 +72,7 @@ export default function Login() {
       <form onSubmit={handleSubmit(handelOnSubmit)}>
         <Box id="header">
           <h1 id="pic-label">Welcome</h1>
-          <Avatar src="/favicon.ico" sx={{ width: "10rem", height: "10rem" }} alt="Sociallty Icon" />
+          <LazyAvatar src="/favicon.ico" width="10rem" height="10rem" alt="Sociallty Icon" />
         </Box>
         <FloatingLabelInput
           type="email"
@@ -122,10 +132,10 @@ export default function Login() {
           </Button>
         </Box>
         <div id="links">
-          <Link to="/signup" className="link">
+          <Link to="/signup" onClick={startLoading} className="link">
             Dont have Account ?
           </Link>
-          <Link to="/user/forgot-password" className="link">
+          <Link to="/user/forgot-password" onClick={startLoading} className="link">
             Forget Your Password ?
           </Link>
         </div>

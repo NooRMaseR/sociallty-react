@@ -28,6 +28,10 @@ i,
   color: var(--text-color);
 }
 
+a {
+  text-decoration: none !important;
+}
+
 textarea {
   resize: none;
   outline: none;
@@ -68,6 +72,19 @@ body {
 
 .open-back-bg {
   transform: scale(1) !important;
+}
+
+
+form:not(.no-style) {
+  transition: var(--color-transition);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--post-bg-color);
+  padding: 20px;
+  margin-top: 20px;
+  border-radius: 2rem;
+  gap: 1.5rem;
+  width: 40%;
 }
 
 .MuiFormLabel-asterisk {

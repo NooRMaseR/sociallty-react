@@ -3,8 +3,9 @@ import { SetStateAction, useCallback, useState } from "react";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { UpdatePostCommentsCount } from "../utils/store";
 import { useDispatch, useSelector } from "react-redux";
-import { Avatar, Card, Tooltip } from "@mui/material";
 import { formatNumbers } from "../utils/functions";
+import { LazyAvatar } from "./media_skelatons";
+import { Card, Tooltip } from "@mui/material";
 import { Link } from "react-router-dom";
 import api from "../utils/api";
 
@@ -107,7 +108,7 @@ export default function Comment({
           </Tooltip>
         </div>
         <div className="d-flex gap-2">
-          <Avatar src={`${API_URL}${comment.user.profile_picture}`} />
+          <LazyAvatar src={`${API_URL}${comment.user.profile_picture}`} />
           <Link
             className="comment-user"
             to={{

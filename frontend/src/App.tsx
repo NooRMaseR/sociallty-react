@@ -2,26 +2,34 @@ import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
-import SeeUserFriendsRequestsPage from "./pages/see_user_friends_requests";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import SeeUserFriendsPage from "./pages/see_user_friends";
-import ForgetPasswordPage from "./pages/forget_password";
 import ProtectedView from "./components/protected_view";
-import SocialFriendsPage from "./pages/social_friends";
-import SharedPostPage from "./pages/shared_post_page";
-import MakePostPage from "./pages/make_post";
-import EditPostPage from "./pages/edit_post";
-import EditUserPage from "./pages/edit_user";
-import SettingsPage from "./pages/settings";
-import ProfilePage from "./pages/profile";
+import { useLoadingBar } from "react-top-loading-bar";
 import Header from "./components/header";
-import Logout from "./pages/logout";
-import Signup from "./pages/signup";
-import Page404 from "./pages/404";
-import Login from "./pages/login";
-import Home from "./pages/home";
+import React from "react";
+
+
+const Lazy404Page = React.lazy(() => import("./pages/404"));
+const LazyHomePage = React.lazy(() => import("./pages/home"));
+const LazyLoginPage = React.lazy(() => import("./pages/login"));
+const LazyLogoutPage = React.lazy(() => import("./pages/logout"));
+const LazySignupPage = React.lazy(() => import("./pages/signup"));
+const LazyProfilePage = React.lazy(() => import("./pages/profile"));
+const LazySettingsPage = React.lazy(() => import("./pages/settings"))
+const LazyMakePostPage = React.lazy(() => import("./pages/make_post"))
+const LazyEditPostPage = React.lazy(() => import("./pages/edit_post"))
+const LazyEditUserPage = React.lazy(() => import("./pages/edit_user"))
+const LazySharedPostPage = React.lazy(() => import("./pages/shared_post_page"));
+const LazySocialFriendsPage = React.lazy(() => import("./pages/social_friends"));
+const LazyForgetPasswordPage = React.lazy(() => import("./pages/forget_password"));
+const LazySeeUserFriendsPage = React.lazy(() => import("./pages/see_user_friends"));
+const LazySeeUserFriendsRequestsPage = React.lazy(() => import("./pages/see_user_friends_requests"));
 
 function App() {
+  useLoadingBar({
+    color: "blue",
+    height: 2,
+  });
   
   return (
     <BrowserRouter>
@@ -32,20 +40,20 @@ function App() {
           path="/"
           element={
             <ProtectedView>
-              <Home />
+              <LazyHomePage />
             </ProtectedView>
           }
         />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/logout" element={<Logout />} />
-        <Route path="/user/forgot-password" element={<ForgetPasswordPage />} />
+        <Route path="/login" element={<LazyLoginPage />} />
+        <Route path="/signup" element={<LazySignupPage />} />
+        <Route path="/logout" element={<LazyLogoutPage />} />
+        <Route path="/user/forgot-password" element={<LazyForgetPasswordPage />} />
 
         <Route
           path="/make-post"
           element={
             <ProtectedView>
-              <MakePostPage />
+              <LazyMakePostPage />
             </ProtectedView>
           }
         />
@@ -53,7 +61,7 @@ function App() {
           path="/edit-post-page/:id"
           element={
             <ProtectedView>
-              <EditPostPage />
+              <LazyEditPostPage />
             </ProtectedView>
           }
         />
@@ -61,7 +69,7 @@ function App() {
           path="/post/:id"
           element={
             <ProtectedView>
-              <SharedPostPage />
+              <LazySharedPostPage />
             </ProtectedView>
           }
         />
@@ -69,7 +77,7 @@ function App() {
           path="/see-user-friends"
           element={
             <ProtectedView>
-              <SeeUserFriendsPage />
+              <LazySeeUserFriendsPage />
             </ProtectedView>
           }
         />
@@ -77,7 +85,7 @@ function App() {
           path="/see-friends-requests"
           element={
             <ProtectedView>
-              <SeeUserFriendsRequestsPage />
+              <LazySeeUserFriendsRequestsPage />
             </ProtectedView>
           }
         />
@@ -85,7 +93,7 @@ function App() {
           path="/social-friends"
           element={
             <ProtectedView>
-              <SocialFriendsPage />
+              <LazySocialFriendsPage />
             </ProtectedView>
           }
         />
@@ -93,7 +101,9 @@ function App() {
           path="/social-user-profile"
           element={
             <ProtectedView>
-              <ProfilePage />
+              {/* <React.Suspense fallback={<Profileskeleton />}> */}
+              <LazyProfilePage />
+              {/* </React.Suspense> */}
             </ProtectedView>
           }
         />
@@ -101,7 +111,7 @@ function App() {
           path="/user/edit"
           element={
             <ProtectedView>
-              <EditUserPage />
+              <LazyEditUserPage />
             </ProtectedView>
           }
         />
@@ -109,11 +119,11 @@ function App() {
           path="/user/settings"
           element={
             <ProtectedView>
-              <SettingsPage />
+              <LazySettingsPage />
             </ProtectedView>
           }
         />
-        <Route path="*" element={<Page404 />} />
+        <Route path="*" element={<Lazy404Page />} />
       </Routes>
     </BrowserRouter>
   );

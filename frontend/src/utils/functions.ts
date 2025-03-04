@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import api from "./api";
 import { ApiUrls } from "./constants";
+import api from "./api";
 
 interface ShareOptions {
   text?: string;

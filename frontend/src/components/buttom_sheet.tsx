@@ -2,12 +2,14 @@ import { ApiUrls, BackBgStateType, BottomSheetStateType } from "../utils/constan
 import { removePost, setBottomSheetOpen } from "../utils/store";
 import { disablePageScroll, share } from "../utils/functions";
 import { useDispatch, useSelector } from "react-redux";
+import { useLoadingBar } from "react-top-loading-bar";
+import { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/bottom-sheet.css";
-import { useCallback, useEffect } from "react";
 import api from "../utils/api";
 
 export default function ButtomSheet() {
+  const { start } = useLoadingBar();
   const buttom_opened = useSelector(
     (state: BottomSheetStateType) => state.bottomSheetState.open
   );
@@ -40,6 +42,7 @@ export default function ButtomSheet() {
   }, [dispatch, last_post_id]);
 
   const handelEdit = () => {
+    start();
     navigate(`/edit-post-page/${last_post_id}`);
     dispatch(setBottomSheetOpen({ open: false, last_post_id: -1 }));
   };

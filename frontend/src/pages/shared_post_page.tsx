@@ -1,15 +1,17 @@
-import { memo, useCallback, useEffect, useState } from "react";
+import React, { memo, Suspense, useCallback, useEffect, useState } from "react";
 import { ApiUrls, PostsStateType } from "../utils/constants";
-import CommentsSlider from "../components/comments_slider";
-import RestPostMedia from "../components/rest_post_media";
 import { useDispatch, useSelector } from "react-redux";
 import PostSkelaton from "../components/post_skelaton";
-import Post, { PostProps } from "../components/post";
+import { PostProps } from "../components/post";
 import { useParams } from "react-router-dom";
 import { setPosts } from "../utils/store";
 import { Helmet } from "react-helmet";
 import { Box } from "@mui/material";
 import api from "../utils/api";
+
+const LazyPost = React.lazy(() => import("../components/post"));
+const LazyRestPostMedia = React.lazy(() => import("../components/rest_post_media"));
+const LazyCommentsSlider = React.lazy(() => import("../components/comments_slider"));
 
 export default function SharedPostPage() {
   const { id } = useParams();
@@ -38,7 +40,11 @@ export default function SharedPostPage() {
   }, [getPost]);
 
   const Posts = memo(() => {
-    if (isLoaded) return post.map((po) => <Post post={po} key={po.id} />);
+    if (isLoaded) return post.map((po) =>
+      <Suspense fallback={<PostSkelaton />}>
+        <LazyPost post={po} key={po.id} />
+      </Suspense>
+    );
     else if (errorType === 404) return <h1 className="text-white">Something went Wrong....</h1>;
     else return <PostSkelaton />;
   });
@@ -52,8 +58,8 @@ export default function SharedPostPage() {
           content="Check Out This Post From This Link, Check it out Now"
         />
       </Helmet>
-      <RestPostMedia />
-      <CommentsSlider />
+      <LazyRestPostMedia />
+      <LazyCommentsSlider />
       <Posts />
     </Box>
   );

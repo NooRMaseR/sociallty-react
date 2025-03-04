@@ -8,9 +8,11 @@ import {
 } from "../utils/constants";
 import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import FloatingLabelInput from "../components/floating_input_label";
-import { Avatar, Box, Button, Skeleton } from "@mui/material";
+import { LazyAvatar } from "../components/media_skelatons";
+import { useLoadingBar } from "react-top-loading-bar";
 import { useNavigate } from "react-router-dom";
 import { setHasToken } from "../utils/store";
+import { Box, Button } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { Helmet } from "react-helmet";
 import api from "../utils/api";
@@ -27,11 +29,11 @@ import "../styles/signup.css";
 
 export default function EditUserPage() {
   const [errors, setErrors] = useState<string[]>([]);
-  const [loaded, setLoaded] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const filePickerRef = useRef<HTMLInputElement>(null);
   const avatarRef = useRef<HTMLImageElement>(null);
   const [user, setUser] = useState<FullUser | null>(null);
+  const { start, complete } = useLoadingBar();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -51,6 +53,7 @@ export default function EditUserPage() {
       const res = await api.put<TokenResponse>(ApiUrls.edit_user, formData);
 
       if (res.status === 200) {
+        start();
         localStorage.setItem(ACCESS, res.data.access);
         localStorage.setItem(REFRESH, res.data.refresh);
         localStorage.setItem("username", res.data.username);
@@ -67,7 +70,7 @@ export default function EditUserPage() {
     } finally {
       setLoading(false);
     }
-  }, [dispatch, navigate]);
+  }, [dispatch, navigate, start]);
 
   const getUserData = useCallback(async () => {
     try {
@@ -75,20 +78,20 @@ export default function EditUserPage() {
 
       if (res.status === 200) {
         setUser(res.data);
-        setLoaded(true);
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setErrors(error.response.data);
     }
-  }, []);
+    complete();
+  }, [complete]);
 
   useEffect(() => {
     getUserData();
   }, [getUserData]);
 
   return (
-    <div id="container">
+    <Box sx={{display: "flex", placeContent: 'center'}}>
       <Helmet>
         <title>Edit {localStorage.getItem("username") || "User"}</title>
       </Helmet>
@@ -97,25 +100,13 @@ export default function EditUserPage() {
           <label htmlFor="pic-picker" id="pic-label">
             Choose profile picture
           </label>
-          <div
-            id="profile-container"
-            onClick={() => filePickerRef.current?.click()}
-          >
-            {loaded ? (
-              <Avatar
-                src={`${API_URL}${user?.profile_picture ?? "/unknown.png"}`}
-                slotProps={{ img: { ref: avatarRef } }}
-                alt="user"
-                sx={{ width: "7rem", height: "7rem" }}
-              />
-            ) : (
-              <Skeleton
-                variant="circular"
-                width={100}
-                height={100}
-                animation="wave"
-              />
-            )}
+          <div id="profile-container" onClick={() => filePickerRef.current?.click()}>
+            <LazyAvatar
+              src={`${API_URL}${user?.profile_picture ?? "/unknown.png"}`}
+              slotProps={{ img: { ref: avatarRef } }}
+              alt="user"
+              sx={{ width: "7rem", height: "7rem", cursor: 'pointer' }}
+            />
             <input
               type="file"
               ref={filePickerRef}
@@ -127,28 +118,24 @@ export default function EditUserPage() {
             />
           </div>
         </div>
-        <div className="field">
-          <div id="user-name-info">
-            <FloatingLabelInput
-              type="text"
-              name="first_name"
-              label="First Name"
-              autoComplete="cc-given-name"
-              suffexIcon={<PersonIcon sx={{ color: "var(--text-color)" }} />}
-              inputProps={{ defaultValue: user?.first_name }}
-              required
-            />
-            <FloatingLabelInput
-              type="text"
-              name="last_name"
-              label="Last Name"
-              autoComplete="family-name"
-              suffexIcon={<Person2Icon sx={{ color: "var(--text-color)" }} />}
-              inputProps={{ defaultValue: user?.last_name }}
-              required
-            />
-          </div>
-        </div>
+        <FloatingLabelInput
+          type="text"
+          name="first_name"
+          label="First Name"
+          autoComplete="cc-given-name"
+          suffexIcon={<PersonIcon sx={{ color: "var(--text-color)" }} />}
+          inputProps={{ defaultValue: user?.first_name }}
+          required
+        />
+        <FloatingLabelInput
+          type="text"
+          name="last_name"
+          label="Last Name"
+          autoComplete="family-name"
+          suffexIcon={<Person2Icon sx={{ color: "var(--text-color)" }} />}
+          inputProps={{ defaultValue: user?.last_name }}
+          required
+        />
         <FloatingLabelInput
           type="text"
           name="username"
@@ -222,6 +209,6 @@ export default function EditUserPage() {
           {loading ? "Please wait...." : "Update"}
         </Button>
       </form>
-    </div>
+    </Box>
   );
 }

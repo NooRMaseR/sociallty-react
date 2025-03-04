@@ -1,10 +1,12 @@
-import { Box, Dialog, easing, IconButton, Slide, Tooltip } from "@mui/material";
+import { Box, CircularProgress, Dialog, easing, IconButton, Slide, Tooltip } from "@mui/material";
 import { API_URL, PostContentSliderStateType } from "../utils/constants";
 import { TransitionProps } from "@mui/material/transitions";
 import { useDispatch, useSelector } from "react-redux";
 import { setPostContentSlider } from "../utils/store";
 import CloseIcon from "@mui/icons-material/Close";
-import React from "react";
+import { Image } from "./media_skelatons";
+import React, { Suspense } from "react";
+import { Media } from "./post";
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
@@ -13,6 +15,38 @@ const Transition = React.forwardRef(function Transition(
   ref: React.Ref<unknown>
 ) {
   return <Slide ref={ref} {...props} direction="left" easing={easing.easeInOut} timeout={1000} />;
+});
+
+const MediaContent = React.memo(({media}: {media: Media[]}) => {
+  const data: React.ReactNode[] = [];
+  for (const media_content of media) {
+    switch (media_content.content_type) {
+      case "image":
+        data.push(
+          <Image
+            src={`${API_URL}${media_content.content}`}
+            alt="post content"
+            key={media_content.id}
+            style={{maxHeight: '50%', maxWidth: '100%'}}
+          />
+        );
+        break;
+      case "video":
+        data.push(
+          <video
+            src={`${API_URL}${media_content.content}`}
+            preload="none"
+            poster={`${API_URL}${media_content.poster}`}
+            controlsList="nodownload"
+            controls
+            width="50rem"
+            key={media_content.id}
+          ></video>
+        );
+        break;
+    }
+  }
+  return data;
 });
 
 export default function RestPostMedia() {
@@ -24,37 +58,6 @@ export default function RestPostMedia() {
   );
   const dispatch = useDispatch();
 
-  const MediaContent = React.memo(() => {
-    const data: React.ReactNode[] = [];
-    for (const media_content of media) {
-      switch (media_content.content_type) {
-        case "image":
-          data.push(
-            <img
-              src={`${API_URL}${media_content.content}`}
-              alt="post content"
-              key={media_content.id}
-              style={{maxHeight: '50%'}}
-            />
-          );
-          break;
-        case "video":
-          data.push(
-            <video
-              src={`${API_URL}${media_content.content}`}
-              preload="none"
-              poster={`${API_URL}${media_content.poster}`}
-              controlsList="nodownload"
-              controls
-              width="50rem"
-              key={media_content.id}
-            ></video>
-          );
-          break;
-      }
-    }
-    return data;
-  });
 
   const closeSlider = React.useCallback(() => dispatch(setPostContentSlider({ value: false, media: [] })), [dispatch]);
 
@@ -73,7 +76,9 @@ export default function RestPostMedia() {
       </Tooltip>
 
       <Box sx={{ width: '100%', height: '100%', display: 'flex', placeItems: 'center', flexDirection: 'column' }}>
-        <MediaContent />
+        <Suspense fallback={<CircularProgress />}>
+          <MediaContent media={media} />
+        </Suspense>
       </Box>
     </Dialog>
   );

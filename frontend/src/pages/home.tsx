@@ -1,18 +1,35 @@
-import { memo, ReactNode, useCallback, useEffect, useState } from "react";
+import React, { memo, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { appendPosts, setCount, setPosts } from "../utils/store";
 import { ApiUrls, PostsStateType } from "../utils/constants";
-import CommentsSlider from "../components/comments_slider";
-import RestPostMedia from "../components/rest_post_media";
 import { useDispatch, useSelector } from "react-redux";
 import PostSkelaton from "../components/post_skelaton";
-import Post, { PostProps } from "../components/post";
-import ButtomSheet from "../components/buttom_sheet";
+import { useLoadingBar } from "react-top-loading-bar";
 import UploadIcon from "@mui/icons-material/Upload";
 import { useNavigate } from "react-router-dom";
+import { PostProps } from "../components/post";
 import { Box, Button } from "@mui/material";
 import "../styles/comments-slider.css";
 import { Helmet } from "react-helmet";
 import api from "../utils/api";
+import "../styles/post.css";
+
+const SkelatonPlaceHolders = memo(() => (
+  Array.from({ length: 5 }, (_, i) => <PostSkelaton key={i} />)
+));
+
+const LazyPosts = React.lazy(() => import("../components/post"));
+const LazyBottomSheet = React.lazy(() => import("../components/buttom_sheet"));
+const LazyRestPostMedia = React.lazy(() => import("../components/rest_post_media"));
+const LazyCommentsSlider = React.lazy(() => import("../components/comments_slider"));
+
+const Posts = memo(({ posts }: { posts: PostProps[] }) => {
+  const renderPosts = useMemo(() =>
+    posts.map((data) => <LazyPosts post={data} key={data.id} />), [posts]
+  );
+  return <Suspense fallback={<PostSkelaton />}>{renderPosts}</Suspense>;
+}
+);
+
 
 export default function Home() {
   const posts = useSelector((state: PostsStateType) => state.postsState.value);
@@ -21,16 +38,9 @@ export default function Home() {
   const [hasNext, setHasNext] = useState<boolean | null>(null);
   const [loaded, setLoaded] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const { start, complete } = useLoadingBar();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  const SkelatonPlaceHolders = memo(() => {
-    const sks: ReactNode[] = [];
-    for (let i = 0; i < 5; i++) {
-      sks.push(<PostSkelaton key={i} />);
-    }
-    return sks;
-  });
 
   const getPosts = useCallback(async () => {
     setLoading(true);
@@ -46,6 +56,7 @@ export default function Home() {
           dispatch(setCount(res.data.friends_requests_count));
           setFirstInit(false);
           setLoaded(true);
+          complete();
         } else {
           dispatch(appendPosts(res.data.posts));
         }
@@ -55,16 +66,12 @@ export default function Home() {
       console.error("error fetching the posts");
     }
     setLoading(false);
-  }, [pageNumebr, dispatch]);
-
-  const Posts = memo(() =>
-    posts.map((data) => <Post post={data} key={data.id} />)
-  );
+  }, [pageNumebr, dispatch, complete]);
 
   // fetch the posts
   useEffect(() => {
     getPosts();
-  }, [getPosts]);
+  }, [getPosts, pageNumebr]);
 
   return (
     <main>
@@ -75,14 +82,16 @@ export default function Home() {
           content="Find and stay up to date for today's posts like, share, comment"
         />
       </Helmet>
-      <ButtomSheet />
+      <LazyBottomSheet />
       <div className="d-flex justify-content-center align-items-center flex-direction-column mb-2">
-        {/* <c-flip_card Type="profile"></c-flip_card> */}
         <Button
           type="button"
           id="post-btn"
           variant="contained"
-          onClick={() => navigate("/make-post")}
+          onClick={() => {
+            start();
+            navigate("/make-post");
+          }}
           sx={{
             padding: "10px 30px",
             fontSize: "large",
@@ -93,14 +102,14 @@ export default function Home() {
           <span id="post-btn-text">New post</span>
         </Button>
       </div>
-      <RestPostMedia />
+      <LazyRestPostMedia />
       <Box id="posts">
-        <CommentsSlider />
+        <LazyCommentsSlider />
         {!loaded ? (
           <SkelatonPlaceHolders />
         ) : (
           <>
-            <Posts />
+            <Posts posts={posts}/>
             <div>
               {hasNext ? (
                 <Button
@@ -113,7 +122,7 @@ export default function Home() {
                   {loading ? "Please wait..." : "Load More"}
                 </Button>
               ) : (
-                hasNext === false && <p>No More Posts...</p>
+                hasNext === false ? <p>No More Posts...</p> : null
               )}
             </div>
           </>

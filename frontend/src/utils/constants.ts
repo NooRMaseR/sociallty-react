@@ -3,7 +3,7 @@ import { Media, PostProps } from "../components/post";
 export const ACCESS: string = "access";
 export const REFRESH: string = "refresh";
 // export const API_URL: string = "http://127.0.0.1:8000";
-export const API_URL: string = import.meta.env.VITE_URL || "http://192.168.1.7:8000";
+export const API_URL: string = import.meta.env.VITE_URL || "http://192.168.1.9:8000";
 
 export interface TokenResponse {
   readonly id: number;

@@ -21,18 +21,6 @@
     cursor: pointer;
 }
 
-form:not(.no-style) {
-    transition: var(--color-transition);
-    display: flex;
-    flex-direction: column;
-    background-color: var(--post-bg-color);
-    padding: 20px;
-    margin-top: 20px;
-    border-radius: 2rem;
-    gap: 1.5rem;
-    width: 40%;
-}
-
 #links {
     display: flex;
     flex-direction: column;

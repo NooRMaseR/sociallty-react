@@ -44,6 +44,10 @@
     transition: var(--color-transition);
 }
 
+.re {
+    background-color: rgb(61 61 249);
+}
+
 @media (min-width: 2000px) {
     .cards-holder {
         grid-template-columns: repeat(5, 1fr);

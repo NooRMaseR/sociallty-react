@@ -1,8 +1,10 @@
 import { FormEvent, memo, ReactNode, useCallback, useEffect, useState } from "react";
 import FloatingLabelInput from "../components/floating_input_label";
 import { API_URL, ApiUrls, Visibility } from "../utils/constants";
+import { Image, LazyAvatar } from "../components/media_skelatons";
 import { useNavigate, useParams } from "react-router-dom";
 import PostSkelaton from "../components/post_skelaton";
+import { useLoadingBar } from "react-top-loading-bar";
 import { Box, Button, MenuItem } from "@mui/material";
 import styles from "../styles/edit-post.module.css";
 import FilePicker from "../components/file_picker";
@@ -21,6 +23,7 @@ export default function EditPostPage() {
   const [desc, setDesc] = useState<string>(post?.description || "");
   const [files, setFiles] = useState<File[]>([]);
   const [media, setMedia] = useState(post?.media || []);
+  const { start, complete } = useLoadingBar();
   const navigate = useNavigate();
 
   const submitForm = async (e: FormEvent) => {
@@ -38,6 +41,7 @@ export default function EditPostPage() {
     const res = await api.putForm("/api/post/", formData);
 
     if (res.status === 200) {
+      start();
       navigate("/");
     }
     setLoading(false);
@@ -121,7 +125,7 @@ export default function EditPostPage() {
                 className={styles["media-container"]}
                 key={postMedia.id}
               >
-                <img
+                <Image
                   src={
                     postMedia.added
                       ? postMedia.content
@@ -161,7 +165,8 @@ export default function EditPostPage() {
     } catch {
       setPost(null);
     }
-  }, [id]);
+    complete();
+  }, [id, complete]);
 
   useEffect(() => {
     getPost();
@@ -185,11 +190,11 @@ export default function EditPostPage() {
               onSubmit={submitForm}
             >
               <div className="post-profile">
-                <img
+                <LazyAvatar
                   src={`${API_URL}${post.user?.profile_picture}`}
                   alt="profile pic"
-                  loading="lazy"
-                  width="50rem"
+                  width='5rem'
+                  height='5rem'
                   className="profile-pic"
                 />
                 <p>{post.user?.username || "user"}</p>
@@ -244,7 +249,10 @@ export default function EditPostPage() {
                   type="button"
                   variant="contained"
                   color="warning"
-                  onClick={() => navigate("/")}
+                  onClick={() => {
+                    start();
+                    navigate("/");
+                  }}
                 >
                   Cancel
                 </Button>

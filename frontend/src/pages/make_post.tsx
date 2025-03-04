@@ -1,17 +1,28 @@
 import { ApiUrls, PostFormProps, Visibility } from "../utils/constants";
 import FloatingLabelInput from "../components/floating_input_label";
+import { memo, useCallback, useEffect, useState } from "react";
+import { useLoadingBar } from "react-top-loading-bar";
 import { Box, Button, MenuItem } from "@mui/material";
-import { memo, useCallback, useState } from "react";
+import { Image } from "../components/media_skelatons";
 import FilePicker from "../components/file_picker";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Helmet } from "react-helmet";
 import api from "../utils/api";
 
+const MediaComponent = memo(({media}: {media: {type: string, src: string}[]}) => media.map((value) => {
+  if (value.type.includes('image')) {
+    return <Image src={value.src} key={value.src} style={{maxWidth: '90%'}} />
+  } else if (value.type.includes('video')) {
+    return <video src={value.src} key={value.src} style={{maxWidth: '90%'}} controls></video>
+  }
+}))
+
 export default function MakePostPage() {
   const { register, handleSubmit, setValue } = useForm<PostFormProps>();
   const [loading, setLoading] = useState<boolean>(false);
   const [media, setMedia] = useState<{type: string, src: string}[]>([]);
+  const { start, complete } = useLoadingBar();
   const navigate = useNavigate();
 
   const formSubmit = useCallback(async (data: PostFormProps) => {
@@ -25,6 +36,7 @@ export default function MakePostPage() {
       const res = await api.post(ApiUrls.post, form_data);
 
       if (res.status === 201) {
+        start();
         navigate("/");
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -58,31 +70,22 @@ export default function MakePostPage() {
     });
   }, [setValue])
 
-  const MediaComponent = memo(() => media.map((value) => {
-    if (value.type.includes('image')) {
-      return <img src={value.src} key={value.src} style={{maxWidth: '90%'}} />
-    } else if (value.type.includes('video')) {
-      return <video src={value.src} key={value.src} style={{maxWidth: '90%'}} controls></video>
-    }
-    
-  }))
+  useEffect(() => {
+    complete();
+  }, [complete]);
 
   return (
-    <div id="container">
+    <Box sx={{display: 'flex', placeContent: 'center'}}>
       <Helmet>
         <title>Create New Post</title>
         <meta name="description" content="Create a New Post and get some reactions and reviews" />
       </Helmet>
-      <form
-        onSubmit={handleSubmit(formSubmit)}
-        encType="multipart/form-data"
-        id="post-form"
-      >
+      <form onSubmit={handleSubmit(formSubmit)} encType="multipart/form-data">
         <FilePicker
           onChangeMethod={(e) => e.target.files && handelFiles(e.target.files)}
         />
         <Box sx={{display: 'flex', placeItems: 'center', flexDirection: 'column', gap: '1rem'}}>
-          <MediaComponent />
+          <MediaComponent media={media} />
         </Box>
         <FloatingLabelInput
           label="Description"
@@ -97,6 +100,6 @@ export default function MakePostPage() {
           Post
         </Button>
       </form>
-    </div>
+    </Box>
   );
 }

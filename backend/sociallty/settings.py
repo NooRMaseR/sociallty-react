@@ -28,7 +28,7 @@ load_dotenv()
 SECRET_KEY = os.getenv("SOCIALLTY_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 AUTH_USER_MODEL = "users.SocialUser"
@@ -57,7 +57,7 @@ INSTALLED_APPS = (
     #! remove in production
     # "debug_toolbar",
     # 'django_seed',
-    # 'corsheaders',
+    'corsheaders',
 )
 
 
@@ -73,7 +73,7 @@ REST_FRAMEWORK = {
 MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    # "corsheaders.middleware.CorsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -104,7 +104,7 @@ TEMPLATES = (
 )
 
 WSGI_APPLICATION = 'sociallty.wsgi.application'
-# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -151,14 +151,14 @@ USE_TZ = True
 #    "127.0.0.1",
 # )
 
-# CORS_ALLOWED_ORIGINS = (
-#     "http://localhost:5173",
-#     "http://localhost:4173",
-#     "http://192.168.1.5:5173",
-#     "http://192.168.1.7:5173",
-#     "http://192.168.1.7:4173"
-# )
-# CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = (
+    "http://localhost:5173",
+    "http://localhost:4173",
+    "http://192.168.1.9:5173",
+    "http://192.168.1.9:5173",
+    "http://192.168.1.9:4173"
+)
+CORS_ALLOW_CREDENTIALS = True
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=6),
@@ -209,12 +209,12 @@ UNFOLD = {
 }
 
 # configs
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = 'DENY'
-SECURE_HSTS_SECONDS = 31536000
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-SECURE_SSL_REDIRECT = True
+# SECURE_BROWSER_XSS_FILTER = True
+# SECURE_CONTENT_TYPE_NOSNIFF = True
+# X_FRAME_OPTIONS = 'DENY'
+# SECURE_HSTS_SECONDS = 31536000
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+# SECURE_HSTS_PRELOAD = True
+# CSRF_COOKIE_SECURE = True
+# SESSION_COOKIE_SECURE = True
+# SECURE_SSL_REDIRECT = True

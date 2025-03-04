@@ -1,13 +1,15 @@
-import { Avatar, Box, Button, Step, StepLabel, Stepper } from "@mui/material";
+import { ChangeEvent, memo, useCallback, useEffect, useRef, useState } from "react";
 import { ACCESS, ApiUrls, REFRESH, TokenResponse } from "../utils/constants";
-import { ChangeEvent, memo, useCallback, useRef, useState } from "react";
+import { Box, Button, Step, StepLabel, Stepper } from "@mui/material";
 import FloatingLabelInput from "../components/floating_input_label";
+import { LazyAvatar } from "../components/media_skelatons";
 import { Link, useNavigate } from "react-router-dom";
 import { setHasToken } from "../utils/store";
 import { useDispatch } from "react-redux";
 import { Helmet } from "react-helmet";
 import api from "../utils/api";
 
+import { useLoadingBar } from "react-top-loading-bar";
 import Person2Icon from "@mui/icons-material/Person2";
 import Person3Icon from "@mui/icons-material/Person3";
 import PersonIcon from "@mui/icons-material/Person";
@@ -37,6 +39,7 @@ export default function Signup() {
   const [activeStep, setActiveStep] = useState<number>(0);
   const avatarRef = useRef<HTMLImageElement>(null);
   const { register, handleSubmit, setValue } = useForm<UserSignupProps>();
+  const { start, complete } = useLoadingBar();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -96,6 +99,7 @@ export default function Signup() {
         localStorage.setItem("id", res.data.id.toString());
         localStorage.setItem("username", res.data.username);
         dispatch(setHasToken(true));
+        start();
         navigate("/");
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -116,7 +120,11 @@ export default function Signup() {
     } finally {
       setLoading(false);
     }
-  }, [dispatch, getMinErrorStep, navigate]);
+  }, [dispatch, getMinErrorStep, navigate, start]);
+
+  useEffect(() => {
+    complete();
+  }, [complete]);
 
   const handelNextStep = () => setActiveStep(activeStep + 1);
   const handelPrevStep = () => setActiveStep(activeStep - 1);
@@ -134,11 +142,12 @@ export default function Signup() {
                 id="profile-container"
                 onClick={() => document.getElementById("pic-picker")?.click()}
               >
-                <Avatar
+                <LazyAvatar
                   src="/unknown.png"
                   slotProps={{ img: { ref: avatarRef } }}
                   alt="user"
-                  sx={{ width: "7rem", height: "7rem" }}
+                  width="7rem"
+                  height="7rem"
                 />
                 <input
                   type="file"
@@ -322,7 +331,7 @@ export default function Signup() {
         <Button disabled={activeStep === 0} onClick={handelPrevStep}>
           Back
         </Button>
-        <Link to="/login" className="link" id="login-btn">
+        <Link to="/login" onClick={() => start()} className="link" id="login-btn">
           Already Have Account ?
         </Link>
       </form>
