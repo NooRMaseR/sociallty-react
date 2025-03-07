@@ -1,11 +1,11 @@
-import { API_URL, ApiUrls, CommentProps, PostsStateType } from "../utils/constants";
+import { ApiUrls, CommentProps, MEDIA_URL, PostsStateType } from "../utils/constants";
 import { SetStateAction, useCallback, useState } from "react";
+import { Card, Tooltip, Typography } from "@mui/material";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { UpdatePostCommentsCount } from "../utils/store";
 import { useDispatch, useSelector } from "react-redux";
 import { formatNumbers } from "../utils/functions";
 import { LazyAvatar } from "./media_skelatons";
-import { Card, Tooltip } from "@mui/material";
 import { Link } from "react-router-dom";
 import api from "../utils/api";
 
@@ -89,14 +89,14 @@ export default function Comment({
           }`}
         >
           <div className="option" onClick={addCommentLike}>
-            <p>Like</p>
-            <p>{formatNumbers(likes ?? 0)}</p>
+            <Typography>Like</Typography>
+            <Typography>{formatNumbers(likes ?? 0)}</Typography>
           </div>
           {/* check if the comment belong to the user or the post belong to the user */}
           {comment.user.id === +(localStorage.getItem("id") ?? 0) && (
-            <p className="option" onClick={deleteComment}>
+            <Typography className="option" onClick={deleteComment}>
               Delete
-            </p>
+            </Typography>
           )}
         </div>
         <div className="comment-options-container">
@@ -108,7 +108,7 @@ export default function Comment({
           </Tooltip>
         </div>
         <div className="d-flex gap-2">
-          <LazyAvatar src={`${API_URL}${comment.user.profile_picture}`} />
+          <LazyAvatar src={`${MEDIA_URL}${comment.user.profile_picture}`} />
           <Link
             className="comment-user"
             to={{
@@ -119,11 +119,11 @@ export default function Comment({
             {comment.user.username}
           </Link>
         </div>
-        <p className="comment-text">{comment.content}</p>
+        <Typography className="comment-text">{comment.content}</Typography>
         <div style={{ width: "100%", display: "flex", justifyContent: "end" }}>
-          <p className="comment-time">
+          <Typography className="comment-time">
             {new Date(comment.created_at).toLocaleString()}
-          </p>
+          </Typography>
         </div>
       </Card>
     </>

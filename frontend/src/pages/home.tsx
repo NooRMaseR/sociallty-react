@@ -8,7 +8,6 @@ import UploadIcon from "@mui/icons-material/Upload";
 import { useNavigate } from "react-router-dom";
 import { PostProps } from "../components/post";
 import { Box, Button } from "@mui/material";
-import "../styles/comments-slider.css";
 import { Helmet } from "react-helmet";
 import api from "../utils/api";
 import "../styles/post.css";

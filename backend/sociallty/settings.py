@@ -46,6 +46,8 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     "whitenoise.runserver_nostatic",
     'django.contrib.staticfiles',
+    'cloudinary_storage',
+    'cloudinary',
     'rest_framework',
     'rest_framework.authtoken',
     'users',
@@ -71,9 +73,9 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = (
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -104,15 +106,19 @@ TEMPLATES = (
 )
 
 WSGI_APPLICATION = 'sociallty.wsgi.application'
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.EmailBackend"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv("DATABASE_NAME"),
+        'USER': os.getenv("DATABASE_USER"),
+        'HOST': os.getenv("DATABASE_HOST"),
+        'PASSWORD': os.getenv("DATABASE_PASSWORD"),
+        'OPTIONS': {'sslmode': 'require'},
     }
 }
 
@@ -151,14 +157,23 @@ USE_TZ = True
 #    "127.0.0.1",
 # )
 
+#! remove in production
 CORS_ALLOWED_ORIGINS = (
-    "http://localhost:5173",
-    "http://localhost:4173",
-    "http://192.168.1.9:5173",
-    "http://192.168.1.9:5173",
-    "http://192.168.1.9:4173"
+    # "http://localhost:5173",
+    # "http://localhost:4173",
+    # "http://192.168.1.9:5173",
+    # "http://192.168.1.9:5173",
+    # "http://192.168.1.9:4173"
+    "https://9656c254-d986-4e95-82b2-fcaf37f7825e.e1-us-east-azure.choreoapps.dev",
+    "https://minimum-lauretta-noormaser-0d773dac.koyeb.app",
 )
 CORS_ALLOW_CREDENTIALS = True
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv("CLOUD_NAME"),
+    'API_KEY': os.getenv("CLOUD_API_KEY"),
+    'API_SECRET': os.getenv("CLOUD_API_SECRET")
+}
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=6),
@@ -180,7 +195,8 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage"
+        # "BACKEND": "django.core.files.storage.FileSystemStorage"
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage"
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
@@ -209,12 +225,12 @@ UNFOLD = {
 }
 
 # configs
-# SECURE_BROWSER_XSS_FILTER = True
-# SECURE_CONTENT_TYPE_NOSNIFF = True
-# X_FRAME_OPTIONS = 'DENY'
-# SECURE_HSTS_SECONDS = 31536000
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-# SECURE_HSTS_PRELOAD = True
-# CSRF_COOKIE_SECURE = True
-# SESSION_COOKIE_SECURE = True
-# SECURE_SSL_REDIRECT = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = True

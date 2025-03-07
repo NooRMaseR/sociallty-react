@@ -89,7 +89,15 @@ class UserAuthAPI(APIView):
             return Response({"error": "This account is not Active, please contact us if you think this is a mistake"}, status=status.HTTP_403_FORBIDDEN)
         
         refresh_token = RefreshToken.for_user(user)
-        return Response({'access': str(refresh_token.access_token), 'refresh': str(refresh_token), 'id': user.pk, "username": user.username})
+        return Response(
+            {
+                'access': str(refresh_token.access_token), 
+                'refresh': str(refresh_token), 
+                'id': user.pk, 
+                "username": user.username,
+                "profile_picture": user.profile_picture.url # type: ignore
+            }
+        )
     
     @transaction.atomic
     def put(self, request: Request) -> Response:

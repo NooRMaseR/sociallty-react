@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='socialuser',
             name='phone',
-            field=models.IntegerField(default=101010101010, unique=True),
+            field=models.BigIntegerField(default=101010101010, unique=True),
             preserve_default=False,
         ),
     ]

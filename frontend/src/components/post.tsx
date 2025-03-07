@@ -5,13 +5,13 @@ import {
   setSliderOpen,
 } from "../utils/store";
 import {
-  API_URL,
+  MEDIA_URL,
   ApiUrls,
   PostsStateType,
   User,
   Visibility,
 } from "../utils/constants";
-import { Box, ImageList, ImageListItem, SvgIcon, Tooltip } from "@mui/material";
+import { Box, ImageList, ImageListItem, SvgIcon, Tooltip, Typography } from "@mui/material";
 import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
 import { memo, ReactNode, useCallback, useState } from "react";
 import { formatNumbers, share } from "../utils/functions";
@@ -43,6 +43,80 @@ export interface PostProps {
   comments_count: number;
   likes_count: number;
 }
+
+interface MediaContentProps {
+  post: PostProps;
+  photoID: number;
+  onImageClick: (id: number) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  dispatch: (action: any) => void;
+}
+
+
+const MediaContent = memo(({post, photoID, onImageClick, dispatch}: MediaContentProps) => {
+  const posts_media: ReactNode[] = [];
+  for (let i = 0; i < post.media.length; i++) {
+    const current_media = post.media[i];
+    if (i < 4) {
+      const data = current_media.content.split("/");
+      const imageName = data[data.length - 1];
+      const imgAlt = imageName.split(".")[0];
+      switch (current_media.content_type) {
+        case "video":
+          posts_media.push(
+            <ImageListItem key={current_media.id} sx={{ display: "flex", placeContent: 'center' }}>
+              <video
+                src={`${MEDIA_URL}${current_media.content}`}
+                preload="none"
+                controlsList="nodownload"
+                poster={`${MEDIA_URL}${current_media.poster}`}
+                className="content-post"
+                controls
+                key={`${current_media.id}i`}
+              ></video>
+            </ImageListItem>
+          );
+          break;
+        case "image":
+          posts_media.push(
+            <ImageListItem key={current_media.id} sx={{ display: "flex", placeContent: 'center' }}>
+              <Image
+                src={`${MEDIA_URL}${current_media.content}`}
+                alt={imgAlt}
+                onClick={() => onImageClick(current_media.id)}
+                className={`content-post ${current_media.id == photoID ? "open" : ""
+                }`}
+                key={`${current_media.id}i`}
+              />
+            </ImageListItem>
+          );
+          break;
+      }
+    } else {
+      posts_media.push(
+        <ImageListItem key={current_media.id} sx={{ display: "flex", placeContent: 'center' }}>
+          <div
+            className="post-hider"
+            key={"final"}
+            onClick={() =>
+              dispatch(setPostContentSlider({ value: true, media: post.media }))
+            }
+            >
+            <p className="posts-counter">+{post.media.length - 4}</p>
+          </div >
+        </ImageListItem>
+      );
+      break;
+    }
+  }
+
+  return (
+    <ImageList variant="masonry" cols={posts_media.length > 2 ? 2 : posts_media.length} gap={8} sx={{ width: '100%' }}>
+      {posts_media}
+    </ImageList>
+  )
+});
+
 
 export default function Post({ post }: { post: PostProps }) {
   const comments_count = useSelector(
@@ -86,89 +160,29 @@ export default function Post({ post }: { post: PostProps }) {
     // check if the user's post id is equal to the user id To control the post
     if (post.user.id === +(localStorage.getItem("id") ?? 0)) {
       return (
-        <div
-          className="options"
-          onClick={() =>
-            dispatch(setBottomSheetOpen({ last_post_id: post.id, open: true }))
-          }
-          title="Options"
-        >
-          <MoreHorizIcon sx={{ width: "1.9rem", height: "1.9rem" }} />
-        </div>
+        <Tooltip title="Options">
+          <div
+            className="options"
+            onClick={() =>
+              dispatch(setBottomSheetOpen({ last_post_id: post.id, open: true }))
+            }
+          >
+            <MoreHorizIcon sx={{ width: "1.9rem", height: "1.9rem" }} />
+          </div>
+        </Tooltip>
       );
     } else {
       // add share button instead
       return (
-        <div className="share" onClick={() => share(post.id)} title="Share">
-          <ShareIcon sx={{ width: "1.9rem", height: "1.9rem" }} />
-        </div>
+        <Tooltip title="Share">
+          <div className="share" onClick={() => share(post.id)}>
+            <ShareIcon sx={{ width: "1.9rem", height: "1.9rem" }} />
+          </div>
+        </Tooltip>
       );
     }
   });
 
-  const MediaContent = memo(() => {
-    const posts_media: ReactNode[] = [];
-    for (let i = 0; i < post.media.length; i++) {
-      const current_media = post.media[i];
-      if (i < 4) {
-        const data = current_media.content.split("/");
-        const imageName = data[data.length - 1];
-        const imgAlt = imageName.split(".")[0];
-        switch (current_media.content_type) {
-          case "video":
-            posts_media.push(
-              <ImageListItem key={current_media.id} sx={{ display: "flex", placeContent: 'center' }}>
-                <video
-                  src={`${API_URL}${current_media.content}`}
-                  preload="none"
-                  controlsList="nodownload"
-                  poster={`${API_URL}${current_media.poster}`}
-                  className="content-post"
-                  controls
-                  key={`${current_media.id}i`}
-                ></video>
-              </ImageListItem>
-            );
-            break;
-          case "image":
-            posts_media.push(
-              <ImageListItem key={current_media.id} sx={{ display: "flex", placeContent: 'center' }}>
-                <Image
-                  src={`${API_URL}${current_media.content}`}
-                  alt={imgAlt}
-                  onClick={() => handelOpenContent(current_media.id)}
-                  className={`content-post ${current_media.id == photoID ? "open" : ""
-                  }`}
-                  key={`${current_media.id}i`}
-                />
-              </ImageListItem>
-            );
-            break;
-        }
-      } else {
-        posts_media.push(
-          <ImageListItem key={current_media.id} sx={{ display: "flex", placeContent: 'center' }}>
-            <div
-              className="post-hider"
-              key={"final"}
-              onClick={() =>
-                dispatch(setPostContentSlider({ value: true, media: post.media }))
-              }
-              >
-              <p className="posts-counter">+{post.media.length - 4}</p>
-            </div >
-          </ImageListItem>
-        );
-        break;
-      }
-    }
-
-    return (
-      <ImageList variant="masonry" cols={posts_media.length > 2 ? 2 : posts_media.length} gap={8} sx={{ width: '100%' }}>
-        {posts_media}
-      </ImageList>
-    )
-  });
 
   return (
     <Box className="post-container" ref={ref}>
@@ -178,13 +192,13 @@ export default function Post({ post }: { post: PostProps }) {
         <>
           <div className="post-profile">
             <LazyAvatar
-              src={`${API_URL}${post.user.profile_picture}`}
+              src={`${MEDIA_URL}${post.user.profile_picture}`}
               alt="profile pic"
             />
             <div className="profile-name" style={{ textAlign: "end" }}>
-              <p style={{ color: "#8f8f8f" }}>
+              <Typography sx={{ color: "#8f8f8f" }}>
                 {new Date(post.created_at).toLocaleString()}
-              </p>
+              </Typography>
               <Link
                 to={{
                   pathname: `/social-user-profile`,
@@ -193,18 +207,18 @@ export default function Post({ post }: { post: PostProps }) {
               >
                 {post.user.username}
               </Link>
-              <p style={{ color: "#8f8f8f" }}>{post.visibility}</p>
+              <Typography style={{ color: "#8f8f8f" }}>{post.visibility}</Typography>
             </div>
           </div>
 
           {/* post description */}
           <div className="desc">
-            <p>{post.description}</p>
+            <Typography>{post.description}</Typography>
           </div>
 
           {/* the post media */}
           <div className="post-content">
-            <MediaContent />
+            <MediaContent post={post} photoID={photoID} onImageClick={handelOpenContent} dispatch={dispatch}/>
           </div>
 
           {/* bottons for the post */}
@@ -220,9 +234,9 @@ export default function Post({ post }: { post: PostProps }) {
                   sx={{ width: "1.9rem", height: "1.9rem" }}
                   className="likes-svg"
                 />
-                <p id={`likes-${post.id}`} className="counter">
+                <Typography id={`likes-${post.id}`} className="counter">
                   {formatNumbers(likes_count)}
-                </p>
+                </Typography>
               </div>
             </Tooltip>
             <Tooltip title="Comments">
@@ -240,9 +254,9 @@ export default function Post({ post }: { post: PostProps }) {
                 >
                   <path d="M123.6 391.3c12.9-9.4 29.6-11.8 44.6-6.4c26.5 9.6 56.2 15.1 87.8 15.1c124.7 0 208-80.5 208-160s-83.3-160-208-160S48 160.5 48 240c0 32 12.4 62.8 35.7 89.2c8.6 9.7 12.8 22.5 11.8 35.5c-1.4 18.1-5.7 34.7-11.3 49.4c17-7.9 31.1-16.7 39.4-22.7zM21.2 431.9c1.8-2.7 3.5-5.4 5.1-8.1c10-16.6 19.5-38.4 21.4-62.9C17.7 326.8 0 285.1 0 240C0 125.1 114.6 32 256 32s256 93.1 256 208s-114.6 208-256 208c-37.1 0-72.3-6.4-104.1-17.9c-11.9 8.7-31.3 20.6-54.3 30.6c-15.1 6.6-32.3 12.6-50.1 16.1c-.8 .2-1.6 .3-2.4 .5c-4.4 .8-8.7 1.5-13.2 1.9c-.2 0-.5 .1-.7 .1c-5.1 .5-10.2 .8-15.3 .8c-6.5 0-12.3-3.9-14.8-9.9c-2.5-6-1.1-12.8 3.4-17.4c4.1-4.2 7.8-8.7 11.3-13.5c1.7-2.3 3.3-4.6 4.8-6.9l.3-.5z" />
                 </SvgIcon>
-                <p id={`comments-${post.id}`} className="counter">
+                <Typography id={`comments-${post.id}`} className="counter">
                   {formatNumbers(comments_count)}
-                </p>
+                </Typography>
               </div>
             </Tooltip>
             <UserButtonsManager />

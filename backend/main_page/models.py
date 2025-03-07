@@ -1,3 +1,5 @@
+from cloudinary_storage.storage import VideoMediaCloudinaryStorage
+from cloudinary_storage.validators import validate_video
 from APIs.models import get_media_type
 from django.dispatch import receiver
 from users.models import SocialUser
@@ -65,7 +67,7 @@ class PostContent(models.Model):
         VIDEO = "video"
 
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="media")
-    content = models.FileField(upload_to="posts_media/", blank=True, null=True)
+    content = models.FileField(upload_to="posts_media/", blank=True, null=True, storage=VideoMediaCloudinaryStorage(), validators=[validate_video])
     content_type = models.CharField(max_length=6, choices=MediaType, null=True)
     full_content_type = models.CharField(max_length=14, null=True)
     poster = models.ImageField(upload_to="posters/", blank=True, null=True)

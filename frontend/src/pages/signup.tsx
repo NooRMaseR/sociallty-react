@@ -1,6 +1,6 @@
 import { ChangeEvent, memo, useCallback, useEffect, useRef, useState } from "react";
 import { ACCESS, ApiUrls, REFRESH, TokenResponse } from "../utils/constants";
-import { Box, Button, Step, StepLabel, Stepper } from "@mui/material";
+import { Box, Button, Step, StepLabel, Stepper, Typography } from "@mui/material";
 import FloatingLabelInput from "../components/floating_input_label";
 import { LazyAvatar } from "../components/media_skelatons";
 import { Link, useNavigate } from "react-router-dom";
@@ -94,12 +94,13 @@ export default function Signup() {
       );
 
       if (res.status === 200) {
+        start();
         localStorage.setItem(ACCESS, res.data.access);
         localStorage.setItem(REFRESH, res.data.refresh);
         localStorage.setItem("id", res.data.id.toString());
         localStorage.setItem("username", res.data.username);
+        localStorage.setItem("profile_pic", res.data.profile_picture);
         dispatch(setHasToken(true));
-        start();
         navigate("/");
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -135,9 +136,9 @@ export default function Signup() {
         return (
           <>
             <div id="main-profile-container">
-              <label htmlFor="pic-picker" id="pic-label">
+              <Typography component="label" htmlFor="pic-picker" id="pic-label">
                 Click To Choose Profile Picture
-              </label>
+              </Typography>
               <div
                 id="profile-container"
                 onClick={() => document.getElementById("pic-picker")?.click()}

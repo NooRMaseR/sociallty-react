@@ -1,7 +1,9 @@
 import React from "react";
 import api from "../utils/api";
 import Comment from "./comment";
+import "../styles/comments-slider.css"
 import SendIcon from "@mui/icons-material/Send";
+import CommentSkeleton from "./comment_skeleton";
 import CloseIcon from "@mui/icons-material/Close";
 import { useSelector, useDispatch } from "react-redux";
 import FloatingLabelInput from "./floating_input_label";
@@ -9,7 +11,6 @@ import { TransitionProps } from "@mui/material/transitions";
 import { setSliderOpen, UpdatePostCommentsCount } from "../utils/store";
 import { ApiUrls, CommentProps, commentSliderType } from "../utils/constants";
 import { Box, Dialog, easing, IconButton, Slide, Tooltip } from "@mui/material";
-import CommentSkeleton from "./comment_skeleton";
 
 const Transition = React.forwardRef(
   (
