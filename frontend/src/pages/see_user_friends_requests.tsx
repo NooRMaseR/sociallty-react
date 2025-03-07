@@ -18,7 +18,7 @@ const LazyAccountCard = React.lazy(() => import("../components/account_card"));
 const Cards = memo(({ users }: { users: FullUser[] }) => {
   const renderCards = useMemo(() =>
     users.map((user) => (
-      <LazyAccountCard user={user} key={user.id} forFriends={false} />
+      <LazyAccountCard user={user} key={user.id} forFriends forAcceptRequests />
     )), [users]);
   return <Suspense fallback={<CardsSkelaton />}>{renderCards}</Suspense>;
 });

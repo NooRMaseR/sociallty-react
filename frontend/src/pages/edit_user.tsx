@@ -57,6 +57,7 @@ export default function EditUserPage() {
         localStorage.setItem(ACCESS, res.data.access);
         localStorage.setItem(REFRESH, res.data.refresh);
         localStorage.setItem("username", res.data.username);
+        localStorage.setItem("profile_picture", res.data.profile_picture);
         dispatch(setHasToken(true));
         navigate("/");
       }

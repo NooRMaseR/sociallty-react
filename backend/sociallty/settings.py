@@ -165,6 +165,7 @@ CORS_ALLOWED_ORIGINS = (
     # "http://192.168.1.9:5173",
     # "http://192.168.1.9:4173"
     "https://9656c254-d986-4e95-82b2-fcaf37f7825e.e1-us-east-azure.choreoapps.dev",
+    "https://bdc0b1d4-0436-4c85-8ed1-6cc4e436a14a.e1-us-east-azure.choreoapps.dev",
     "https://minimum-lauretta-noormaser-0d773dac.koyeb.app",
 )
 CORS_ALLOW_CREDENTIALS = True
@@ -172,7 +173,8 @@ CORS_ALLOW_CREDENTIALS = True
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.getenv("CLOUD_NAME"),
     'API_KEY': os.getenv("CLOUD_API_KEY"),
-    'API_SECRET': os.getenv("CLOUD_API_SECRET")
+    'API_SECRET': os.getenv("CLOUD_API_SECRET"),
+    'EXCLUDE_DELETE_ORPHANED_MEDIA_PATHS': ('media/profile_pictures/dolru8slhdzk3boxztrv',)
 }
 
 SIMPLE_JWT = {

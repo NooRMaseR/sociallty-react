@@ -28,7 +28,8 @@ import "../styles/post.css";
 export interface Media {
   readonly id: number;
   content_type: string;
-  content: string;
+  image?: string;
+  video?: string;
   poster: string;
   added?: boolean;
 }
@@ -58,15 +59,12 @@ const MediaContent = memo(({post, photoID, onImageClick, dispatch}: MediaContent
   for (let i = 0; i < post.media.length; i++) {
     const current_media = post.media[i];
     if (i < 4) {
-      const data = current_media.content.split("/");
-      const imageName = data[data.length - 1];
-      const imgAlt = imageName.split(".")[0];
       switch (current_media.content_type) {
-        case "video":
+        case current_media.video:
           posts_media.push(
             <ImageListItem key={current_media.id} sx={{ display: "flex", placeContent: 'center' }}>
               <video
-                src={`${MEDIA_URL}${current_media.content}`}
+                src={`${MEDIA_URL}${current_media.video}`}
                 preload="none"
                 controlsList="nodownload"
                 poster={`${MEDIA_URL}${current_media.poster}`}
@@ -77,20 +75,23 @@ const MediaContent = memo(({post, photoID, onImageClick, dispatch}: MediaContent
             </ImageListItem>
           );
           break;
-        case "image":
+        case "image": {
+          const data = current_media.image?.split("/");
+          const imageName = data ? data[data.length - 1] : '';
+          const imgAlt = imageName.split(".")[0];
           posts_media.push(
             <ImageListItem key={current_media.id} sx={{ display: "flex", placeContent: 'center' }}>
               <Image
-                src={`${MEDIA_URL}${current_media.content}`}
+                src={`${MEDIA_URL}${current_media.image}`}
                 alt={imgAlt}
                 onClick={() => onImageClick(current_media.id)}
-                className={`content-post ${current_media.id == photoID ? "open" : ""
-                }`}
+                className={`content-post ${current_media.id == photoID ? "open" : ''}`}
                 key={`${current_media.id}i`}
               />
             </ImageListItem>
           );
           break;
+        }
       }
     } else {
       posts_media.push(

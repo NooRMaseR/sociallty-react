@@ -55,12 +55,14 @@ export default function EditPostPage() {
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target && e.target.result) {
+          const isImage = file.type.startsWith("image");
           setMedia((prevMedia) => [
             ...prevMedia,
             {
               id: Date.now(),
-              content_type: file.type.startsWith("image") ? "image" : "video",
-              content: e.target?.result as string,
+              content_type: isImage ? "image" : "video",
+              image: isImage ? e.target?.result as string : undefined,
+              video: !isImage ? e.target?.result as string : undefined,
               poster: "",
               added: true,
             },
@@ -99,8 +101,8 @@ export default function EditPostPage() {
                 <video
                   src={
                     postMedia.added
-                      ? postMedia.content
-                      : `${MEDIA_URL}${postMedia.content}`
+                      ? postMedia.video
+                      : `${MEDIA_URL}${postMedia.video}`
                   }
                   preload="none"
                   className="content-post"
@@ -128,8 +130,8 @@ export default function EditPostPage() {
                 <Image
                   src={
                     postMedia.added
-                      ? postMedia.content
-                      : `${MEDIA_URL}${postMedia.content}`
+                      ? postMedia.image
+                      : `${MEDIA_URL}${postMedia.image}`
                   }
                   alt="image"
                   className="content-post"

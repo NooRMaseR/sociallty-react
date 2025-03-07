@@ -1,5 +1,6 @@
 from cloudinary_storage.storage import VideoMediaCloudinaryStorage
 from cloudinary_storage.validators import validate_video
+from django.core.management import call_command
 from APIs.models import get_media_type
 from django.dispatch import receiver
 from users.models import SocialUser
@@ -67,23 +68,23 @@ class PostContent(models.Model):
         VIDEO = "video"
 
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="media")
-    content = models.FileField(upload_to="posts_media/", blank=True, null=True, storage=VideoMediaCloudinaryStorage(), validators=[validate_video])
+    image = models.ImageField(upload_to="posters/", blank=True, null=True)
+    video = models.FileField(upload_to="posts_media/", blank=True, null=True,storage=VideoMediaCloudinaryStorage(), validators=[validate_video])
     content_type = models.CharField(max_length=6, choices=MediaType, null=True)
     full_content_type = models.CharField(max_length=14, null=True)
     poster = models.ImageField(upload_to="posters/", blank=True, null=True)
 
     def save(self, *args, **kwargs) -> None:
-        media_type = get_media_type(self.content.path)
-        if self.content and media_type[0] == "image":
-            converted_img = pilImage.open(self.content)
+        if self.image:
+            converted_img = pilImage.open(self.image)
             pic_in_memory = BytesIO()
 
             converted_img.save(pic_in_memory, "WebP")
             pic_in_memory.seek(0)
 
-            self.imge = self.generate_webp_filename(self.content.name)
-            self.content.save(self.imge, pic_in_memory, False)  # type: ignore
-            self.full_content_type = media_type[1]
+            self.imge = self.generate_webp_filename(self.image.name)
+            self.image.save(self.imge, pic_in_memory, False)  # type: ignore
+            self.full_content_type = "image/WebP"
 
         return super().save(*args, **kwargs)
 
@@ -97,26 +98,31 @@ class PostContent(models.Model):
         return f"content description - {self.post}"
 
 
-@receiver(models.signals.pre_delete, sender=Post)
+@receiver(models.signals.post_delete, sender=Post)
+@receiver(models.signals.post_delete, sender=PostContent)
 def auto_delete_post_files(sender, instance, **kwargs):
     """
     Deletes associated files when a post is deleted.
     """
-    for post in instance.media.all():
-        if post.content and os.path.isfile(post.content.path):
-            os.remove(post.content.path)
+    call_command("deleteorphanedmedia")
+    # for post in instance.media.all():
+    #     if post.content and os.path.isfile(post.content.path):
+    #         os.remove(post.content.path)
             
-        if post.poster and os.path.isfile(post.poster.path):
-            os.remove(post.poster.path)
+    #     if post.poster and os.path.isfile(post.poster.path):
+    #         os.remove(post.poster.path)
 
 
-@receiver(models.signals.pre_delete, sender=PostContent)
-def auto_delete_post_content_files(sender, instance: PostContent, **kwargs):
-    """
-    Deletes associated content when the media is deleted.
-    """
-    if instance.content and os.path.isfile(instance.content.path):
-        os.remove(instance.content.path)
+# @receiver(models.signals.pre_delete, sender=PostContent)
+# def auto_delete_post_content_files(sender, instance: PostContent, **kwargs):
+#     """
+#     Deletes associated content when the media is deleted.
+#     """
+#     if instance.image and os.path.isfile(instance.image.path):
+#         os.remove(instance.image.path)
+    
+#     if instance.video and os.path.isfile(instance.video.path):
+#         os.remove(instance.video.path)
         
-    if instance.poster and os.path.isfile(instance.poster.path):
-        os.remove(instance.poster.path)
+#     if instance.poster and os.path.isfile(instance.poster.path):
+#         os.remove(instance.poster.path)

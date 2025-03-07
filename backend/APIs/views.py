@@ -49,7 +49,7 @@ class PostApi(APIView):
             post (Post): The `Post` itself to change
 
         Returns:
-            Response: `405` if no files found in the post, else `None`
+            Response: `415` if no files found in the post, else `None`
         """
         
         
@@ -62,14 +62,15 @@ class PostApi(APIView):
             
             post_content: PostContent = PostContent(
                 post=post,
-                content=file,
+                image=file if is_image else None,
+                video=file if is_video else None,
                 content_type=PostContent.MediaType.IMAGE if is_image else PostContent.MediaType.VIDEO,
                 full_content_type=file.content_type
             )
             post_content.save()
 
             if is_video:
-                first_frame_io: BytesIO | None = extract_first_frame(post_content.content.path)
+                first_frame_io: BytesIO | None = extract_first_frame(post_content.video.path)
 
                 if first_frame_io:
                     poster = InMemoryUploadedFile(

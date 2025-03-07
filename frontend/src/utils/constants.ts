@@ -1,6 +1,6 @@
 import { Media, PostProps } from "../components/post";
 
-const DEBUG: boolean = false; 
+const DEBUG: boolean = false;
 export const ACCESS: string = "access";
 export const REFRESH: string = "refresh";
 // export const API_URL: string = "http://127.0.0.1:8000";

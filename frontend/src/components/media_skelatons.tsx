@@ -2,7 +2,7 @@ import { Avatar, Skeleton } from "@mui/material";
 import { useState } from "react";
 
 interface MediaProps {
-  src: string;
+  src?: string;
   alt?: string;
   className?: string;
   width?: string | number;

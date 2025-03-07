@@ -134,7 +134,7 @@ export default function ProfilePage() {
       setRequestSent(false);
       setIsFriend(false);
     } else if (requestSent) {
-      await deleteRequest(user.id);
+      await deleteRequest(user.id ?? +(localStorage.getItem("id") ?? 0));
       setRequestSent(false);
       setIsFriend(false);
     } else {

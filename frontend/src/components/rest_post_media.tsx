@@ -24,7 +24,7 @@ const MediaContent = React.memo(({media}: {media: Media[]}) => {
       case "image":
         data.push(
           <Image
-            src={`${MEDIA_URL}${media_content.content}`}
+            src={`${MEDIA_URL}${media_content.image}`}
             alt="post content"
             key={media_content.id}
             style={{maxHeight: '50%', maxWidth: '100%'}}
@@ -34,7 +34,7 @@ const MediaContent = React.memo(({media}: {media: Media[]}) => {
       case "video":
         data.push(
           <video
-            src={`${MEDIA_URL}${media_content.content}`}
+            src={`${MEDIA_URL}${media_content.video}`}
             preload="none"
             poster={`${MEDIA_URL}${media_content.poster}`}
             controlsList="nodownload"

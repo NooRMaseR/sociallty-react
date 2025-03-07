@@ -17,7 +17,8 @@ class PostModel(ModelAdmin):
 class PostContentModel(ModelAdmin):
     list_display = (
         "post",
-        "content",
+        "image",
+        "video",
         "content_type",
         "full_content_type",
         "poster",

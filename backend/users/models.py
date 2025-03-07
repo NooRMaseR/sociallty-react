@@ -72,7 +72,7 @@ class SocialUser(AbstractBaseUser, PermissionsMixin):
     bio = models.TextField(max_length=150, null=True, blank=True)
     profile_picture = models.ImageField(
         upload_to="profile_pictures/",
-        default="profile_pictures/unknown.png"
+        default="profile_pictures/dolru8slhdzk3boxztrv"
     )
     phone = PhoneNumberField(unique=True)
     is_active = models.BooleanField(default=True)
