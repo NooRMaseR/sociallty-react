@@ -44,7 +44,7 @@ export default function MakePostPage() {
       console.error(error);
     }
     setLoading(false);
-  }, [navigate]);
+  }, [navigate, start]);
 
   const handelFiles = useCallback((event: FileList) => {
     const selectedMedia = Array.from(event || []);

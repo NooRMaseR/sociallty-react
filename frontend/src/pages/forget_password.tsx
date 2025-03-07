@@ -1,5 +1,5 @@
+import { Box, Button, Step, StepLabel, Stepper, Typography } from "@mui/material";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
-import { Box, Button, Step, StepLabel, Stepper } from "@mui/material";
 import FloatingLabelInput from "../components/floating_input_label";
 import { memo, useCallback, useEffect, useState } from "react";
 import { ApiUrls, TokenResponse } from "../utils/constants";
@@ -131,7 +131,7 @@ export default function ForgetPasswordPage() {
         return (
           <form onSubmit={handleSubmit(handelOnEmailSubmit)}>
             <Box id="header">
-              <h1 id="pic-label">Forget Password</h1>
+              <Typography component="h1" id="pic-label">Forget Password</Typography>
               <LazyAvatar
                 src="/favicon.ico"
                 width="10rem"
@@ -172,7 +172,7 @@ export default function ForgetPasswordPage() {
               <ArrowBackRoundedIcon />
             </Button>
             <Box id="header">
-              <h1 id="pic-label">Confirm Email</h1>
+              <Typography component="h1" id="pic-label">Confirm Email</Typography>
               <LazyAvatar
                 src="/favicon.ico"
                 width="10rem"
@@ -207,7 +207,7 @@ export default function ForgetPasswordPage() {
         return (
           <form onSubmit={handleSubmit(handelOnPasswordChangeSubmit)}>
             <Box id="header">
-              <h1 id="pic-label">Change Password</h1>
+              <Typography component="h1" id="pic-label">Change Password</Typography>
               <LazyAvatar
                 src="/favicon.ico"
                 width="10rem"

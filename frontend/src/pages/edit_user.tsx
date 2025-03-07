@@ -1,6 +1,6 @@
 import {
   ACCESS,
-  API_URL,
+  MEDIA_URL,
   ApiUrls,
   FullUser,
   REFRESH,
@@ -102,7 +102,7 @@ export default function EditUserPage() {
           </label>
           <div id="profile-container" onClick={() => filePickerRef.current?.click()}>
             <LazyAvatar
-              src={`${API_URL}${user?.profile_picture ?? "/unknown.png"}`}
+              src={`${MEDIA_URL}${user?.profile_picture ?? "/unknown.png"}`}
               slotProps={{ img: { ref: avatarRef } }}
               alt="user"
               sx={{ width: "7rem", height: "7rem", cursor: 'pointer' }}

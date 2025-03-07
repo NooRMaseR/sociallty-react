@@ -2,14 +2,14 @@ import api from "../utils/api";
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { LazyAvatar } from "./media_skelatons";
-import { Button, Tooltip } from "@mui/material";
 import { decrementCount } from "../utils/store";
 import { memo, useCallback, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import AccountCardSkelaton from "./account_card_skelaton";
+import { Button, Tooltip, Typography } from "@mui/material";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
-import { API_URL, ApiUrls, FullUser } from "../utils/constants";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
+import { ApiUrls, FullUser, MEDIA_URL } from "../utils/constants";
 import { addFriend, deleteRequest, FriendRequest, removeFriend } from "../utils/functions";
 
 export default function AccountCard({
@@ -94,9 +94,9 @@ export default function AccountCard({
           </div>
         );
       } else if (accepted === false) {
-          return <p>Rejected</p>
+          return <Typography>Rejected</Typography>
       } else if (accepted) {
-          return <p>Accepted</p>
+          return <Typography>Accepted</Typography>
       }
     } else
       return (
@@ -134,7 +134,7 @@ export default function AccountCard({
             <div className="left">
               <Tooltip title={`${user.first_name} ${user.last_name}'s profile picture`}>
                 <LazyAvatar
-                  src={`${API_URL}${user.profile_picture}`}
+                  src={`${MEDIA_URL}${user.profile_picture}`}
                   width="4rem"
                   height="4rem"
                   alt={`${user.first_name} ${user.last_name}`}

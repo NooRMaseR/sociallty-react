@@ -1,5 +1,5 @@
 import { Box, CircularProgress, Dialog, easing, IconButton, Slide, Tooltip } from "@mui/material";
-import { API_URL, PostContentSliderStateType } from "../utils/constants";
+import { MEDIA_URL, PostContentSliderStateType } from "../utils/constants";
 import { TransitionProps } from "@mui/material/transitions";
 import { useDispatch, useSelector } from "react-redux";
 import { setPostContentSlider } from "../utils/store";
@@ -24,7 +24,7 @@ const MediaContent = React.memo(({media}: {media: Media[]}) => {
       case "image":
         data.push(
           <Image
-            src={`${API_URL}${media_content.content}`}
+            src={`${MEDIA_URL}${media_content.content}`}
             alt="post content"
             key={media_content.id}
             style={{maxHeight: '50%', maxWidth: '100%'}}
@@ -34,9 +34,9 @@ const MediaContent = React.memo(({media}: {media: Media[]}) => {
       case "video":
         data.push(
           <video
-            src={`${API_URL}${media_content.content}`}
+            src={`${MEDIA_URL}${media_content.content}`}
             preload="none"
-            poster={`${API_URL}${media_content.poster}`}
+            poster={`${MEDIA_URL}${media_content.poster}`}
             controlsList="nodownload"
             controls
             width="50rem"

@@ -1,6 +1,6 @@
 import styles from "../styles/files-picker.module.css";
+import { Tooltip, Typography } from "@mui/material";
 import { ChangeEvent, useRef } from "react";
-import { Tooltip } from "@mui/material";
 
 interface FilePickerProps {
   label?: string;
@@ -28,7 +28,7 @@ export default function FilePicker({
             multiple={acceptMultiple}
             id="files"
           />
-          <p>{label}</p>
+          <Typography>{label}</Typography>
         </div>
       </div>
     </Tooltip>

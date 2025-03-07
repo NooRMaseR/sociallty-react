@@ -1,5 +1,5 @@
 # Django
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.uploadedfile import InMemoryUploadedFile, UploadedFile
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from django.db import transaction
@@ -41,55 +41,70 @@ class PostApi(APIView):
         post_serializer = PostSerializer(post)
         return Response(post_serializer.data, status=200)
         
+    def save_content(self, files: list[UploadedFile], post: Post) -> Response | None:
+        """A Function to save the `PostContent` and creates a `poster` for the video if there are videos
+
+        Args:
+            files (list[UploadedFile]): the `Media` to add to he `PostContent`
+            post (Post): The `Post` itself to change
+
+        Returns:
+            Response: `405` if no files found in the post, else `None`
+        """
+        
+        
+        for file in files:
+            is_image: bool = file.content_type != None and file.content_type.startswith("image")
+            is_video: bool = file.content_type != None and file.content_type.startswith("video")
+            
+            if file.content_type and not (is_image or is_video):
+                return Response(status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+            
+            post_content: PostContent = PostContent(
+                post=post,
+                content=file,
+                content_type=PostContent.MediaType.IMAGE if is_image else PostContent.MediaType.VIDEO,
+                full_content_type=file.content_type
+            )
+            post_content.save()
+
+            if is_video:
+                first_frame_io: BytesIO | None = extract_first_frame(post_content.content.path)
+
+                if first_frame_io:
+                    poster = InMemoryUploadedFile(
+                        first_frame_io,
+                        None,
+                        f"{os.path.splitext(file.name)[0]}.webP",
+                        file.content_type,
+                        first_frame_io.tell(),
+                        None,
+                    )
+                    post_content.poster = poster  # type: ignore
+                    post_content.save()
+        post.save()
+    
     @transaction.atomic
     def post(self, request: Request) -> Response:
         "`(API)` for adding a post to the data"
 
-        files = request.FILES.getlist("files")  # type: ignore
-        desc = request.data.get("desc")  # type: ignore
-        visibility = request.data.get("visibility")  # type: ignore
+        files: list[UploadedFile] = request.FILES.getlist("files")  # type: ignore
+        desc: str | None = request.data.get("desc")  # type: ignore
+        visibility: str | None = request.data.get("visibility")  # type: ignore
 
         if not (files or desc):
             return Response(status=status.HTTP_204_NO_CONTENT)
         
-        elif visibility in Post.PostVisibility.values:
-            my_user: SocialUser = SocialUser.objects.get(id=request.user.id, username=request.user)  # type: ignore
-            post: Post = Post.objects.create(user=my_user, description=desc, visibility=Post.PostVisibility(visibility))
+        if visibility not in Post.PostVisibility.values:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+            
+        my_user: SocialUser = SocialUser.objects.get(id=request.user.id, username=request.user)  # type: ignore
+        post: Post = Post.objects.create(user=my_user, description=desc, visibility=Post.PostVisibility(visibility))
 
-            for file in files:
-                is_image: bool = file.content_type != None and file.content_type.startswith("image")
-                is_video: bool = file.content_type != None and file.content_type.startswith("video")
-                
-                if file.content_type and not (is_image or is_video):
-                    return Response(status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
-                
-                post_content: PostContent = PostContent(
-                    post=post,
-                    content=file,
-                    content_type=PostContent.MediaType.IMAGE if is_image else PostContent.MediaType.VIDEO,
-                    full_content_type=file.content_type
-                )
-                post_content.save()
-
-                if is_video:
-                    first_frame_io: BytesIO | None = extract_first_frame(post_content.content.path)
-
-                    if first_frame_io:
-                        poster = InMemoryUploadedFile(
-                            first_frame_io,
-                            None,
-                            f"{os.path.splitext(file.name)[0]}.webP",
-                            file.content_type,
-                            first_frame_io.tell(),
-                            None,
-                        )
-                        post_content.poster = poster  # type: ignore
-                        post_content.save()
-                        
-            return Response(status=status.HTTP_201_CREATED)
-
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-
+        if (res := self.save_content(files, post)) is Response:
+            return res
+        
+        return Response(status=status.HTTP_201_CREATED)
 
     @transaction.atomic
     def put(self, request: Request) -> Response:
@@ -97,11 +112,11 @@ class PostApi(APIView):
         `API` for getting the edited post and applying the changes then redirect to the home page
         """
 
-        postID = request.data.get("postID")  # type: ignore
-        mediaID_to_delete = request.data.getlist("delete_media")  # type: ignore
-        mediaID_to_add = request.FILES.getlist("files")  # type: ignore
-        visibility = request.data.get("visibility")  # type: ignore
-        post_desc = request.data.get("desc")  # type: ignore
+        postID: str = request.data.get("postID")  # type: ignore
+        mediaID_to_delete: list[str] = request.data.getlist("delete_media")  # type: ignore
+        mediaID_to_add: list[UploadedFile] = request.FILES.getlist("files")  # type: ignore
+        visibility: str | None = request.data.get("visibility")  # type: ignore
+        post_desc: str | None = request.data.get("desc")  # type: ignore
 
         if visibility not in Post.PostVisibility.values:
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -116,45 +131,16 @@ class PostApi(APIView):
         if visibility is not None:
             post.visibility = Post.PostVisibility(visibility)  # type: ignore
 
-        for media in mediaID_to_add:
-            is_image: bool = media.content_type != None and media.content_type.startswith("image")
-            is_video: bool = media.content_type != None and media.content_type.startswith("video")
-            
-            if media.content_type and not (is_image or is_video):
-                return Response(status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
-            
-            post_content: PostContent = PostContent(
-                post=post,
-                content=media,
-                content_type=PostContent.MediaType.IMAGE if is_image else PostContent.MediaType.VIDEO,
-                full_content_type=media.content_type,
-            )
-            post_content.save()
-
-            if is_video:
-
-                first_frame_io: BytesIO | None = extract_first_frame(post_content.content.path)
-                
-                if first_frame_io:
-                    poster = InMemoryUploadedFile(
-                        first_frame_io,
-                        None,
-                        f"{os.path.splitext(media.name)[0]}.webP",
-                        media.content_type,
-                        first_frame_io.tell(),
-                        None,
-                    )
-                    post_content.poster = poster  # type: ignore
-                    post_content.save()
-                    
-        post.save()
+        if (res := self.save_content(mediaID_to_add, post)) is Response:
+            return res
+        
         return Response(status=status.HTTP_200_OK)
     
     @transaction.atomic
     def delete(self, request: Request) -> Response:
         "`(API)` for removing a post using the post id"
 
-        postID = request.data.get("postID")  # type: ignore
+        postID: str = request.data.get("postID")  # type: ignore
         try:
             post: Post = Post.objects.only("id", "user__id","likes__id","media__id", "comments__id").select_related("user").get(id=postID)
         except Post.DoesNotExist:
@@ -207,11 +193,12 @@ class PostCommentAPI(APIView):
             )
         )
 
-        if comments:
-            comments_serializer = CommentSerializer(comments, many=True)
-            return Response({"comments": comments_serializer.data, "post_user_id": post.user.id}, status=200)  # type: ignore
+        if not comments:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+    
+        comments_serializer = CommentSerializer(comments, many=True)
+        return Response({"comments": comments_serializer.data, "post_user_id": post.user.id}, status=200)  # type: ignore
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def delete(self, request: Request, ID: int) -> Response:
         """
@@ -221,22 +208,22 @@ class PostCommentAPI(APIView):
             ID: the comment id
         """
 
-        if ID is not None:
-            try:
-                comment: Comment = Comment.objects.only("id", "user__id", "post__user__id").select_related("user", "post__user").get(id=ID)
-            except Comment.DoesNotExist:
-                return Response(
-                    {"errors": "comment not found"}, status=status.HTTP_404_NOT_FOUND
-                )
-            except Exception as e:
-                return Response(
-                    {"errors": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                )
+        
+        try:
+            comment: Comment = Comment.objects.only("id", "user__id", "post__user__id").select_related("user", "post__user").get(id=ID)
+        except Comment.DoesNotExist:
+            return Response(
+                {"errors": "comment not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"errors": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
-            # check if the comment belong to that requested user or the post belong to that requested user
-            if comment.user.id == request.user.id or comment.post.user.id == request.user.id:  # type: ignore
-                comment.delete()
-                return Response(status=200)
+        # check if the comment belong to that requested user or the post belong to that requested user
+        if comment.user.id == request.user.id or comment.post.user.id == request.user.id:  # type: ignore
+            comment.delete()
+            return Response(status=200)
 
         return Response(
             {"errors": "ID cannot be empty"}, status=status.HTTP_400_BAD_REQUEST
@@ -260,14 +247,15 @@ class PostCommentAPI(APIView):
                 {"errors": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-        data = request.data.get("comment")  # type: ignore
+        data: str = request.data.get("comment")  # type: ignore
 
-        if data:
-            comment: Comment = Comment.objects.create(post=post, user=request.user, content=data)
-            comment_serializer = CommentSerializer(comment)
-            return Response(comment_serializer.data, status=201)
+        if not data:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        
+        comment: Comment = Comment.objects.create(post=post, user=request.user, content=data)
+        comment_serializer = CommentSerializer(comment)
+        return Response(comment_serializer.data, status=201)
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["POST"])
@@ -328,11 +316,11 @@ def add_comment_like(request: Request, comment_id: int) -> Response:
 def remove_user(request: Request) -> Response:
     "`API` for removing the user account from the database"
 
-    password = request.data.get("password")  # type: ignore
-    user: SocialUser = get_object_or_404(SocialUser.objects.select_related("auth_token"), id=request.user.id)  # type: ignore
+    password: str = request.data.get("password")  # type: ignore
+    # user: SocialUser = get_object_or_404(SocialUser.objects.select_related("auth_token"), id=request.user.id)  # type: ignore
 
-    if password and user.check_password(password) and user.auth_token:  # type: ignore
-        user.delete()
+    if password and request.user.check_password(password):  # type: ignore
+        request.user.delete()
         return Response({"accept": True, "reson": "valid password"})
 
     return Response(

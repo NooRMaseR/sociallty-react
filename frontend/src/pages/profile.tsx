@@ -6,7 +6,7 @@ import {
   removeFriend,
 } from "../utils/functions";
 import {
-  API_URL,
+  MEDIA_URL,
   ApiUrls,
   FullUser,
   UserProfileResponse,
@@ -19,7 +19,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { Backdrop, Box, Button, ButtonGroup } from "@mui/material";
+import { Backdrop, Box, Button, ButtonGroup, Typography } from "@mui/material";
 import Profileskeleton from "../components/profile_page_skelaton";
 import { Link, useSearchParams } from "react-router-dom";
 import PostSkelaton from "../components/post_skelaton";
@@ -33,15 +33,25 @@ import { QRCodeCanvas } from "qrcode.react";
 import { Helmet } from "react-helmet";
 import api from "../utils/api";
 
-const SkelatonPlaceHolders = memo(() => (
-  Array.from({ length: 5 }, (_, i) => <PostSkelaton key={i} />)
-));
+interface AccountPostsProps {
+  user: FullUser;
+  posts: PostProps[];
+  is_friend: boolean;
+  isAuthor: boolean;
+  loaded: boolean;
+  hasNext: boolean;
+  onPageChange: () => void;
+}
 
 const LazyPost = React.lazy(() => import("../components/post"));
 const LazyBottomSheet = React.lazy(() => import("../components/buttom_sheet"));
 const LazyCommentsSlider = React.lazy(
   () => import("../components/comments_slider")
 );
+
+const SkelatonPlaceHolders = memo(() => (
+  Array.from({ length: 5 }, (_, i) => <PostSkelaton key={i} />)
+));
 
 const Posts = memo(({ posts }: { posts: PostProps[] }) => {
   const renderPosts = useMemo(() =>
@@ -50,6 +60,56 @@ const Posts = memo(({ posts }: { posts: PostProps[] }) => {
   return <Suspense fallback={<PostSkelaton />}>{renderPosts}</Suspense>;
 }
 );
+
+
+const AccountPosts = memo(({user, posts, is_friend, isAuthor, loaded, hasNext, onPageChange}: AccountPostsProps) => {
+  if (user.settings?.is_private_account && !is_friend && !isAuthor)
+    return <Typography variant="h1">Private Account</Typography>;
+  else
+    return (
+      <Box id="posts">
+        <LazyBottomSheet />
+        <LazyCommentsSlider />
+        {!loaded ? (
+          <SkelatonPlaceHolders />
+        ) : (
+          <>
+            <Suspense fallback={<PostSkelaton />}>
+              <Posts posts={posts} />
+              <div>
+                {hasNext ? (
+                  <Button
+                    type="button"
+                    variant="contained"
+                    onClick={onPageChange}
+                  >
+                    Load More
+                  </Button>
+                ) : (
+                  <p>No More Posts...</p>
+                )}
+              </div>
+            </Suspense>
+          </>
+        )}
+      </Box>
+    );
+});
+
+
+const QRCodeCom = memo(({openQr, setOpenQr, params, user}: {openQr: boolean, setOpenQr: (open: boolean) => void, params: URLSearchParams, user: FullUser}) => (
+  <Backdrop
+    open={openQr}
+    onClick={() => setOpenQr(false)}
+    sx={{ zIndex: 1 }}
+  >
+    <QRCodeCanvas
+      value={`${location.origin}/social-user-profile?username=${params.get("username") || user.username
+        }&id=${params.get("id") || user.id}`}
+      size={320}
+    />
+  </Backdrop>
+));
 
 
 export default function ProfilePage() {
@@ -66,7 +126,7 @@ export default function ProfilePage() {
   const { start, complete } = useLoadingBar();
   const [params] = useSearchParams();
 
-  const isAuthor = user.id == +(localStorage.getItem("id") ?? -1);
+  const isAuthor = user.id == +(localStorage.getItem("id") ?? 0);
 
   const toggleFriend = useCallback(async () => {
     if (is_friend) {
@@ -109,43 +169,11 @@ export default function ProfilePage() {
     }
   }, [pageNumber, params, complete]);
 
+  const onPageChange = useCallback(() => setPageNumber((prev) => prev + 1), []);
+
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
-
-  const AccountPosts = memo(() => {
-    if (user.settings?.is_private_account && !is_friend && !isAuthor)
-      return <h1>Private Account</h1>;
-    else
-      return (
-        <Box id="posts">
-          <LazyBottomSheet />
-          <LazyCommentsSlider />
-          {!loaded ? (
-            <SkelatonPlaceHolders />
-          ) : (
-            <>
-              <Suspense fallback={<PostSkelaton />}>
-                <Posts posts={posts} />
-                <div>
-                  {hasNext ? (
-                    <Button
-                      type="button"
-                      variant="contained"
-                      onClick={() => setPageNumber((prev) => prev + 1)}
-                    >
-                      Load More
-                    </Button>
-                  ) : (
-                    <p>No More Posts...</p>
-                  )}
-                </div>
-              </Suspense>
-            </>
-          )}
-        </Box>
-      );
-  });
 
   useEffect(() => {
     disablePageScroll(openQr);
@@ -161,28 +189,17 @@ export default function ProfilePage() {
         />
       </Helmet>
       {error ? (
-        <h1 className="text-white">{error}</h1>
+        <Typography variant="h1" className="text-white">{error}</Typography>
       ) : (
         <main>
           {!loaded ? (
             <Profileskeleton />
           ) : (
             <>
-              <Backdrop
-                open={openQr}
-                onClick={() => setOpenQr(false)}
-                sx={{ zIndex: 1 }}
-              >
-                <QRCodeCanvas
-                  value={`${location.origin}/social-user-profile?username=${
-                    params.get("username") || user.username
-                  }&id=${params.get("id") || user.id}`}
-                  size={320}
-                />
-              </Backdrop>
+              <QRCodeCom openQr={openQr} setOpenQr={setOpenQr} params={params} user={user} />
               <div id={styles["user-profile-pic"]}>
                 <Image
-                  src={`${API_URL}${user.profile_picture}`}
+                  src={`${MEDIA_URL}${user.profile_picture}`}
                   alt="user profile pic"
                 />
               </div>
@@ -200,7 +217,7 @@ export default function ProfilePage() {
                 <div id={styles["user-info"]}>
                   <div>
                     <h1>{user.username}</h1>
-                    <p>{user.bio}</p>
+                    <Typography>{user.bio}</Typography>
                   </div>
 
                   {/* check if the user is seeing his own profile to let him edit his profile */}
@@ -250,7 +267,7 @@ export default function ProfilePage() {
               </div>
             </>
           )}
-          <AccountPosts />
+          <AccountPosts hasNext={hasNext} isAuthor={isAuthor} is_friend={is_friend} loaded={loaded} user={user} posts={posts} onPageChange={onPageChange} />
         </main>
       )}
     </>

@@ -1,1 +1,1 @@
-web: gunicorn sociallty.wsgi:application --bind 0.0.0.0:8000
+web: uv sync --no-group dev --group production && uv run gunicorn sociallty.wsgi:application --bind 0.0.0.0:8000

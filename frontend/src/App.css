@@ -95,6 +95,28 @@ form:not(.no-style) {
   color: rgb(133, 133, 133) !important;
 }
 
+
+@media (max-width: 1230px) {
+  form:not(.no-style) {
+    width: 50%;
+  }
+}
+
+
+@media (max-width: 920px) {
+  form:not(.no-style) {
+    width: 70%;
+  }
+}
+
+
+@media (max-width: 660px) {
+  form:not(.no-style) {
+    width: 90%;
+  }
+}
+
+
 /*
 instant change theme
 Light mode 

@@ -36,12 +36,14 @@ export default function Login() {
       });
 
       if (res && res.status == 200) {
+        start();
         localStorage.setItem(ACCESS, res.data.access);
         localStorage.setItem(REFRESH, res.data.refresh);
         localStorage.setItem("id", res.data.id.toString());
         localStorage.setItem("username", res.data.username);
+        localStorage.setItem("profile_pic", res.data.profile_picture);
+        console.table(res.data);
         dispatch(setHasToken(true));
-        start();
         navigate("/");
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,15 +1,17 @@
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from "@mui/material";
 import { ApiUrls, BackBgStateType, BottomSheetStateType } from "../utils/constants";
 import { removePost, setBottomSheetOpen } from "../utils/store";
 import { disablePageScroll, share } from "../utils/functions";
+import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLoadingBar } from "react-top-loading-bar";
-import { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/bottom-sheet.css";
 import api from "../utils/api";
 
 export default function ButtomSheet() {
   const { start } = useLoadingBar();
+  const [openDlg, setOpenDlg] = useState<boolean>(false);
   const buttom_opened = useSelector(
     (state: BottomSheetStateType) => state.bottomSheetState.open
   );
@@ -30,7 +32,11 @@ export default function ButtomSheet() {
     dispatch(setBottomSheetOpen({ open: false, last_post_id: -1 }));
   }, [dispatch, last_post_id]);
 
+
+  const confirmDelete = useCallback(() => setOpenDlg(true),[]);
+
   const handelDeleteButton = useCallback(async () => {
+    setOpenDlg(false);
     const res = await api.delete(ApiUrls.post, {
       data: { postID: last_post_id },
     });
@@ -39,6 +45,7 @@ export default function ButtomSheet() {
       dispatch(removePost(last_post_id));
       dispatch(setBottomSheetOpen({ open: false, last_post_id: -1 }));
     }
+    disablePageScroll(false);
   }, [dispatch, last_post_id]);
 
   const handelEdit = () => {
@@ -55,10 +62,20 @@ export default function ButtomSheet() {
 
   return (
     <>
+      <Dialog open={openDlg}>
+        <DialogTitle>Delete Post?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Are you sure you want to delete this post, you won't be able to restore it again</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={() => setOpenDlg(false)}>Cancel</Button>
+          <Button variant="outlined" color="error" onClick={handelDeleteButton}>Delete</Button>
+        </DialogActions>
+      </Dialog>
       <div id="back-bg" className={(buttom_opened || back_opened) ? "open-back-bg" : ""} onClick={closeBottomSheet}></div>
       <div id="bottom-sheet" style={{ bottom: buttom_opened ? 0 : "-100%" }}>
         <div>
-          <p id="sheet-title">Options</p>
+          <Typography id="sheet-title">Options</Typography>
           <hr />
           <div id="options">
             <div
@@ -72,7 +89,7 @@ export default function ButtomSheet() {
             </div>
             <div
               className="sheet-btn"
-              onClick={handelDeleteButton}
+              onClick={confirmDelete}
               style={{ color: "red" }}
             >
               Delete

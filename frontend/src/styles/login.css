@@ -26,23 +26,3 @@
     flex-direction: column;
     gap: .8rem;
 }
-
-@media (max-width: 1230px) {
-    form:not(.no-style) {
-        width: 50%;
-    }
-}
-
-
-@media (max-width: 920px) {
-    form:not(.no-style) {
-        width: 70%;
-    }
-}
-
-
-@media (max-width: 660px) {
-    form:not(.no-style) {
-        width: 90%;
-    }
-}

@@ -1,11 +1,11 @@
 import { FormEvent, memo, ReactNode, useCallback, useEffect, useState } from "react";
+import { Box, Button, MenuItem, Tooltip, Typography } from "@mui/material";
 import FloatingLabelInput from "../components/floating_input_label";
-import { API_URL, ApiUrls, Visibility } from "../utils/constants";
+import { MEDIA_URL, ApiUrls, Visibility } from "../utils/constants";
 import { Image, LazyAvatar } from "../components/media_skelatons";
 import { useNavigate, useParams } from "react-router-dom";
 import PostSkelaton from "../components/post_skelaton";
 import { useLoadingBar } from "react-top-loading-bar";
-import { Box, Button, MenuItem } from "@mui/material";
 import styles from "../styles/edit-post.module.css";
 import FilePicker from "../components/file_picker";
 import { PostProps } from "../components/post";
@@ -100,7 +100,7 @@ export default function EditPostPage() {
                   src={
                     postMedia.added
                       ? postMedia.content
-                      : `${API_URL}${postMedia.content}`
+                      : `${MEDIA_URL}${postMedia.content}`
                   }
                   preload="none"
                   className="content-post"
@@ -129,7 +129,7 @@ export default function EditPostPage() {
                   src={
                     postMedia.added
                       ? postMedia.content
-                      : `${API_URL}${postMedia.content}`
+                      : `${MEDIA_URL}${postMedia.content}`
                   }
                   alt="image"
                   className="content-post"
@@ -138,7 +138,9 @@ export default function EditPostPage() {
                   className={styles["X-btn"]}
                   onClick={() => setChecked((pre) => [...pre, postMedia.id])}
                 >
-                  <p title="Remove media">X</p>
+                  <Tooltip title="Remove media">
+                    <Typography>X</Typography>
+                  </Tooltip>
                 </div>
               </div>
             );
@@ -180,7 +182,7 @@ export default function EditPostPage() {
       {post === undefined ? (
         <PostSkelaton animationType="wave" />
       ) : post === null ? (
-        <h1>Post Not found!</h1>
+        <Typography component="h1">Post Not found!</Typography>
       ) : (
         <>
           <div className={styles["post-container"]}>
@@ -191,13 +193,13 @@ export default function EditPostPage() {
             >
               <div className="post-profile">
                 <LazyAvatar
-                  src={`${API_URL}${post.user?.profile_picture}`}
+                  src={`${MEDIA_URL}${post.user?.profile_picture}`}
                   alt="profile pic"
                   width='5rem'
                   height='5rem'
                   className="profile-pic"
                 />
-                <p>{post.user?.username || "user"}</p>
+                <Typography>{post.user?.username || "user"}</Typography>
                 <br />
               </div>
               <Box sx={{ width: "fit-content" }}>

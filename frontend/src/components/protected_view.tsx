@@ -1,7 +1,7 @@
 import { ACCESS, HasTokenStateType} from "../utils/constants";
+import { ReactNode, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { CircularProgress } from "@mui/material";
-import { ReactNode, useEffect } from "react";
 import { refresh_token } from "../utils/api";
 import { setHasToken } from "../utils/store";
 import { Navigate } from "react-router-dom";
@@ -15,11 +15,12 @@ export default function ProtectedView({ children }: { children: ReactNode }) {
     );
     const dispatch = useDispatch();
 
-    const auth = async () => {
+    const auth = useCallback(async () => {
         try {
             const token = localStorage.getItem(ACCESS);
             
             if (!token) {
+                localStorage.clear();
                 dispatch(setHasToken(false));
                 return;
             } 
@@ -28,6 +29,7 @@ export default function ProtectedView({ children }: { children: ReactNode }) {
             const exp = userAccessToken.exp;
             
             if (!exp) {
+                localStorage.clear();
                 dispatch(setHasToken(false));
                 return
             }
@@ -35,22 +37,27 @@ export default function ProtectedView({ children }: { children: ReactNode }) {
             if (exp < timeNow) {
                 try {
                     if (await refresh_token()) dispatch(setHasToken(true));
-                    else dispatch(setHasToken(false));
+                    else {
+                        localStorage.clear();
+                        dispatch(setHasToken(false))
+                    };
                 } catch {
+                    localStorage.clear();
                     dispatch(setHasToken(false));
                 }
             } else {
                 dispatch(setHasToken(true));
             }
         } catch {
+            localStorage.clear();
             dispatch(setHasToken(false));
         }
         
-    };
+    }, [dispatch]);
 
     useEffect(() => {
         auth();
-    })
+    }, [auth])
 
     if (isAuthed === null) {
         return <CircularProgress />

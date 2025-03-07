@@ -1,13 +1,17 @@
 import { Media, PostProps } from "../components/post";
 
+const DEBUG: boolean = true; 
 export const ACCESS: string = "access";
 export const REFRESH: string = "refresh";
 // export const API_URL: string = "http://127.0.0.1:8000";
-export const API_URL: string = import.meta.env.VITE_URL || "http://192.168.1.9:8000";
+// export const API_URL: string = import.meta.env.VITE_URL || "http://192.168.1.9:8000";
+export const API_URL: string = "https://minimum-lauretta-noormaser-0d773dac.koyeb.app/";
+export const MEDIA_URL: string = DEBUG ? "http://192.168.1.9:8000" : '';
 
 export interface TokenResponse {
   readonly id: number;
   readonly username: string;
+  readonly profile_picture: string;
   readonly access: string;
   readonly refresh: string;
 }
@@ -51,22 +55,22 @@ export enum Visibility {
 }
 
 export enum ApiUrls {
-  user_log_sign = "/user/",
-  api = "/api/",
+  user_log_sign = "user/",
+  api = "api/",
 
   user_refresh_token = `${user_log_sign}refresh/`,
-  see_user_friends = "/see-user-friends/?list=",
-  see_friends_requests = '/see-friends-request/',
+  see_user_friends = "see-user-friends/?list=",
+  see_friends_requests = 'see-friends-request/',
   edit_user = `${user_log_sign}edit-user/`,
   forget_password = `${user_log_sign}forget-password/`,
   settings = `${user_log_sign}settings/`,
-  posts_today = "/today-posts/?page=",
+  posts_today = "today-posts/?page=",
   post = `${api}post/`,
   post_edit = "post-edit/",
   add_post_like = `${api}add-post-like/`,
   post_comment = `${api}post-comment/`,
   add_comment_like = `${api}add-comment-like/`,
-  social_users = "/social-users/",
+  social_users = "social-users/",
 }
 
 export interface PostFormProps {
