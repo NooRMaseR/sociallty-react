@@ -95,6 +95,11 @@ export default function EditUserPage() {
     <Box sx={{display: "flex", placeContent: 'center'}}>
       <Helmet>
         <title>Edit {localStorage.getItem("username") || "User"}</title>
+        <meta property="og:image" content="/favicon.ico" />
+        <meta property="og:title" content="Edit Post" />
+        <meta property="og:description" content="Edit Your Post From Here" />
+        <meta property="og:url" content={location.href} />
+        <meta property="og:type" content="edit" />
       </Helmet>
       <form onSubmit={handelOnSubmit}>
         <div id="main-profile-container">

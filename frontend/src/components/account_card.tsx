@@ -3,10 +3,12 @@ import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { LazyAvatar } from "./media_skelatons";
 import { decrementCount } from "../utils/store";
+import CheckIcon from '@mui/icons-material/Check';
+import ClearIcon from '@mui/icons-material/Clear';
 import { memo, useCallback, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import AccountCardSkelaton from "./account_card_skelaton";
-import { Button, Tooltip, Typography } from "@mui/material";
+import { Button, IconButton, Tooltip, Typography } from "@mui/material";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import { ApiUrls, FullUser, MEDIA_URL } from "../utils/constants";
@@ -84,12 +86,14 @@ export default function AccountCard({
         return (
           <div className="d-flex gap-2">
             <Tooltip title="Accept the request">
-              <Button variant="contained" loading={isLoading} loadingPosition="start" onClick={acceptRequest}>Accept</Button>
+              <IconButton color="success" loading={isLoading} onClick={acceptRequest}>
+                <CheckIcon />
+              </IconButton>
             </Tooltip>
             <Tooltip title="Delete the request">
-              <Button variant="contained" sx={{backgroundColor: '#292929', color: 'var(--text-color)'}} loading={isLoading} loadingPosition="start" onClick={deleteRequestCom}>
-                Delete
-              </Button>
+              <IconButton color="error" loading={isLoading} onClick={deleteRequestCom}>
+                <ClearIcon />
+              </IconButton>
             </Tooltip>
           </div>
         );

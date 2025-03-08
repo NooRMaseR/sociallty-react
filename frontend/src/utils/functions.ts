@@ -95,7 +95,7 @@ export async function deleteRequest(friendID: number): Promise<FriendRequest> {
 }
 
 export function disablePageScroll(disable: boolean = true) {
-  document.body.style.overflow = disable ? "hidden" : 'initial';
+  document.body.style.overflow = disable === true ? "hidden" : 'initial';
 };
 
 export function formatNumbers(value: number): string {

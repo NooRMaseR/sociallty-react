@@ -1,5 +1,5 @@
 import React, { memo, Suspense, useCallback, useEffect, useState } from "react";
-import { ApiUrls, PostsStateType } from "../utils/constants";
+import { ApiUrls, MEDIA_URL, PostsStateType } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import PostSkelaton from "../components/post_skelaton";
 import { PostProps } from "../components/post";
@@ -41,7 +41,7 @@ export default function SharedPostPage() {
 
   const Posts = memo(() => {
     if (isLoaded) return post.map((po) =>
-      <Suspense fallback={<PostSkelaton />}>
+      <Suspense key={"sd"} fallback={<PostSkelaton />}>
         <LazyPost post={po} key={po.id} />
       </Suspense>
     );
@@ -57,6 +57,11 @@ export default function SharedPostPage() {
           name="description"
           content="Check Out This Post From This Link, Check it out Now"
         />
+        <meta property="og:image" content={post[0]?.media[0]?.image ?? `${MEDIA_URL}${post[0]?.user?.profile_picture}`} />
+        <meta property="og:title" content={`${post[0]?.user?.username}'s Post`} />
+        <meta property="og:description" content={post[0]?.description} />
+        <meta property="og:url" content={location.href} />
+        <meta property="og:type" content="post" />
       </Helmet>
       <LazyRestPostMedia />
       <LazyCommentsSlider />

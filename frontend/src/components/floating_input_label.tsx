@@ -13,7 +13,9 @@ interface FloatingLabelInputProps {
   inputProps?: object;
   slotProps?: object;
   children?: react.ReactNode[];
-  sx?: SxProps
+  sx?: SxProps;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
 }
 
 export default function FloatingLabelInput({
@@ -29,12 +31,14 @@ export default function FloatingLabelInput({
   slotProps,
   children,
   sx,
+  ...props
 }: FloatingLabelInputProps) {
   return (
     <Box className="d-flex align-items-center gap-2">
       {suffexIcon}
       <TextField
         fullWidth
+        placeholder=""
         name={name}
         type={type}
         label={label}
@@ -44,7 +48,8 @@ export default function FloatingLabelInput({
         onChange={(e) => updater && updater(e.target.value)}
         slotProps={slotProps}
         required={required}
-        sx={{...sx}}
+        sx={{ ...sx }}
+        {...props}
       >
         {children}
       </TextField>
