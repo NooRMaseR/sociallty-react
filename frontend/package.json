@@ -30,7 +30,8 @@
     "react-intersection-observer": "^9.15.1",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.1.1",
-    "react-top-loading-bar": "^3.0.2"
+    "react-top-loading-bar": "^3.0.2",
+    "react-verification-input": "^4.2.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

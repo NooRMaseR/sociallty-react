@@ -180,6 +180,11 @@ export default function EditPostPage() {
     <>
       <Helmet>
         <title>Edit Post</title>
+        <meta property="og:image" content="/favicon.ico" />
+        <meta property="og:title" content="Edit Post" />
+        <meta property="og:description" content="Edit Your Post" />
+        <meta property="og:url" content={location.href} />
+        <meta property="og:type" content="website" />
       </Helmet>
       {post === undefined ? (
         <PostSkelaton animationType="wave" />

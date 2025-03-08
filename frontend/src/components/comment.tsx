@@ -1,10 +1,10 @@
 import { ApiUrls, CommentProps, MEDIA_URL, PostsStateType } from "../utils/constants";
+import { Card, ClickAwayListener, Tooltip, Typography } from "@mui/material";
 import { SetStateAction, useCallback, useState } from "react";
-import { Card, Tooltip, Typography } from "@mui/material";
+import { textDir, formatNumbers } from "../utils/functions";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { UpdatePostCommentsCount } from "../utils/store";
 import { useDispatch, useSelector } from "react-redux";
-import { formatNumbers } from "../utils/functions";
 import { LazyAvatar } from "./media_skelatons";
 import { Link } from "react-router-dom";
 import api from "../utils/api";
@@ -28,9 +28,12 @@ export default function Comment({
   );
   const dispatch = useDispatch();
 
-  const handelOpenOptions = useCallback(() => {
-    setOptionsOpened((prev) => !prev);
-    setTimeout(() => setOptionsOpened(false), 5000);
+  const openOptions = useCallback(() => {
+    setOptionsOpened(true);
+  }, []);
+  
+  const closeOptions = useCallback(() => {
+    setOptionsOpened(false);
   }, []);
 
   const deleteComment = useCallback(async () => {
@@ -82,7 +85,7 @@ export default function Comment({
 
   return (
     <>
-      <Card className="user-comment">
+      <Card className="user-comment" sx={{backgroundColor: "#161616"}}>
         <div
           className={`comment-container-options ${
             optionsOpened ? "options-opened" : ""
@@ -100,12 +103,14 @@ export default function Comment({
           )}
         </div>
         <div className="comment-options-container">
-          <Tooltip title="Options">
-            <MoreHorizIcon
-              onClick={handelOpenOptions}
-              sx={{ color: "var(--text-color)", cursor: "pointer" }}
-            />
-          </Tooltip>
+          <ClickAwayListener onClickAway={closeOptions}>
+            <Tooltip title="Options">
+              <MoreHorizIcon
+                onClick={openOptions}
+                sx={{ color: "var(--text-color)", cursor: "pointer" }}
+              />
+            </Tooltip>
+          </ClickAwayListener>
         </div>
         <div className="d-flex gap-2">
           <LazyAvatar src={`${MEDIA_URL}${comment.user.profile_picture}`} />
@@ -119,7 +124,7 @@ export default function Comment({
             {comment.user.username}
           </Link>
         </div>
-        <Typography className="comment-text">{comment.content}</Typography>
+        <Typography className="comment-text" dir={textDir(comment.content)} sx={{margin: "1rem .5rem"}}>{comment.content}</Typography>
         <div style={{ width: "100%", display: "flex", justifyContent: "end" }}>
           <Typography className="comment-time">
             {new Date(comment.created_at).toLocaleString()}

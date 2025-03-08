@@ -89,9 +89,10 @@ export default function MakePostPage() {
         </Box>
         <FloatingLabelInput
           label="Description"
-          inputProps={{ multiline: true, ...register("desc") }}
+          inputProps={{ multiline: true }}
+          {...register("desc")}
         />
-        <FloatingLabelInput label="Visibility" variant="filled" inputProps={{defaultValue: Visibility.public, select: true , ...register("visibility")}}>
+        <FloatingLabelInput label="Visibility" variant="filled" inputProps={{defaultValue: Visibility.public, select: true }} {...register("visibility")}>
           <MenuItem value={Visibility.public}>Public</MenuItem>
           <MenuItem value={Visibility.private}>Private</MenuItem>
           <MenuItem value={Visibility.friends_only}>Friends only</MenuItem>

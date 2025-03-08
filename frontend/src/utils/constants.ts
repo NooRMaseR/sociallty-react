@@ -3,10 +3,9 @@ import { Media, PostProps } from "../components/post";
 const DEBUG: boolean = false;
 export const ACCESS: string = "access";
 export const REFRESH: string = "refresh";
-// export const API_URL: string = "http://127.0.0.1:8000";
-// export const API_URL: string = import.meta.env.VITE_URL || "http://192.168.1.9:8000";
-export const API_URL: string = "https://minimum-lauretta-noormaser-0d773dac.koyeb.app/";
-export const MEDIA_URL: string = DEBUG ? "http://192.168.1.9:8000" : '';
+export const API_URL: string = DEBUG ? "http://192.168.1.7:8000" : "https://minimum-lauretta-noormaser-0d773dac.koyeb.app/";
+export const MEDIA_URL: string = DEBUG ? "http://192.168.1.7:8000" : '';
+export const AR: string[] = ['ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'];
 
 export interface TokenResponse {
   readonly id: number;
@@ -20,6 +19,7 @@ export interface User {
   readonly id: number;
   readonly username: string;
   readonly profile_picture: string;
+  readonly bio?: string;
 }
 
 export interface UserSettings {
@@ -45,6 +45,7 @@ export interface UserProfileResponse {
   readonly user: FullUser;
   readonly posts: PostProps[];
   readonly is_friend: boolean;
+  readonly has_request: boolean;
   readonly has_next: boolean;
 }
 

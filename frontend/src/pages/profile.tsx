@@ -19,7 +19,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { Backdrop, Box, Button, ButtonGroup, Typography } from "@mui/material";
+import { Backdrop, Box, Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from "@mui/material";
 import Profileskeleton from "../components/profile_page_skelaton";
 import { Link, useSearchParams } from "react-router-dom";
 import PostSkelaton from "../components/post_skelaton";
@@ -64,7 +64,7 @@ const Posts = memo(({ posts }: { posts: PostProps[] }) => {
 
 const AccountPosts = memo(({user, posts, is_friend, isAuthor, loaded, hasNext, onPageChange}: AccountPostsProps) => {
   if (user.settings?.is_private_account && !is_friend && !isAuthor)
-    return <Typography variant="h1">Private Account</Typography>;
+    return <h1>Private Account</h1>;
   else
     return (
       <Box id="posts">
@@ -116,9 +116,11 @@ export default function ProfilePage() {
   const [user, setUser] = useState<FullUser>({} as FullUser);
   const [error, setError] = useState<string | null>(null);
   const [is_friend, setIsFriend] = useState<boolean>(false);
+  const [has_request, setHasRequest] = useState<boolean>(false);
   const [posts, setPosts] = useState<PostProps[]>([]);
   const [loaded, setLoaded] = useState<boolean>(false);
   const [openQr, setOpenQr] = useState<boolean>(false);
+  const [openDeleteUserConfirm, setOpenDeleteUserConfirm] = useState<boolean>(false);
   const [hasNext, setHasNext] = useState<boolean>(false);
   const [isFIrst, setIsFirst] = useState<boolean>(true);
   const [requestSent, setRequestSent] = useState<boolean>(false);
@@ -133,15 +135,19 @@ export default function ProfilePage() {
       await removeFriend(user.id);
       setRequestSent(false);
       setIsFriend(false);
-    } else if (requestSent) {
-      await deleteRequest(user.id ?? +(localStorage.getItem("id") ?? 0));
+    } else if (requestSent || has_request) {
+      await deleteRequest(user.id);
       setRequestSent(false);
       setIsFriend(false);
+      setHasRequest(false);
     } else {
-      await addFriend(user.id);
-      setRequestSent(true);
+      const add_friend = await addFriend(user.id);
+      if (add_friend.success) setRequestSent(true);
     }
-  }, []);
+  }, [user.id, has_request, requestSent]);
+
+  const openConfirmRemoveFriend = useCallback(() => setOpenDeleteUserConfirm(true), []);
+  const closeConfirmRemoveFriend = useCallback(() => setOpenDeleteUserConfirm(false), []);
 
   const fetchUser = useCallback(async () => {
     document.documentElement.scrollTop = 0;
@@ -156,6 +162,7 @@ export default function ProfilePage() {
       if (isFIrst) {
         setUser(res.data.user);
         setIsFriend(res.data.is_friend);
+        setHasRequest(res.data.has_request);
         setIsFirst(false);
         setPosts(res.data.posts);
         complete();
@@ -167,7 +174,7 @@ export default function ProfilePage() {
     } catch {
       setError("User Not Found, Please Try To Refresh the page or contact us");
     }
-  }, [pageNumber, params, complete]);
+  }, [pageNumber, params]);
 
   const onPageChange = useCallback(() => setPageNumber((prev) => prev + 1), []);
 
@@ -187,11 +194,28 @@ export default function ProfilePage() {
           name="description"
           content="User Profile Page, Get your Social informations from here"
         />
+        <meta property="og:image" content={`${MEDIA_URL}${user.profile_picture}`} />
+        <meta property="og:title" content={`${user.username}'s Profile`} />
+        <meta property="og:description" content={user.bio || "Check Me Out"} />
+        <meta property="og:url" content={`${location.origin}/social-user-profile?username=${params.get("username") || user.username}&id=${params.get("id") || user.id}`} />
+        <meta property="og:type" content="profile" />
       </Helmet>
       {error ? (
         <Typography variant="h1" className="text-white">{error}</Typography>
       ) : (
-        <main>
+          <main>
+            <Dialog open={openDeleteUserConfirm}>
+              <DialogTitle>Remove {user.username}?</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Are you Sure you want to Unfriend {user.username}?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button variant="contained" onClick={closeConfirmRemoveFriend}>No</Button>
+                <Button variant="outlined" color="error" onClick={toggleFriend}>Remove</Button>
+              </DialogActions>
+            </Dialog>
           {!loaded ? (
             <Profileskeleton />
           ) : (
@@ -244,19 +268,19 @@ export default function ProfilePage() {
                       className="d-flex gap-3"
                       sx={{ flexDirection: "row-reverse !important" }}
                     >
-                      <Button onClick={toggleFriend}>Remove Friend</Button>
+                      <Button onClick={openConfirmRemoveFriend}>Remove Friend</Button>
                       <Button onClick={() => setOpenQr(true)}>
                         <QrCodeIcon />
                         Qr Code
                       </Button>
                     </ButtonGroup>
-                  ) : requestSent ? (
+                  ) : requestSent || has_request ? (
                     <Button
-                      variant="contained"
-                      sx={{ backgroundColor: "#292929" }}
+                      variant="outlined"
+                      color="warning"
                       onClick={toggleFriend}
                     >
-                      Cancel
+                      Cancel Request
                     </Button>
                   ) : (
                     <Button variant="contained" onClick={toggleFriend}>

@@ -16,7 +16,7 @@ createRoot(document.getElementById("root")!).render(
   // <StrictMode>
   <ThemeProvider theme={theme}>
     <Provider store={store}>
-      <LoadingBarContainer>
+      <LoadingBarContainer props={{color: 'blue', height: 2}}>
         <App />
       </LoadingBarContainer>
     </Provider>

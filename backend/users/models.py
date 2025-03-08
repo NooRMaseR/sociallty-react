@@ -1,5 +1,6 @@
 import os
 from typing import Any
+from django.conf import settings
 from django.db import models
 from django.dispatch import receiver
 from django.db.models import Q, signals
@@ -72,7 +73,7 @@ class SocialUser(AbstractBaseUser, PermissionsMixin):
     bio = models.TextField(max_length=150, null=True, blank=True)
     profile_picture = models.ImageField(
         upload_to="profile_pictures/",
-        default="profile_pictures/dolru8slhdzk3boxztrv"
+        default="profile_pictures/dolru8slhdzk3boxztrv" if not settings.DEBUG else "profile_pictures/unknown.png"
     )
     phone = PhoneNumberField(unique=True)
     is_active = models.BooleanField(default=True)

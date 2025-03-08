@@ -1,4 +1,5 @@
-import { Box, SxProps, TextField, TextFieldVariants } from "@mui/material";
+import { Box, SxProps, TextFieldVariants } from "@mui/material";
+import LangTextField from "./lang_textfield";
 import react from "react";
 
 interface FloatingLabelInputProps {
@@ -13,7 +14,10 @@ interface FloatingLabelInputProps {
   inputProps?: object;
   slotProps?: object;
   children?: react.ReactNode[];
-  sx?: SxProps
+  disableDetectTextDir?: boolean;
+  sx?: SxProps;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
 }
 
 export default function FloatingLabelInput({
@@ -28,13 +32,16 @@ export default function FloatingLabelInput({
   inputProps,
   slotProps,
   children,
+  disableDetectTextDir = false,
   sx,
+  ...props
 }: FloatingLabelInputProps) {
   return (
     <Box className="d-flex align-items-center gap-2">
       {suffexIcon}
-      <TextField
+      <LangTextField
         fullWidth
+        placeholder=""
         name={name}
         type={type}
         label={label}
@@ -44,10 +51,12 @@ export default function FloatingLabelInput({
         onChange={(e) => updater && updater(e.target.value)}
         slotProps={slotProps}
         required={required}
-        sx={{...sx}}
+        sx={{ ...sx }}
+        disableDetectTextDir={disableDetectTextDir}
+        {...props}
       >
         {children}
-      </TextField>
+      </LangTextField>
     </Box>
   );
 }
