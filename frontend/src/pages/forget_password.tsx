@@ -4,6 +4,8 @@ import FloatingLabelInput from "../components/floating_input_label";
 import { memo, useCallback, useEffect, useState } from "react";
 import { ApiUrls, TokenResponse } from "../utils/constants";
 import { LazyAvatar } from "../components/media_skelatons";
+import styles from "../styles/forget_password.module.css";
+import VerificationInput from "react-verification-input";
 import { useLoadingBar } from "react-top-loading-bar";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
@@ -24,9 +26,9 @@ export default function ForgetPasswordPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(0);
-  const { register, handleSubmit } = useForm<ChangePasswordStepsProps>();
-  const navigate = useNavigate();
+  const { register, handleSubmit, setValue } = useForm<ChangePasswordStepsProps>();
   const { start, complete } = useLoadingBar();
+  const navigate = useNavigate();
 
   const handelOnEmailSubmit = useCallback(async (data: ChangePasswordStepsProps) => {
     setLoading(true);
@@ -144,10 +146,11 @@ export default function ForgetPasswordPage() {
               suffexIcon={<EmailIcon sx={{ color: "var(--text-color)" }} />}
               autoComplete="email"
               inputProps={{
-                ...register("email"),
                 error: !!errors.email,
                 helperText: errors.email,
               }}
+              {...register("email")}
+              disableDetectTextDir
               required
             />
             <Button
@@ -172,34 +175,27 @@ export default function ForgetPasswordPage() {
               <ArrowBackRoundedIcon />
             </Button>
             <Box id="header">
-              <Typography component="h1" id="pic-label">Confirm Email</Typography>
+              <h1 id="pic-label">Confirm Email</h1>
               <LazyAvatar
                 src="/favicon.ico"
                 width="10rem"
                 height="10rem"
               />
             </Box>
-            <FloatingLabelInput
-              type="number"
-              label="Code"
-              suffexIcon={<EmailIcon sx={{ color: "var(--text-color)" }} />}
-              slotProps={{ htmlInput: { inputMode: "numeric", maxLength: 6 } }}
-              inputProps={{
-                ...register("code"),
-                error: !!errors.code,
-                helperText: errors.code,
-              }}
-              required
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              loading={loading}
-              loadingPosition="start"
-              sx={{ width: "100%", marginTop: "1rem" }}
-            >
-              {loading ? "Please wait...." : "Verify Code"}
-            </Button>
+            <Box sx={{display: 'flex', placeContent: 'center'}}>
+              <VerificationInput 
+                validChars="0-9" 
+                placeholder="" 
+                inputProps={{ inputMode: "numeric", autoComplete: "one-time-code" }}
+                onComplete={(code) => {
+                  setValue('code', +code);
+                  handleSubmit(handelOnCodeSubmit)();
+                }}
+                classNames={{
+                  character: styles.character
+                }}
+              />
+            </Box>
           </form>
         );
 
@@ -220,10 +216,10 @@ export default function ForgetPasswordPage() {
               suffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
               slotProps={{ htmlInput: { minLength: 8 } }}
               inputProps={{
-                ...register("password"),
                 error: !!errors.passwordError,
                 helperText: errors.passwordError,
               }}
+              {...register("password")}
               required
             />
             <FloatingLabelInput
@@ -232,10 +228,10 @@ export default function ForgetPasswordPage() {
               suffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
               slotProps={{ htmlInput: { minLength: 8 } }}
               inputProps={{
-                ...register("confirm_password"),
                 error: !!errors.passwordError,
                 helperText: errors.passwordError,
               }}
+              {...register("confirm_password")}
               required
             />
             <Button

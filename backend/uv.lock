@@ -57,7 +57,7 @@ requires-dist = [
     { name = "djangorestframework-simplejwt", specifier = ">=5.4.0" },
     { name = "gtts", specifier = "==2.5.3" },
     { name = "moviepy", specifier = ">=1.0.3" },
-    { name = "phonenumbers", specifier = "==8.13.47" },
+    { name = "phonenumbers", specifier = "==9.0.0" },
     { name = "pillow", specifier = "==11.0.0" },
     { name = "python-dotenv", specifier = "==1.0.1" },
     { name = "whitenoise", specifier = "==6.7.0" },
@@ -410,11 +410,11 @@ wheels = [
 
 [[package]]
 name = "phonenumbers"
-version = "8.13.47"
+version = "9.0.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/ae/0c/8f315d5e6ddea2e45ae13ada6936df6240858929881daf20cb3133fdb729/phonenumbers-8.13.47.tar.gz", hash = "sha256:53c5e7c6d431cafe4efdd44956078404ae9bc8b0eacc47be3105d3ccc88aaffa", size = 2297081 }
+sdist = { url = "https://files.pythonhosted.org/packages/88/96/58ab3aa4f8695c85f5dce60c15bb3b113856f420d4f0575f6b6e92c1acb5/phonenumbers-9.0.0.tar.gz", hash = "sha256:094a6f728e3c2b1906df4494a480743a3c797320f721f2b53f1400fd4d8ed5f5", size = 2296775 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b6/0b/5cde445764ac72460748107e999b026b7245e3fcc5fd5551cc5aff45e469/phonenumbers-8.13.47-py2.py3-none-any.whl", hash = "sha256:5d3c0142ef7055ca5551884352e3b6b93bfe002a0bc95b8eaba39b0e2184541b", size = 2582530 },
+    { url = "https://files.pythonhosted.org/packages/62/82/943ce12a9db8932be3a1baff7cbc93524262942f2c41678242f410c8f420/phonenumbers-9.0.0-py2.py3-none-any.whl", hash = "sha256:f566eddf6219d9af9b4aad454ba411a1df565d13b875a490fd33d1d202c1148d", size = 2582416 },
 ]
 
 [[package]]

@@ -1,7 +1,7 @@
 import React from "react";
 import api from "../utils/api";
 import Comment from "./comment";
-import "../styles/comments-slider.css"
+import "../styles/comments-slider.css";
 import SendIcon from "@mui/icons-material/Send";
 import CommentSkeleton from "./comment_skeleton";
 import CloseIcon from "@mui/icons-material/Close";
@@ -27,6 +27,37 @@ const Transition = React.forwardRef(
       easing={{ enter: easing.easeInOut, exit: easing.easeInOut }}
     />
   )
+);
+
+const CommentSkeletons = React.memo(() =>
+  Array.from({ length: 5 }).map((_, i) => <CommentSkeleton key={i} />)
+);
+
+const Comments = React.memo(
+  ({
+    loaded,
+    comments,
+    postID,
+    commentsUpdater,
+  }: {
+    loaded: boolean;
+    comments: CommentProps[];
+    postID: number;
+    commentsUpdater: (comments: React.SetStateAction<CommentProps[]>) => void;
+  }) => {
+    if (loaded) {
+      if (comments.length > 0)
+        return comments.map((commentObj) => (
+          <Comment
+            comment={commentObj}
+            key={commentObj.id}
+            postID={postID}
+            setCommentsUpdater={commentsUpdater}
+          />
+        ));
+      else return <h1 className="text-center">No Comments</h1>;
+    } else return <CommentSkeletons />;
+  }
 );
 
 export default function CommentsSlider() {
@@ -80,7 +111,7 @@ export default function CommentsSlider() {
         })
       );
     }
-  }, [comment, comments.length, dispatch, last_post_id]);
+  }, [comment, comments.length, last_post_id]);
 
   const closeSlide = React.useCallback(
     () => dispatch(setSliderOpen({ last_post_id: -1, value: false })),
@@ -90,28 +121,6 @@ export default function CommentsSlider() {
     (value: string) => setComment(value),
     []
   );
-  const Comments = React.memo(() => {
-    if (loaded) {
-      if (comments.length > 0) return comments.map((commentObj) => (
-          <Comment
-            comment={commentObj}
-            key={commentObj.id}
-            postID={last_post_id}
-            setCommentsUpdater={setComments}
-        />
-      ))
-      else return <h1>No Comments</h1>
-    }
-    else return <CommentSkeletons />
-  });
-
-  const CommentSkeletons = React.memo(() => {
-    const nodes: React.ReactNode[] = [];
-    for (let i = 0; i < 5; i++) {
-      nodes.push(<CommentSkeleton key={i} />);
-    };
-    return nodes;
-  })
 
   return (
     <Dialog
@@ -129,7 +138,12 @@ export default function CommentsSlider() {
         </Tooltip>
       </Box>
       <div id="comments">
-        <Comments />
+        <Comments
+          postID={last_post_id}
+          loaded={loaded}
+          comments={comments}
+          commentsUpdater={setComments}
+        />
       </div>
       <div id="div-send">
         <FloatingLabelInput

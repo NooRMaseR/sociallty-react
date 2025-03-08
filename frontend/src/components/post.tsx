@@ -11,10 +11,17 @@ import {
   User,
   Visibility,
 } from "../utils/constants";
-import { Box, ImageList, ImageListItem, SvgIcon, Tooltip, Typography } from "@mui/material";
+import {
+  Box,
+  ImageList,
+  ImageListItem,
+  SvgIcon,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
+import { textDir, formatNumbers, share } from "../utils/functions";
 import { memo, ReactNode, useCallback, useState } from "react";
-import { formatNumbers, share } from "../utils/functions";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { useInView } from "react-intersection-observer";
 import { useDispatch, useSelector } from "react-redux";
@@ -53,16 +60,18 @@ interface MediaContentProps {
   dispatch: (action: any) => void;
 }
 
-
-const MediaContent = memo(({post, photoID, onImageClick, dispatch}: MediaContentProps) => {
-  const posts_media: ReactNode[] = [];
-  for (let i = 0; i < post.media.length; i++) {
-    const current_media = post.media[i];
-    if (i < 4) {
-      switch (current_media.content_type) {
-        case current_media.video:
+const MediaContent = memo(
+  ({ post, photoID, onImageClick, dispatch }: MediaContentProps) => {
+    const posts_media: ReactNode[] = [];
+    for (let i = 0; i < post.media.length; i++) {
+      const current_media = post.media[i];
+      if (i < 4) {
+        if (current_media.video) {
           posts_media.push(
-            <ImageListItem key={current_media.id} sx={{ display: "flex", placeContent: 'center' }}>
+            <ImageListItem
+              key={current_media.id}
+              sx={{ display: "flex", placeContent: "center" }}
+            >
               <video
                 src={`${MEDIA_URL}${current_media.video}`}
                 preload="none"
@@ -74,50 +83,62 @@ const MediaContent = memo(({post, photoID, onImageClick, dispatch}: MediaContent
               ></video>
             </ImageListItem>
           );
-          break;
-        case "image": {
+        } else if (current_media.image) {
           const data = current_media.image?.split("/");
-          const imageName = data ? data[data.length - 1] : '';
+          const imageName = data ? data[data.length - 1] : "";
           const imgAlt = imageName.split(".")[0];
           posts_media.push(
-            <ImageListItem key={current_media.id} sx={{ display: "flex", placeContent: 'center' }}>
+            <ImageListItem
+              key={current_media.id}
+              sx={{ display: "flex", placeContent: "center" }}
+            >
               <Image
                 src={`${MEDIA_URL}${current_media.image}`}
                 alt={imgAlt}
                 onClick={() => onImageClick(current_media.id)}
-                className={`content-post ${current_media.id == photoID ? "open" : ''}`}
+                className={`content-post ${
+                  current_media.id == photoID ? "open" : ""
+                }`}
                 key={`${current_media.id}i`}
               />
             </ImageListItem>
           );
-          break;
         }
-      }
-    } else {
-      posts_media.push(
-        <ImageListItem key={current_media.id} sx={{ display: "flex", placeContent: 'center' }}>
-          <div
-            className="post-hider"
-            key={"final"}
-            onClick={() =>
-              dispatch(setPostContentSlider({ value: true, media: post.media }))
-            }
+      } else {
+        posts_media.push(
+          <ImageListItem
+            key={current_media.id}
+            sx={{ display: "flex", placeContent: "center" }}
+          >
+            <div
+              className="post-hider"
+              key={"final"}
+              onClick={() =>
+                dispatch(
+                  setPostContentSlider({ value: true, media: post.media })
+                )
+              }
             >
-            <p className="posts-counter">+{post.media.length - 4}</p>
-          </div >
-        </ImageListItem>
-      );
-      break;
+              <p className="posts-counter">+{post.media.length - 4}</p>
+            </div>
+          </ImageListItem>
+        );
+        break;
+      }
     }
+
+    return (
+      <ImageList
+        variant="masonry"
+        cols={posts_media.length > 2 ? 2 : posts_media.length}
+        gap={8}
+        sx={{ width: "100%" }}
+      >
+        {posts_media}
+      </ImageList>
+    );
   }
-
-  return (
-    <ImageList variant="masonry" cols={posts_media.length > 2 ? 2 : posts_media.length} gap={8} sx={{ width: '100%' }}>
-      {posts_media}
-    </ImageList>
-  )
-});
-
+);
 
 export default function Post({ post }: { post: PostProps }) {
   const comments_count = useSelector(
@@ -142,15 +163,15 @@ export default function Post({ post }: { post: PostProps }) {
     if (res.status === 201) {
       setLiked(true);
       setTimeout(() => setLiked(null), 1000);
-      setLikesCount(likes_count + 1);
+      setLikesCount(pre => pre + 1);
     } else if (res.status === 200) {
-      setLikesCount(likes_count - 1);
+      setLikesCount(pre => pre - 1);
       setLiked(false);
       setTimeout(() => setLiked(null), 1000);
     } else {
       console.error("somthing wnet wrong");
     }
-  }, [likes_count, post.id]);
+  }, [post.id]);
 
   const handelOpenContent = (id: number) => {
     setPhotoID((preID) => (preID != id ? id : -1));
@@ -165,7 +186,9 @@ export default function Post({ post }: { post: PostProps }) {
           <div
             className="options"
             onClick={() =>
-              dispatch(setBottomSheetOpen({ last_post_id: post.id, open: true }))
+              dispatch(
+                setBottomSheetOpen({ last_post_id: post.id, open: true })
+              )
             }
           >
             <MoreHorizIcon sx={{ width: "1.9rem", height: "1.9rem" }} />
@@ -183,7 +206,6 @@ export default function Post({ post }: { post: PostProps }) {
       );
     }
   });
-
 
   return (
     <Box className="post-container" ref={ref}>
@@ -208,18 +230,25 @@ export default function Post({ post }: { post: PostProps }) {
               >
                 {post.user.username}
               </Link>
-              <Typography style={{ color: "#8f8f8f" }}>{post.visibility}</Typography>
+              <Typography style={{ color: "#8f8f8f" }}>
+                {post.visibility}
+              </Typography>
             </div>
           </div>
 
           {/* post description */}
           <div className="desc">
-            <Typography>{post.description}</Typography>
+            <Typography dir={textDir(post.description)}>{post.description}</Typography>
           </div>
 
           {/* the post media */}
           <div className="post-content">
-            <MediaContent post={post} photoID={photoID} onImageClick={handelOpenContent} dispatch={dispatch}/>
+            <MediaContent
+              post={post}
+              photoID={photoID}
+              onImageClick={handelOpenContent}
+              dispatch={dispatch}
+            />
           </div>
 
           {/* bottons for the post */}

@@ -8,7 +8,7 @@ def create_defult_settings(apps, schema) -> None:
     
     for user in SocialUser.objects.all().iterator(30):
         if not hasattr(user, 'settings'):
-            print(f"creating settings for {user}")
+            print(f"- creating settings for {user}")
             SocialUserSettings.objects.create(user=user)
 
 class Migration(migrations.Migration):

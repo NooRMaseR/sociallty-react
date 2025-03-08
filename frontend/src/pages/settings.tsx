@@ -10,8 +10,7 @@ import {
   DialogTitle,
   FormControlLabel,
   Switch,
-  TextField,
-  Tooltip,
+  TextField
 } from "@mui/material";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
@@ -20,6 +19,7 @@ import { useLoadingBar } from "react-top-loading-bar";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import api from "../utils/api";
+import InfoButton from "../components/info_button";
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<UserSettings>({
@@ -206,9 +206,11 @@ export default function SettingsPage() {
               />
             }
           />
-          <Tooltip title="If enabled, no one can view your posts except your friends">
+          <InfoButton title="If enabled, no one can view your posts except your friends">
             <InfoOutlinedIcon sx={{ color: "#fff" }} />
-          </Tooltip>
+          </InfoButton>
+          {/* <Tooltip title="If enabled, no one can view your posts except your friends">
+          </Tooltip> */}
         </Box>
         <Box
           sx={{

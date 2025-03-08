@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ApiUrls } from "./constants";
+import { ApiUrls, AR } from "./constants";
 import api from "./api";
 
 interface ShareOptions {
@@ -95,7 +95,7 @@ export async function deleteRequest(friendID: number): Promise<FriendRequest> {
 }
 
 export function disablePageScroll(disable: boolean = true) {
-  document.body.style.overflow = disable ? "hidden" : 'initial';
+  document.body.style.overflow = disable === true ? "hidden" : 'initial';
 };
 
 export function formatNumbers(value: number): string {
@@ -112,3 +112,8 @@ export function formatNumbers(value: number): string {
     return `${Math.floor(_value)}B`;
   }
 }
+
+export function textDir(text: string): "rtl" | "ltr" {
+  if (text.length > 0 && AR.includes(text[0].toLowerCase())) return "rtl";
+  else return "ltr";
+};

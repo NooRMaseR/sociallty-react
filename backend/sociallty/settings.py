@@ -28,9 +28,9 @@ load_dotenv()
 SECRET_KEY = os.getenv("SOCIALLTY_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*' if DEBUG else "minimum-lauretta-noormaser-0d773dac.koyeb.app"]
 AUTH_USER_MODEL = "users.SocialUser"
 
 # Application definition
@@ -55,11 +55,11 @@ INSTALLED_APPS = (
     "whitenoise",
     "phonenumber_field",
     'django_extensions',  
+    'corsheaders',
       
     #! remove in production
     # "debug_toolbar",
     # 'django_seed',
-    'corsheaders',
 )
 
 
@@ -69,6 +69,9 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
     )
 }
 
@@ -106,13 +109,21 @@ TEMPLATES = (
 )
 
 WSGI_APPLICATION = 'sociallty.wsgi.application'
-EMAIL_BACKEND = "django.core.mail.backends.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend" if DEBUG else "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = os.getenv("EMAIL_PORT")
+EMAIL_HOST_USER = os.getenv("EMAIL_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")
+EMAIL_USE_TLS = True
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
     'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / "db.sqlite3",
+    } if DEBUG else {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv("DATABASE_NAME"),
         'USER': os.getenv("DATABASE_USER"),
@@ -153,21 +164,21 @@ USE_I18N = True
 
 USE_TZ = True
 
-# INTERNAL_IPS = (
-#    "127.0.0.1",
-# )
 
-#! remove in production
-CORS_ALLOWED_ORIGINS = (
-    # "http://localhost:5173",
-    # "http://localhost:4173",
-    # "http://192.168.1.9:5173",
-    # "http://192.168.1.9:5173",
-    # "http://192.168.1.9:4173"
-    "https://9656c254-d986-4e95-82b2-fcaf37f7825e.e1-us-east-azure.choreoapps.dev",
-    "https://bdc0b1d4-0436-4c85-8ed1-6cc4e436a14a.e1-us-east-azure.choreoapps.dev",
-    "https://minimum-lauretta-noormaser-0d773dac.koyeb.app",
-)
+if DEBUG:
+    CORS_ALLOWED_ORIGINS = (
+        "http://localhost:5173",
+        "http://localhost:4173",
+        "http://192.168.1.7:5173",
+        "http://192.168.1.7:4173"
+    )
+else:
+    CORS_ALLOWED_ORIGINS = (
+        "https://9656c254-d986-4e95-82b2-fcaf37f7825e.e1-us-east-azure.choreoapps.dev",
+        "https://bdc0b1d4-0436-4c85-8ed1-6cc4e436a14a.e1-us-east-azure.choreoapps.dev",
+        "https://minimum-lauretta-noormaser-0d773dac.koyeb.app",
+    )
+    
 CORS_ALLOW_CREDENTIALS = True
 
 CLOUDINARY_STORAGE = {
@@ -197,8 +208,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 STORAGES = {
     "default": {
-        # "BACKEND": "django.core.files.storage.FileSystemStorage"
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage"
+        "BACKEND": "django.core.files.storage.FileSystemStorage" if DEBUG else "cloudinary_storage.storage.MediaCloudinaryStorage"
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
@@ -214,25 +224,26 @@ UNFOLD = {
     "SITE_TITLE": "Sociallty",
     "SITE_HEADER": "Sociallty",
     "SITE_URL": "/",
-    "SITE_ICON": lambda _: static("favicon.png"),
-    "SITE_LOGO": lambda _: static("favicon.png"),
+    "SITE_ICON": lambda _: static("favicon.ico"),
+    "SITE_LOGO": lambda _: static("favicon.ico"),
     "SITE_FAVICONS": (
         {
             "rel": "icon",
             "sizes": "32x32",
-            "type": "image/png",
-            "href": lambda _: static("favicon.png"),
+            "type": "image/x-icon",
+            "href": lambda _: static("favicon.ico"),
         },
     ),
 }
 
 # configs
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = 'DENY'
-SECURE_HSTS_SECONDS = 31536000
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-SECURE_SSL_REDIRECT = True
+if not DEBUG:
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True

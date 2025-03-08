@@ -42,7 +42,6 @@ export default function Login() {
         localStorage.setItem("id", res.data.id.toString());
         localStorage.setItem("username", res.data.username);
         localStorage.setItem("profile_pic", res.data.profile_picture);
-        console.table(res.data);
         dispatch(setHasToken(true));
         navigate("/");
       }
@@ -80,29 +79,22 @@ export default function Login() {
           type="email"
           label="Email"
           suffexIcon={<EmailIcon sx={{ color: "var(--text-color)" }} />}
-          inputProps={
-            {
-              ...register('email', {required: true})
-            }
-          }
+          {...register('email', {required: true})}
           autoComplete="email"
+          disableDetectTextDir
           required
         />
         <FloatingLabelInput
           type="password"
           label="Password"
           suffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
-          inputProps={
-            {
-              ...register('password', {required: true})
-            }
-          }
           autoComplete="current-password"
           slotProps={{
             htmlInput: {
               minLength: 8,
             },
           }}
+          {...register('password', { required: true })}
           required
         />
         {errors && (

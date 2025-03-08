@@ -1,6 +1,6 @@
 import { ChangeEvent, memo, useCallback, useEffect, useRef, useState } from "react";
-import { ACCESS, ApiUrls, REFRESH, TokenResponse } from "../utils/constants";
 import { Box, Button, Step, StepLabel, Stepper, Typography } from "@mui/material";
+import { ACCESS, ApiUrls, REFRESH, TokenResponse } from "../utils/constants";
 import FloatingLabelInput from "../components/floating_input_label";
 import { LazyAvatar } from "../components/media_skelatons";
 import { Link, useNavigate } from "react-router-dom";
@@ -166,10 +166,10 @@ export default function Signup() {
               autoComplete="cc-given-name"
               suffexIcon={<PersonIcon sx={{ color: "#fff" }} />}
               inputProps={{
-                ...register("first_name"),
                 error: !!errors.first_name,
                 helperText: errors.first_name,
               }}
+              {...register("first_name")}
               required
             />
             <FloatingLabelInput
@@ -177,8 +177,8 @@ export default function Signup() {
               label="Last Name"
               autoComplete="family-name"
               suffexIcon={<Person2Icon sx={{ color: "#fff" }} />}
+              {...register("last_name")}
               inputProps={{
-                ...register("last_name"),
                 error: !!errors.last_name,
                 helperText: errors.last_name,
               }}
@@ -189,8 +189,8 @@ export default function Signup() {
               label="User Name"
               autoComplete="username"
               suffexIcon={<Person3Icon sx={{ color: "#fff" }} />}
+              {...register("username")}
               inputProps={{
-                ...register("username"),
                 error: !!errors.username,
                 helperText: errors.username,
               }}
@@ -206,12 +206,13 @@ export default function Signup() {
               label="Email"
               autoComplete="email"
               suffexIcon={<EmailIcon sx={{ color: "#fff" }} />}
+              {...register("email")}
               inputProps={{
                 inputMode: "email",
-                ...register("email"),
                 error: !!errors.email,
                 helperText: errors.email,
               }}
+              disableDetectTextDir
               required
             />
             <FloatingLabelInput
@@ -219,8 +220,8 @@ export default function Signup() {
               label="Password"
               suffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
               autoComplete="current-password"
+              {...register("password")}
               inputProps={{
-                ...register("password"),
                 error: !!errors.password,
                 helperText: errors.password,
               }}
@@ -240,33 +241,36 @@ export default function Signup() {
             <FloatingLabelInput
               type="date"
               suffexIcon={<CakeIcon sx={{ color: "#fff" }} />}
+              {...register("birth")}
               inputProps={{
-                ...register("birth"),
                 error: !!errors.birth,
                 helperText: errors.birth,
               }}
+              disableDetectTextDir
               required
             />
             <FloatingLabelInput
               type="tel"
               label="Phone Number"
+              placeholder="+20XXXXX"
               autoComplete="tel"
               suffexIcon={<PhoneIcon sx={{ color: "#fff" }} />}
+              {...register("phone")}
               inputProps={{
                 inputMode: "tel",
-                ...register("phone"),
                 error: !!errors.phone,
                 helperText: errors.phone,
               }}
+              disableDetectTextDir
               required
             />
             <FloatingLabelInput
               label="Bio"
               suffexIcon={<InfoIcon sx={{ color: "#fff" }} />}
+              {...register("bio")}
               inputProps={{
                 multiline: true,
                 placeholder: "i'm a Social Person 😊😁....",
-                ...register("bio"),
               }}
             />
             <Button

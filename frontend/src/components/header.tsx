@@ -1,3 +1,4 @@
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -23,7 +24,7 @@ interface CheckHeadProps {
     isAuthed: boolean;
     forDeskTop?: boolean;
     friends_requests_count: number;
-    startLoading: () => void;
+    startLoading: (url: string) => void;
     onMenuClick?: (open: boolean) => void;
 }
 
@@ -31,10 +32,10 @@ const CheckHead = memo(({isAuthed, current_route, menuOpened, forDeskTop, friend
     if (isAuthed) {
         return (
             <>
-                <Box component="ul" className={forDeskTop ? 'desktop-layout' : ''} sx={{paddingInline: "0 5rem"}}>
+                <Box component="ul" className={forDeskTop ? 'desktop-layout' : ''} sx={{paddingInline: "0 1rem"}}>
                     <li>
                         <Tooltip title='Home'>
-                            <Link to="/" onClick={startLoading} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/" ? 'active-head' : ''} d-flex gap-2`}>
+                            <Link to="/" onClick={() => startLoading("/")} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/" ? 'active-head' : ''} d-flex gap-2`}>
                                 <HomeIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
                                 <Typography className="label-for m-0">Home</Typography>
                             </Link>
@@ -42,7 +43,7 @@ const CheckHead = memo(({isAuthed, current_route, menuOpened, forDeskTop, friend
                     </li>
                     <li>
                         <Tooltip title="Profile">
-                            <Link to="/social-user-profile" onClick={startLoading} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/social-user-profile" ? 'active-head' : ''} d-flex gap-2`}>
+                            <Link to="/social-user-profile" onClick={() => startLoading("/social-user-profile")} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/social-user-profile" ? 'active-head' : ''} d-flex gap-2`}>
                                 <PersonIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
                                 <Typography className="label-for m-0">My Profile</Typography>
                             </Link>
@@ -50,7 +51,7 @@ const CheckHead = memo(({isAuthed, current_route, menuOpened, forDeskTop, friend
                     </li>
                     <li>
                         <Tooltip title="Friends Requests">
-                            <Link to="/see-friends-requests" onClick={startLoading} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/see-friends-requests" ? 'active-head' : ''} d-flex gap-2`}>
+                            <Link to="/see-friends-requests" onClick={() => startLoading("/see-friends-requests")} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/see-friends-requests" ? 'active-head' : ''} d-flex gap-2`}>
                                 <Badge badgeContent={friends_requests_count} color='primary'>
                                     <GroupAddIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
                                 </Badge>
@@ -60,7 +61,7 @@ const CheckHead = memo(({isAuthed, current_route, menuOpened, forDeskTop, friend
                     </li>
                     <li>
                         <Tooltip title="My Friends">
-                            <Link to="/see-user-friends" onClick={startLoading} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/see-user-friends" ? 'active-head' : ''} d-flex gap-2`}>
+                            <Link to="/see-user-friends" onClick={() => startLoading("/see-user-friends")} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/see-user-friends" ? 'active-head' : ''} d-flex gap-2`}>
                                 <PeopleIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
                                 <Typography className="label-for m-0">My Firends</Typography>
                             </Link>
@@ -68,7 +69,7 @@ const CheckHead = memo(({isAuthed, current_route, menuOpened, forDeskTop, friend
                     </li>
                     <li>
                         <Tooltip title="Add Friends">
-                            <Link to="/social-friends" onClick={startLoading} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/social-friends" ? 'active-head' : ''} d-flex gap-2`}>
+                            <Link to="/social-friends" onClick={() => startLoading("/social-friends")} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/social-friends" ? 'active-head' : ''} d-flex gap-2`}>
                                 <PersonAddIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
                                 <Typography className="label-for m-0">Add Friends</Typography>
                             </Link>
@@ -77,8 +78,16 @@ const CheckHead = memo(({isAuthed, current_route, menuOpened, forDeskTop, friend
                 </Box>
                 <Box component="ul" className={forDeskTop ? 'desktop-layout' : ''} sx={{padding: 0}}>
                     <li>
+                        <Tooltip title="Q&A">
+                            <Link to="/common-questions" onClick={() => startLoading("/common-questions")} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/common-questions" ? 'active-head' : ''} d-flex gap-2`}>
+                                <SupportAgentIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
+                                <Typography className="label-for m-0">Q&A</Typography>
+                            </Link>
+                        </Tooltip>
+                    </li>
+                    <li>
                         <Tooltip title="Settings">
-                            <Link to="/user/settings" onClick={startLoading} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/user/settings" ? 'active-head' : ''} d-flex gap-2`}>
+                            <Link to="/user/settings" onClick={() => startLoading("/user/settings")} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/user/settings" ? 'active-head' : ''} d-flex gap-2`}>
                                 <SettingsIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
                                 <Typography className="label-for m-0">Settings</Typography>
                             </Link>
@@ -86,7 +95,7 @@ const CheckHead = memo(({isAuthed, current_route, menuOpened, forDeskTop, friend
                     </li>
                     <li>
                         <Tooltip title="Logout">
-                            <Link to='/logout' onClick={startLoading} className={`nav-link ${menuOpened ? 'show' : ''}`}>
+                            <Link to='/logout' onClick={() => startLoading("/logout")} className={`nav-link ${menuOpened ? 'show' : ''}`}>
                                 <LogoutIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
                                 <Typography className="label-for m-0">Logout</Typography>
                             </Link>
@@ -108,7 +117,7 @@ const CheckHead = memo(({isAuthed, current_route, menuOpened, forDeskTop, friend
                 <Box className={forDeskTop ? 'desktop-layout' : ''} component='ul' sx={{padding: 0}}>
                     <li>
                         <Tooltip title="Login">
-                            <Link to="/login" onClick={startLoading} className={`nav-link ${menuOpened ? 'show' : ''}`}>
+                            <Link to="/login" onClick={() => startLoading("/login")} className={`nav-link ${menuOpened ? 'show' : ''}`}>
                                 <LoginIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
                                 <Typography className="label-for m-0">Login</Typography>
                             </Link>
@@ -132,10 +141,7 @@ export default function Header() {
     const [menuOpened, setMenuOpened] = useState<boolean>(false);
     const dispatch = useDispatch();
     const location = useLocation();
-    const { start } = useLoadingBar({
-        color: "blue",
-        height: 2,
-    });
+    const { start } = useLoadingBar();
     
     const isAuthed = useSelector(
         (state: HasTokenStateType) => state.hasToken.value
@@ -153,7 +159,9 @@ export default function Header() {
         dispatch(set_current_active_route(location.pathname));
     }, [dispatch, location.pathname])
 
-    const startLoading = useCallback(() => start(), [start]);
+    const startLoading = useCallback((url: string) => {
+        if (current_route !== url) start();
+    }, [current_route]);
 
     return (
         <header>

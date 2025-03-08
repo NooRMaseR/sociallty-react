@@ -23,6 +23,7 @@ const LazySettingsPage = React.lazy(() => import("./pages/settings"))
 const LazyMakePostPage = React.lazy(() => import("./pages/make_post"))
 const LazyEditPostPage = React.lazy(() => import("./pages/edit_post"))
 const LazyEditUserPage = React.lazy(() => import("./pages/edit_user"))
+const LazyQuestionsPage = React.lazy(() => import("./pages/questions"));
 const LazySharedPostPage = React.lazy(() => import("./pages/shared_post_page"));
 const LazySocialFriendsPage = React.lazy(() => import("./pages/social_friends"));
 const LazyForgetPasswordPage = React.lazy(() => import("./pages/forget_password"));
@@ -52,6 +53,7 @@ function App() {
         <Route path="/signup" element={<LazySignupPage />} />
         <Route path="/logout" element={<LazyLogoutPage />} />
         <Route path="/user/forgot-password" element={<LazyForgetPasswordPage />} />
+        <Route path="/common-questions" element={<LazyQuestionsPage />} />
 
         <Route
           path="/make-post"

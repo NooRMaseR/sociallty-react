@@ -9,7 +9,7 @@ from django.template.loader import render_to_string
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 from django.core.mail import send_mail
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.db import transaction
 from django.contrib import auth
 
@@ -20,8 +20,8 @@ from APIs.serializers import (
     SocialUserSerializer,
     PostSerializer,
 )
+from .models import FriendRequest, SocialUser, UserCode
 from utils.main_utils import generate_verify_code
-from .models import SocialUser, UserCode
 
 
 class UserProfileApi(APIView):
@@ -35,14 +35,15 @@ class UserProfileApi(APIView):
         ), id=id, username=username)
         
         posts = user.posts.annotate( # type: ignore
-            comments_count=Count('comments'),
-            likes_count=Count('likes')
+            comments_count=Count('comments', distinct=True),
+            likes_count=Count('likes', distinct=True)
         ).order_by("-created_at")
         
         paginator = Paginator(posts, '10')
         post_page = paginator.get_page(request.GET.get('page', 1))
         
-        is_friend = user.friend.filter(user=request.user).exists() # type: ignore
+        is_friend: bool = user.friend.filter(Q(user=request.user) | Q(friend=request.user)).exists() # type: ignore
+        has_request: bool = FriendRequest.objects.filter(Q(user=request.user) | Q(friend=request.user)).exists()
         
         user_serializer = UserProfileSerializer(user)
         post_serializer = PostSerializer(post_page, many=True)
@@ -51,6 +52,7 @@ class UserProfileApi(APIView):
             "user": user_serializer.data,
             "posts": post_serializer.data,
             "is_friend": is_friend,
+            "has_request": has_request,
             "has_next": post_page.has_next()
         }, status=status.HTTP_200_OK)
 
