@@ -152,14 +152,10 @@ class SeeFirendsRequestsApi(APIView):
             )
         )
         friends = (
-            SocialUser.objects
-            .filter(
-                user_request__in=friends_requests
-                # friend_request__in=friends_requests
-            )
-            .exclude(
-                id=request.user.id
-            )
+            SocialUser
+            .objects
+            .filter(user_request__in=friends_requests)
+            .exclude(id=request.user.id)
         )
         paginator = Paginator(friends, 10)
         friends_page = paginator.get_page(request.GET.get('list', 1))
@@ -207,6 +203,9 @@ class SeeFirendsRequestsApi(APIView):
             return Response({"details": "friend ID was not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
         friend = get_object_or_404(SocialUser.objects.only('id'), id=friendID)
+        if FriendRequest.objects.filter(Q(user=request.user, friend=friend) | Q(user=friend, friend=request.user)).exists():
+            return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+        
         FriendRequest.objects.create(user=request.user, friend=friend)
         return Response(status=status.HTTP_201_CREATED)
     

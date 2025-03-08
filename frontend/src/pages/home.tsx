@@ -65,7 +65,7 @@ export default function Home() {
       console.error("error fetching the posts");
     }
     setLoading(false);
-  }, [pageNumebr, dispatch, complete]);
+  }, [pageNumebr]);
 
   // fetch the posts
   useEffect(() => {
@@ -80,6 +80,11 @@ export default function Home() {
           name="description"
           content="Find and stay up to date for today's posts like, share, comment"
         />
+        <meta property="og:image" content="/favicon.ico" />
+        <meta property="og:title" content="Sociallty" />
+        <meta property="og:description" content="Find and stay up to date for today's posts like, share, comment" />
+        <meta property="og:url" content={location.href} />
+        <meta property="og:type" content="website" />
       </Helmet>
       <LazyBottomSheet />
       <div className="d-flex justify-content-center align-items-center flex-direction-column mb-2">

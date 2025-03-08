@@ -250,6 +250,7 @@ export default function Signup() {
             <FloatingLabelInput
               type="tel"
               label="Phone Number"
+              placeholder="+20XXXXX"
               autoComplete="tel"
               suffexIcon={<PhoneIcon sx={{ color: "#fff" }} />}
               inputProps={{

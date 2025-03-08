@@ -1,3 +1,4 @@
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -31,7 +32,7 @@ const CheckHead = memo(({isAuthed, current_route, menuOpened, forDeskTop, friend
     if (isAuthed) {
         return (
             <>
-                <Box component="ul" className={forDeskTop ? 'desktop-layout' : ''} sx={{paddingInline: "0 5rem"}}>
+                <Box component="ul" className={forDeskTop ? 'desktop-layout' : ''} sx={{paddingInline: "0 1rem"}}>
                     <li>
                         <Tooltip title='Home'>
                             <Link to="/" onClick={startLoading} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/" ? 'active-head' : ''} d-flex gap-2`}>
@@ -76,6 +77,14 @@ const CheckHead = memo(({isAuthed, current_route, menuOpened, forDeskTop, friend
                     </li>
                 </Box>
                 <Box component="ul" className={forDeskTop ? 'desktop-layout' : ''} sx={{padding: 0}}>
+                    <li>
+                        <Tooltip title="Q&A">
+                            <Link to="/common-questions" onClick={startLoading} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/common-questions" ? 'active-head' : ''} d-flex gap-2`}>
+                                <SupportAgentIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
+                                <Typography className="label-for m-0">Q&A</Typography>
+                            </Link>
+                        </Tooltip>
+                    </li>
                     <li>
                         <Tooltip title="Settings">
                             <Link to="/user/settings" onClick={startLoading} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/user/settings" ? 'active-head' : ''} d-flex gap-2`}>

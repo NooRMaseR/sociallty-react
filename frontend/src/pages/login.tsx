@@ -42,7 +42,6 @@ export default function Login() {
         localStorage.setItem("id", res.data.id.toString());
         localStorage.setItem("username", res.data.username);
         localStorage.setItem("profile_pic", res.data.profile_picture);
-        console.table(res.data);
         dispatch(setHasToken(true));
         navigate("/");
       }
