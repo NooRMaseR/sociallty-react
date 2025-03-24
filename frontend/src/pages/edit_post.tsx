@@ -63,7 +63,6 @@ export default function EditPostPage() {
               content_type: isImage ? "image" : "video",
               image: isImage ? e.target?.result as string : undefined,
               video: !isImage ? e.target?.result as string : undefined,
-              poster: "",
               added: true,
             },
           ]);
@@ -104,10 +103,8 @@ export default function EditPostPage() {
                       ? postMedia.video
                       : `${MEDIA_URL}${postMedia.video}`
                   }
-                  preload="none"
                   className="content-post"
                   controlsList="nodownload"
-                  poster={postMedia.poster}
                   controls
                 ></video>
                 <div

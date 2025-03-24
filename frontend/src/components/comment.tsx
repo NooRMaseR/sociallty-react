@@ -1,5 +1,5 @@
 import { ApiUrls, CommentProps, MEDIA_URL, PostsStateType } from "../utils/constants";
-import { Card, ClickAwayListener, Tooltip, Typography } from "@mui/material";
+import { Box, Card, ClickAwayListener, Tooltip, Typography } from "@mui/material";
 import { SetStateAction, useCallback, useState } from "react";
 import { textDir, formatNumbers } from "../utils/functions";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
@@ -102,17 +102,15 @@ export default function Comment({
             </Typography>
           )}
         </div>
-        <div className="comment-options-container">
-          <ClickAwayListener onClickAway={closeOptions}>
-            <Tooltip title="Options">
-              <MoreHorizIcon
-                onClick={openOptions}
-                sx={{ color: "var(--text-color)", cursor: "pointer" }}
-              />
-            </Tooltip>
-          </ClickAwayListener>
-        </div>
-        <div className="d-flex gap-2">
+        <ClickAwayListener onClickAway={closeOptions}>
+          <Tooltip title="Options">
+            <MoreHorizIcon
+              className="comment-options"
+              onClick={openOptions}
+            />
+          </Tooltip>
+        </ClickAwayListener>
+        <Box sx={{display: 'flex', alignItems: "center", gap: ".5rem"}}>
           <LazyAvatar src={`${MEDIA_URL}${comment.user.profile_picture}`} />
           <Link
             className="comment-user"
@@ -123,13 +121,13 @@ export default function Comment({
           >
             {comment.user.username}
           </Link>
-        </div>
-        <Typography className="comment-text" dir={textDir(comment.content)} sx={{margin: "1rem .5rem"}}>{comment.content}</Typography>
-        <div style={{ width: "100%", display: "flex", justifyContent: "end" }}>
+        </Box>
+        <Typography className="comment-text" dir={textDir(comment.content)} sx={{margin: ".5rem"}}>{comment.content}</Typography>
+        <Box sx={{ width: "100%", display: "flex", justifyContent: "end" }}>
           <Typography className="comment-time">
             {new Date(comment.created_at).toLocaleString()}
           </Typography>
-        </div>
+        </Box>
       </Card>
     </>
   );

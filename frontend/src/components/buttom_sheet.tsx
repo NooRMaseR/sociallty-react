@@ -1,11 +1,11 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from "@mui/material";
 import { ApiUrls, BackBgStateType, BottomSheetStateType } from "../utils/constants";
 import { removePost, setBottomSheetOpen } from "../utils/store";
-import { memo, useCallback, useEffect, useState } from "react";
-import { disablePageScroll, share } from "../utils/functions";
 import { useDispatch, useSelector } from "react-redux";
 import { useLoadingBar } from "react-top-loading-bar";
+import { memo, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { share } from "../utils/functions";
 import "../styles/bottom-sheet.css";
 import api from "../utils/api";
 
@@ -67,7 +67,6 @@ export default function ButtomSheet() {
       dispatch(removePost(last_post_id));
     }
     setOpenDlg(false);
-    disablePageScroll(false);
   }, [last_post_id]);
 
   const handelEdit = () => {
@@ -76,14 +75,7 @@ export default function ButtomSheet() {
     dispatch(setBottomSheetOpen({ open: false, last_post_id: -1 }));
   };
 
-  const closeBottomSheet = () => {
-    dispatch(setBottomSheetOpen({ last_post_id: -1, open: false }))
-    disablePageScroll(false);
-  };
-
-  useEffect(() => {
-    disablePageScroll(buttom_opened || back_opened);
-  }, [buttom_opened, back_opened]);
+  const closeBottomSheet = useCallback(() => dispatch(setBottomSheetOpen({ last_post_id: -1, open: false })), []);
 
   return (
     <>

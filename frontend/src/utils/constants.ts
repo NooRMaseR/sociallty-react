@@ -3,8 +3,8 @@ import { Media, PostProps } from "../components/post";
 const DEBUG: boolean = false;
 export const ACCESS: string = "access";
 export const REFRESH: string = "refresh";
-export const API_URL: string = DEBUG ? "http://192.168.1.7:8000" : "https://minimum-lauretta-noormaser-0d773dac.koyeb.app/";
-export const MEDIA_URL: string = DEBUG ? "http://192.168.1.7:8000" : '';
+export const API_URL: string = DEBUG ? "http://192.168.1.8:8000" : "https://minimum-lauretta-noormaser-0d773dac.koyeb.app/";
+export const MEDIA_URL: string = DEBUG ? "http://192.168.1.8:8000" : '';
 export const AR: string[] = ['ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'];
 
 export interface TokenResponse {

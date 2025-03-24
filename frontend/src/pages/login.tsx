@@ -61,6 +61,7 @@ export default function Login() {
   const startLoading = useCallback(() => start(), [start]);
 
   useEffect(() => {
+    (document.getElementById("root") as HTMLDivElement).style.height = "100%";
     complete();
   }, [complete]);
 
@@ -97,7 +98,7 @@ export default function Login() {
           {...register('password', { required: true })}
           required
         />
-        {errors && (
+        {errors.length != 0 ? (
           <ul>
             {errors.map((value, index) => (
               <li style={{ color: "red" }} key={index}>
@@ -105,7 +106,7 @@ export default function Login() {
               </li>
             ))}
           </ul>
-        )}
+        ): null}
         <Box
           sx={{
             display: "flex",

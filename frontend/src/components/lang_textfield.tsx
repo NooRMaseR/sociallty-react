@@ -1,7 +1,6 @@
 import { ChangeEvent, ReactNode, useState } from "react";
 import { textDir } from "../utils/functions";
 import { TextField } from "@mui/material";
-// import { AR } from "../utils/constants";
 
 interface LangTextFieldProps {
     children: ReactNode;
@@ -26,7 +25,7 @@ export default function LangTextField({ children, onChange, disableDetectTextDir
             dir={dir}
             onChange={(e) => {
                 if (!disableDetectTextDir) change_lang(e);
-                if (onChange) onChange(e);
+                onChange?.(e);
             }}
             {...props}
         >

@@ -1,14 +1,14 @@
-import { Box, Button, Step, StepLabel, Stepper, Typography } from "@mui/material";
-import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import FloatingLabelInput from "../components/floating_input_label";
-import { memo, useCallback, useEffect, useState } from "react";
+import Stepper, { Step } from "../components/Stepper/Stepper";
 import { ApiUrls, TokenResponse } from "../utils/constants";
 import { LazyAvatar } from "../components/media_skelatons";
 import styles from "../styles/forget_password.module.css";
+import { useCallback, useEffect, useState } from "react";
 import VerificationInput from "react-verification-input";
 import { useLoadingBar } from "react-top-loading-bar";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
+import { Box, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Helmet } from "react-helmet";
@@ -25,120 +25,173 @@ interface ChangePasswordStepsProps {
 export default function ForgetPasswordPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState<boolean>(false);
-  const [activeStep, setActiveStep] = useState<number>(0);
-  const { register, handleSubmit, setValue } = useForm<ChangePasswordStepsProps>();
+  const [activeStep, setActiveStep] = useState<number>(1);
+  const { register, handleSubmit, setValue } =
+    useForm<ChangePasswordStepsProps>();
   const { start, complete } = useLoadingBar();
   const navigate = useNavigate();
 
-  const handelOnEmailSubmit = useCallback(async (data: ChangePasswordStepsProps) => {
-    setLoading(true);
-    setErrors({});
-    try {
-      const res = await api.post<TokenResponse>(ApiUrls.forget_password, {
-        email: data.email,
-      });
-
-      if (res && res.status == 200) {
-        setActiveStep(activeStep + 1);
-      }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error(error);
-      if (error.response.status === 400) {
-        const er: Record<string, string> = {};
-        for (const [key, value] of Object.entries<string>(
-          error.response.data
-        )) {
-          er[key] = value;
-        }
-        setErrors(er);
-        console.log(er);
-      } else if (error.response.status === 404) {
-        setErrors({ email: error.response.data.detail });
-      } else {
-        setErrors({ error: "Somthing went wrong, please try Again." });
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [activeStep]);
-
-  const handelOnCodeSubmit = useCallback(async (data: ChangePasswordStepsProps) => {
-    setLoading(true);
-    setErrors({});
-    try {
-      const res = await api.delete<TokenResponse>(ApiUrls.forget_password, {
-        data: {
-          code: data.code,
+  const handelOnEmailSubmit = useCallback(
+    async (data: ChangePasswordStepsProps, onSuccess: () => void) => {
+      setLoading(true);
+      setErrors({});
+      try {
+        const res = await api.post<TokenResponse>(ApiUrls.forget_password, {
           email: data.email,
-        },
-      });
+        });
 
-      if (res && res.status == 200) {
-        setActiveStep(activeStep + 1);
+        if (res && res.status == 200) {
+          onSuccess();
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
+        console.error(error);
+        if (error.response.status === 400) {
+          const er: Record<string, string> = {};
+          for (const [key, value] of Object.entries<string>(
+            error.response.data
+          )) {
+            er[key] = value;
+          }
+          setErrors(er);
+          console.log(er);
+        } else if (error.response.status === 404) {
+          setErrors({ email: error.response.data.detail });
+        } else {
+          setErrors({ error: "Somthing went wrong, please try Again." });
+        }
+      } finally {
+        setLoading(false);
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error(error);
-      if (error.response.status === 404) {
-        setErrors({ ...error.response.data });
-      } else {
-        setErrors({ error: "Somthing went wrong, please try Again." });
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [activeStep]);
+      return false;
+    },
+    []
+  );
 
-  const handelOnPasswordChangeSubmit = useCallback(async (
-    data: ChangePasswordStepsProps
-  ) => {
-    setLoading(true);
-    setErrors({});
-    if (data.password !== data.confirm_password) {
-      setErrors({
-        passwordError: "Password and Confirm Password must be the same.",
-      });
-      setLoading(false);
-      return;
-    }
-    try {
-      const res = await api.put<TokenResponse>(ApiUrls.forget_password, {
-        ...data,
-      });
+  const handelOnCodeSubmit = useCallback(
+    async (data: ChangePasswordStepsProps, onSuccess: () => void) => {
+      setLoading(true);
+      setErrors({});
+      try {
+        const res = await api.delete<TokenResponse>(ApiUrls.forget_password, {
+          data: {
+            code: data.code,
+            email: data.email,
+          },
+        });
 
-      if (res && res.status == 200) {
-        start();
-        navigate("/login");
+        if (res && res.status == 200) {
+          onSuccess();
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
+        console.error(error);
+        if (error.response.status === 404) {
+          setErrors({ ...error.response.data });
+        } else {
+          setErrors({ error: "Somthing went wrong, please try Again." });
+        }
+      } finally {
+        setLoading(false);
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      if (error.response.status === 404) {
-        setErrors({ ...error.response.data });
-      } else {
-        setErrors({ error: "Somthing went wrong, please try Again." });
+      return false;
+    },
+    []
+  );
+
+  const handelOnPasswordChangeSubmit = useCallback(
+    async (data: ChangePasswordStepsProps) => {
+      setLoading(true);
+      setErrors({});
+      if (data.password !== data.confirm_password) {
+        setErrors({
+          passwordError: "Password and Confirm Password must be the same.",
+        });
+        setLoading(false);
+        return;
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [navigate, start]);
+      try {
+        const res = await api.put<TokenResponse>(ApiUrls.forget_password, {
+          ...data,
+        });
+
+        if (res && res.status == 200) {
+          start();
+          navigate("/login");
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
+        if (error.response.status === 404) {
+          setErrors({ ...error.response.data });
+        } else {
+          setErrors({ error: "Somthing went wrong, please try Again." });
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    [navigate, start]
+  );
 
   useEffect(() => {
     complete();
   }, [complete]);
 
-  const ChangePasswordSteps = memo(() => {
-    switch (activeStep) {
-      case 0:
-        return (
-          <form onSubmit={handleSubmit(handelOnEmailSubmit)}>
+  const ChangePasswordFuncsSteps = useCallback(
+    async (updater?: (step: number) => void) => {
+      switch (activeStep) {
+        case 1:
+          await handleSubmit((data) =>
+            handelOnEmailSubmit(data, () => updater?.(2))
+          )();
+          break;
+
+        case 2:
+          await handleSubmit((data) =>
+            handelOnCodeSubmit(data, () => updater?.(3))
+          )();
+          break;
+
+        default:
+          break;
+      }
+    },
+    [activeStep]
+  );
+
+  return (
+    <Box sx={{ placeItems: "center" }}>
+      <Helmet>
+        <title>Forget Password</title>
+        <meta
+          name="description"
+          content="Forget Your Password ?, Authenticate To Change your Password Now."
+        />
+      </Helmet>
+      <Box
+        component="form"
+        className="no-style"
+        sx={{ width: "100%" }}
+        onSubmit={(e) => e.preventDefault()}
+      >
+        <Stepper
+          initialStep={activeStep}
+          disableStepIndicators
+          loading={loading}
+          onStepChange={setActiveStep}
+          beforeStepChange={ChangePasswordFuncsSteps}
+          onFinalStepCompleted={handleSubmit(handelOnPasswordChangeSubmit)}
+          style={{ width: "100%" }}
+        >
+          <Step>
             <Box id="header">
-              <Typography component="h1" id="pic-label">Forget Password</Typography>
-              <LazyAvatar
-                src="/favicon.ico"
-                width="10rem"
-                height="10rem"
-              />
+              <Typography
+                component="h3"
+                color={errors.email ? "error" : "primary"}
+              >
+                Enter Your Email
+              </Typography>
+              <LazyAvatar src="/favicon.ico" width="10rem" height="10rem" />
             </Box>
             <FloatingLabelInput
               type="email"
@@ -149,66 +202,41 @@ export default function ForgetPasswordPage() {
                 error: !!errors.email,
                 helperText: errors.email,
               }}
-              {...register("email")}
+              {...register("email", { required: true })}
               disableDetectTextDir
               required
             />
-            <Button
-              type="submit"
-              variant="contained"
-              loading={loading}
-              loadingPosition="start"
-              sx={{ width: "100%", marginTop: "1rem" }}
-            >
-              {loading ? "Please wait...." : "Send Email"}
-            </Button>
-          </form>
-        );
-
-      case 1:
-        return (
-          <form onSubmit={handleSubmit(handelOnCodeSubmit)}>
-            <Button
-              sx={{ float: "left", width: "fit-content" }}
-              onClick={() => navigate("/user/forget-password")}
-            >
-              <ArrowBackRoundedIcon />
-            </Button>
+          </Step>
+          <Step>
             <Box id="header">
-              <h1 id="pic-label">Confirm Email</h1>
-              <LazyAvatar
-                src="/favicon.ico"
-                width="10rem"
-                height="10rem"
-              />
+              <Typography color={errors.code ? "error" : "primary"}>
+                {errors.code ? "error Verifying your Email" : "Verify Email"}
+              </Typography>
+              <LazyAvatar src="/favicon.ico" width="10rem" height="10rem" />
             </Box>
-            <Box sx={{display: 'flex', placeContent: 'center'}}>
-              <VerificationInput 
-                validChars="0-9" 
-                placeholder="" 
-                inputProps={{ inputMode: "numeric", autoComplete: "one-time-code" }}
+            <Box sx={{ display: "flex", placeContent: "center" }}>
+              <VerificationInput
+                validChars="0-9"
+                placeholder=""
+                inputProps={{
+                  inputMode: "numeric",
+                  autoComplete: "one-time-code",
+                }}
                 onComplete={(code) => {
-                  setValue('code', +code);
-                  handleSubmit(handelOnCodeSubmit)();
+                  setValue("code", +code);
                 }}
                 classNames={{
-                  character: styles.character
+                  character: styles.character,
                 }}
               />
             </Box>
-          </form>
-        );
-
-      case 2:
-        return (
-          <form onSubmit={handleSubmit(handelOnPasswordChangeSubmit)}>
+          </Step>
+          <Step>
             <Box id="header">
-              <Typography component="h1" id="pic-label">Change Password</Typography>
-              <LazyAvatar
-                src="/favicon.ico"
-                width="10rem"
-                height="10rem"
-              />
+              <Typography color={errors.passwordError ? "error" : "primary"}>
+                Change Your Password
+              </Typography>
+              <LazyAvatar src="/favicon.ico" width="10rem" height="10rem" />
             </Box>
             <FloatingLabelInput
               type="password"
@@ -234,46 +262,9 @@ export default function ForgetPasswordPage() {
               {...register("confirm_password")}
               required
             />
-            <Button
-              type="submit"
-              variant="contained"
-              loading={loading}
-              loadingPosition="start"
-              sx={{ width: "100%", marginTop: "1rem" }}
-            >
-              {loading ? "Please wait...." : "Change Password Now"}
-            </Button>
-          </form>
-        );
-
-      default:
-        break;
-    }
-  });
-
-  return (
-    <Box sx={{ placeItems: "center" }}>
-      <Helmet>
-        <title>Forget Password</title>
-        <meta
-          name="description"
-          content="Forget Your Password ?, Authenticate To Change your Password Now."
-        />
-      </Helmet>
-      <Stepper alternativeLabel activeStep={activeStep} sx={{ width: "100%" }}>
-        <Step>
-          <StepLabel error={!!errors.email}>Enter Your Email</StepLabel>
-        </Step>
-        <Step>
-          <StepLabel error={!!errors.code}>Verify Email</StepLabel>
-        </Step>
-        <Step>
-          <StepLabel error={!!errors.passwordError}>
-            Change Your Password
-          </StepLabel>
-        </Step>
-      </Stepper>
-      <ChangePasswordSteps />
+          </Step>
+        </Stepper>
+      </Box>
     </Box>
   );
 }

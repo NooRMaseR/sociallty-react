@@ -14,7 +14,6 @@ from rest_framework import status
 # my imports
 from APIs.serializers import CommentSerializer, PostSerializer
 from main_page.models import Post, PostContent, Comment
-from utils.main_utils import extract_first_frame
 from users.models import SocialUser
 # from .AI import MaseR_Response
 from io import BytesIO
@@ -44,7 +43,7 @@ class PostApi(APIView):
         return Response(post_serializer.data, status=200)
         
     def save_content(self, files: list[UploadedFile], post: Post) -> Response | None:
-        """A Function to save the `PostContent` and creates a `poster` for the video if there are videos
+        """A Function to save the `PostContent`
 
         Args:
             files (list[UploadedFile]): the `Media` to add to he `PostContent`
@@ -55,6 +54,7 @@ class PostApi(APIView):
         """
         
         try:
+            contents: list[PostContent] = []
             for file in files:
                 is_image: bool = file.content_type != None and file.content_type.startswith("image")
                 is_video: bool = file.content_type != None and file.content_type.startswith("video")
@@ -62,30 +62,17 @@ class PostApi(APIView):
                 if file.content_type and not (is_image or is_video):
                     return Response(status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
                 
-                post_content: PostContent = PostContent(
-                    post=post,
-                    image=file if is_image else None,
-                    video=file if is_video else None,
-                    content_type=PostContent.MediaType.IMAGE if is_image else PostContent.MediaType.VIDEO,
-                    full_content_type=file.content_type
+                contents.append(
+                    PostContent(
+                        post=post,
+                        image=file if is_image else None,
+                        video=file if is_video else None,
+                        content_type=PostContent.MediaType.IMAGE if is_image else PostContent.MediaType.VIDEO,
+                        full_content_type=file.content_type
+                    )
                 )
-                post_content.save()
-
-                if is_video:
-                    first_frame_io: BytesIO | None = extract_first_frame(post_content.video.path)
-
-                    if first_frame_io:
-                        poster = InMemoryUploadedFile(
-                            first_frame_io,
-                            None,
-                            f"{os.path.splitext(file.name)[0]}.webP",
-                            file.content_type,
-                            first_frame_io.tell(),
-                            None,
-                        )
-                        post_content.poster = poster  # type: ignore
-                        post_content.save()
-            post.save()
+            PostContent.objects.bulk_create(contents)
+            
         except Exception as e:
             logging.error(str(e))
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

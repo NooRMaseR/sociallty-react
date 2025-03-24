@@ -1,8 +1,8 @@
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, MenuItem } from "@mui/material";
 import { ApiUrls, PostFormProps, Visibility } from "../utils/constants";
 import FloatingLabelInput from "../components/floating_input_label";
 import { memo, useCallback, useEffect, useState } from "react";
 import { useLoadingBar } from "react-top-loading-bar";
-import { Box, Button, MenuItem } from "@mui/material";
 import { Image } from "../components/media_skelatons";
 import FilePicker from "../components/file_picker";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +21,7 @@ const MediaComponent = memo(({media}: {media: {type: string, src: string}[]}) =>
 export default function MakePostPage() {
   const { register, handleSubmit, setValue } = useForm<PostFormProps>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [openDlg, setOpenDlg] = useState<boolean>(false);
   const [media, setMedia] = useState<{type: string, src: string}[]>([]);
   const { start, complete } = useLoadingBar();
   const navigate = useNavigate();
@@ -46,8 +47,16 @@ export default function MakePostPage() {
     setLoading(false);
   }, [navigate, start]);
 
-  const handelFiles = useCallback((event: FileList) => {
+  const handelFiles = useCallback((event: FileList | null) => {
     const selectedMedia = Array.from(event || []);
+    for (let i = 0; i < selectedMedia.length; i++) {
+      const file = selectedMedia[i];
+      const sizeInMB: number = (file.size / 1024) / 1024;
+      if (sizeInMB > 20) {
+        setOpenDlg(true);
+        return;
+      }
+    }
     setValue("files", selectedMedia);
     const data: { type: string, src: string }[] = [];
     let filesProcessed = 0;
@@ -70,6 +79,8 @@ export default function MakePostPage() {
     });
   }, [setValue])
 
+  const closeDlg = useCallback(() => setOpenDlg(false), []);
+
   useEffect(() => {
     complete();
   }, [complete]);
@@ -80,9 +91,18 @@ export default function MakePostPage() {
         <title>Create New Post</title>
         <meta name="description" content="Create a New Post and get some reactions and reviews" />
       </Helmet>
+      <Dialog open={openDlg}>
+        <DialogTitle>Big File</DialogTitle>
+        <DialogContent>
+          <DialogContentText>one of the files are larger than 20MB!!!</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDlg}>Ok</Button>
+        </DialogActions>
+      </Dialog>
       <form onSubmit={handleSubmit(formSubmit)} encType="multipart/form-data">
         <FilePicker
-          onChangeMethod={(e) => e.target.files && handelFiles(e.target.files)}
+          onChangeMethod={(e) => handelFiles(e.target.files)}
         />
         <Box sx={{display: 'flex', placeItems: 'center', flexDirection: 'column', gap: '1rem'}}>
           <MediaComponent media={media} />

@@ -27,13 +27,6 @@
     transition: transform 1s ease-in-out;
 }
 
-.comment-options-container {
-    display: flex;
-    justify-content: end;
-    align-items: center;
-    margin: 7px;
-}
-
 .options-opened {
     top: 19% !important;
     opacity: 1 !important;
@@ -43,7 +36,10 @@
 
 .comment-options {
     cursor: pointer;
-    color: #000;
+    color: var(--text-color);
+    position: absolute;
+    top: .3rem;
+    right: .5rem;
 }
 
 .comment-container-options {

@@ -84,7 +84,6 @@ class PostContent(models.Model):
     )
     content_type = models.CharField(max_length=6, choices=MediaType, null=True)
     full_content_type = models.CharField(max_length=14, null=True)
-    poster = models.ImageField(upload_to="posters/", blank=True, null=True)
 
     def save(self, *args, **kwargs) -> None:
         if self.image:
@@ -97,6 +96,7 @@ class PostContent(models.Model):
             self.imge = self.generate_webp_filename(self.image.name)
             self.image.save(self.imge, pic_in_memory, False)  # type: ignore
             self.full_content_type = "image/WebP"
+            pic_in_memory.close()
 
         return super().save(*args, **kwargs)
 
@@ -145,5 +145,3 @@ else:
         if instance.video and os.path.isfile(instance.video.path):
             os.remove(instance.video.path)
             
-        if instance.poster and os.path.isfile(instance.poster.path):
-            os.remove(instance.poster.path)

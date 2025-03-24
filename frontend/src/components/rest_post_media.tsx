@@ -35,8 +35,6 @@ const MediaContent = React.memo(({media}: {media: Media[]}) => {
         data.push(
           <video
             src={`${MEDIA_URL}${media_content.video}`}
-            preload="none"
-            poster={`${MEDIA_URL}${media_content.poster}`}
             controlsList="nodownload"
             controls
             width="50rem"

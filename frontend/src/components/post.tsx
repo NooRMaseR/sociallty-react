@@ -37,7 +37,6 @@ export interface Media {
   content_type: string;
   image?: string;
   video?: string;
-  poster: string;
   added?: boolean;
 }
 
@@ -74,9 +73,7 @@ const MediaContent = memo(
             >
               <video
                 src={`${MEDIA_URL}${current_media.video}`}
-                preload="none"
                 controlsList="nodownload"
-                poster={`${MEDIA_URL}${current_media.poster}`}
                 className="content-post"
                 controls
                 key={`${current_media.id}i`}

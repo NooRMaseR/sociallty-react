@@ -2,7 +2,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-block: 5rem;
+    height: calc(100% - 6rem);
 }
 
 #header {

@@ -29,13 +29,13 @@ SECRET_KEY = os.getenv("SOCIALLTY_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-
+MAX_UPLOAD_SIZE = 20971520 # 20MB
 ALLOWED_HOSTS = ['*' if DEBUG else "minimum-lauretta-noormaser-0d773dac.koyeb.app"]
 AUTH_USER_MODEL = "users.SocialUser"
 
 # Application definition
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     "unfold",  # before django.contrib.admin
     "unfold.contrib.filters",  # optional, if special filters are needed
     "unfold.contrib.forms",  # optional, if special form elements are needed
@@ -46,21 +46,19 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     "whitenoise.runserver_nostatic",
     'django.contrib.staticfiles',
-    'cloudinary_storage',
-    'cloudinary',
     'rest_framework',
     'rest_framework.authtoken',
     'users',
     "main_page",
     "whitenoise",
-    "phonenumber_field",
-    'django_extensions',  
+    "phonenumber_field",  
     'corsheaders',
-      
-    #! remove in production
-    # "debug_toolbar",
-    # 'django_seed',
-)
+]
+
+if not DEBUG:
+    INSTALLED_APPS.extend(('cloudinary_storage','cloudinary'))
+if DEBUG:
+    INSTALLED_APPS.append("django_extensions")
 
 
 REST_FRAMEWORK = {
@@ -85,7 +83,6 @@ MIDDLEWARE = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    # "debug_toolbar.middleware.DebugToolbarMiddleware",
 )
 
 ROOT_URLCONF = 'sociallty.urls'
@@ -169,14 +166,13 @@ if DEBUG:
     CORS_ALLOWED_ORIGINS = (
         "http://localhost:5173",
         "http://localhost:4173",
-        "http://192.168.1.7:5173",
-        "http://192.168.1.7:4173"
+        "http://192.168.1.8:5173",
+        "http://192.168.1.8:4173"
     )
 else:
     CORS_ALLOWED_ORIGINS = (
         "https://9656c254-d986-4e95-82b2-fcaf37f7825e.e1-us-east-azure.choreoapps.dev",
-        "https://bdc0b1d4-0436-4c85-8ed1-6cc4e436a14a.e1-us-east-azure.choreoapps.dev",
-        "https://minimum-lauretta-noormaser-0d773dac.koyeb.app",
+        "https://bdc0b1d4-0436-4c85-8ed1-6cc4e436a14a.e1-us-east-azure.choreoapps.dev"
     )
     
 CORS_ALLOW_CREDENTIALS = True

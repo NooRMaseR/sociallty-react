@@ -45,6 +45,7 @@ body {
   font-family: inherit;
   background-color: #c7c7c7;
   transition: var(--color-transition);
+  height: 100svh;
 }
 
 ::-webkit-scrollbar {
@@ -81,10 +82,10 @@ form:not(.no-style) {
   flex-direction: column;
   background-color: var(--post-bg-color);
   padding: 20px;
-  margin-top: 20px;
-  border-radius: 2rem;
+  border-radius: .5rem;
   gap: 1.5rem;
   width: 40%;
+  height: fit-content;
 }
 
 .MuiFormLabel-asterisk {

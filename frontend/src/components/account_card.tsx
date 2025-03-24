@@ -8,10 +8,10 @@ import ClearIcon from '@mui/icons-material/Clear';
 import { memo, useCallback, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import AccountCardSkelaton from "./account_card_skelaton";
-import { Button, IconButton, Tooltip, Typography } from "@mui/material";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import { ApiUrls, FullUser, MEDIA_URL } from "../utils/constants";
+import { Button, IconButton, Tooltip, Typography } from "@mui/material";
 import { addFriend, deleteRequest, FriendRequest, removeFriend } from "../utils/functions";
 
 export default function AccountCard({
