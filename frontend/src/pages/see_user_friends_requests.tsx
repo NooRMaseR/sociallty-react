@@ -89,7 +89,7 @@ export default function SeeUserFriendsRequestsPage() {
                 {buttonLoading ? "Please wait..." : "Load More"}
               </Button>
             ) : (
-              <p>No More Friend Requests...</p>
+              <p>No Friend Requests...</p>
             )}
           </Box>
         </>

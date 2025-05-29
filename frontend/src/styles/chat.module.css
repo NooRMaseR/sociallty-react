@@ -1,0 +1,45 @@
+#message-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    overflow-y: auto;
+    padding-block: 1rem;
+    width: 100%;
+    min-height: calc(100svh - 180px);
+    scroll-behavior: smooth;
+
+    & > div {
+        transition: opacity 0.2s ease-in-out, filter 0.2s ease-in-out;
+    }
+
+    & > div.has-no-context-menu {
+        opacity: 0.7;
+        filter: blur(2px);
+    }
+
+    & > div.has-context-menu {
+        opacity: 1;
+        filter: blur(0);
+    }
+}
+
+#header-container {
+    position: sticky;
+    top: 0;
+    padding: 1rem;
+    background-color: #292929;
+    color: white;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+  
+    & > div {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+}

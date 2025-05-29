@@ -7,15 +7,17 @@ import PersonIcon from '@mui/icons-material/Person';
 import PeopleIcon from '@mui/icons-material/People';
 import LoginIcon from '@mui/icons-material/Login';
 import HomeIcon from '@mui/icons-material/Home';
+import ChatIcon from '@mui/icons-material/Chat';
 
-import { MEDIA_URL, CurrentActiveRouteStateType, FriendsRequestsCountStateType, HasTokenStateType } from '../utils/constants';
+import { MEDIA_URL, CurrentActiveRouteStateType, FriendsRequestsCountStateType, HasTokenStateType, API_URL, ApiUrls, FullUser } from '../utils/constants';
+import { set_current_active_route, setCount } from "../utils/store";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Badge, Box, Tooltip, Typography } from '@mui/material';
 import { memo, useCallback, useEffect, useState } from "react";
-import { set_current_active_route } from "../utils/store";
 import { useSelector, useDispatch } from "react-redux";
 import { useLoadingBar } from "react-top-loading-bar";
-import { Link, useLocation } from "react-router-dom";
 import { LazyAvatar } from './media_skelatons';
+import api from '../utils/api';
 import '../styles/nav.css'
 
 interface CheckHeadProps {
@@ -28,11 +30,23 @@ interface CheckHeadProps {
     onMenuClick?: (open: boolean) => void;
 }
 
-const CheckHead = memo(({isAuthed, current_route, menuOpened, forDeskTop, friends_requests_count, startLoading, onMenuClick}: CheckHeadProps) => {
+interface Notification {
+    id: number;
+    to_user: FullUser;
+    from_user: FullUser;
+    content: string;
+}
+
+interface NotificationProps {
+    friends_requests_count: number;
+    notifications: Notification[];
+}
+
+const CheckHead = memo(({ isAuthed, current_route, menuOpened, forDeskTop, friends_requests_count, startLoading, onMenuClick }: CheckHeadProps) => {
     if (isAuthed) {
         return (
             <>
-                <Box component="ul" className={forDeskTop ? 'desktop-layout' : ''} sx={{paddingInline: "0 1rem"}}>
+                <Box component="ul" className={forDeskTop ? 'desktop-layout' : ''}>
                     <li>
                         <Tooltip title='Home'>
                             <Link to="/" onClick={() => startLoading("/")} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/" ? 'active-head' : ''} d-flex gap-2`}>
@@ -76,7 +90,15 @@ const CheckHead = memo(({isAuthed, current_route, menuOpened, forDeskTop, friend
                         </Tooltip>
                     </li>
                 </Box>
-                <Box component="ul" className={forDeskTop ? 'desktop-layout' : ''} sx={{padding: 0}}>
+                <Box component="ul" className={forDeskTop ? 'desktop-layout' : ''}>
+                    <li>
+                        <Tooltip title="Chats">
+                            <Link to="/chat" onClick={() => startLoading("/chat")} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/chat" ? 'active-head' : ''} d-flex gap-2`}>
+                                <ChatIcon sx={{ width: '1.9rem', height: '1.9rem' }} />
+                                <Typography className="label-for m-0">Chat</Typography>
+                            </Link>
+                        </Tooltip>
+                    </li>
                     <li>
                         <Tooltip title="Q&A">
                             <Link to="/common-questions" onClick={() => startLoading("/common-questions")} className={`nav-link ${menuOpened ? 'show' : ''} ${current_route === "/common-questions" ? 'active-head' : ''} d-flex gap-2`}>
@@ -142,6 +164,7 @@ export default function Header() {
     const dispatch = useDispatch();
     const location = useLocation();
     const { start } = useLoadingBar();
+    const navigate = useNavigate();
     
     const isAuthed = useSelector(
         (state: HasTokenStateType) => state.hasToken.value
@@ -154,15 +177,100 @@ export default function Header() {
     );
 
 
+    const delete_notification = useCallback(async (notification: Notification) => {
+        try {
+            await api.delete(`${API_URL}/${ApiUrls.user_requests_count}`, {
+                data: {
+                    id: notification.id
+                }
+            });
+        } catch {
+            console.error("error while delete notification")
+        }
+    }, []);
+
+    const create_notification = async (notification: Notification) => {
+        try {
+            // Check if the browser supports notifications
+            if (!("Notification" in window)) {
+                console.error("This browser does not support notifications");
+                return;
+            }
+
+            // Request permission if not already granted
+            if (Notification.permission !== "granted") {
+                const permission = await Notification.requestPermission();
+                if (permission !== "granted") {
+                    console.log("Notification permission denied");
+                    return;
+                }
+            }
+
+            // Create and show the notification
+            const noti = new Notification(notification.from_user.username, {
+                body: notification.content,
+                icon: `${API_URL}${notification.from_user.profile_picture}`,
+            });
+
+            // Add click handler
+            noti.onclick = () => {
+                window.focus(); // Focus the window
+                navigate(`/chat/${notification.from_user.id}?username=${notification.from_user.username}#message-${notification.from_user.id}`);
+                noti.close(); // Close the notification after clicking
+            };
+
+            // Add error handler
+            noti.onerror = (error) => {
+                console.error("Error while creating notification:", error);
+            };
+
+        } catch (error) {
+            console.error("Error in create_notification:", error);
+        }
+    }
+
+
     useEffect(() => {
         setMenuOpened(false);
         dispatch(set_current_active_route(location.pathname));
     }, [dispatch, location.pathname])
 
+    useEffect(() => {
+        async function get_requests() {
+            try {
+                const res = await api.get<NotificationProps>(`${API_URL}/${ApiUrls.user_requests_count}`);
+    
+                if (res.status === 200) {
+                    dispatch(setCount(res.data.friends_requests_count));
+                    const notisToSend = [];
+                    const notisToDelete = [];
+                    for (let i = 0; i < res.data.notifications.length; i++) {
+                        const noti = res.data.notifications[i];
+                        notisToSend.push(create_notification(noti));
+                    }
+                    await Promise.all(notisToSend);
+
+                    for (let i = 0; i < res.data.notifications.length; i++) {
+                        const noti = res.data.notifications[i];
+                        notisToDelete.push(delete_notification(noti));
+                    }
+                    await Promise.all(notisToDelete);
+                }
+            } catch {
+                console.error("field to get requests count");
+            }
+        };
+
+        const inter = setInterval(get_requests, 10000);
+        return () => clearInterval(inter);
+
+    }, [create_notification, delete_notification, dispatch])
+
     const startLoading = useCallback((url: string) => {
         if (current_route !== url) start();
     }, [current_route]);
 
+    if (current_route.startsWith("/chat/")) return <></>
     return (
         <header>
             <nav className={menuOpened ? 'show-nav' : ''}>

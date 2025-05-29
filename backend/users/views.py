@@ -1,5 +1,6 @@
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
+from adrf.views import APIView as AsyncAPIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -9,12 +10,14 @@ from django.template.loader import render_to_string
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 from django.core.mail import send_mail
+from asgiref.sync import sync_to_async
 from django.db.models import Count, Q
 from django.db import transaction
 from django.contrib import auth
 
 
 from APIs.serializers import (
+    NotificationSerializer,
     SocialUserSettingsSerializer,
     UserProfileSerializer,
     SocialUserSerializer,
@@ -22,6 +25,9 @@ from APIs.serializers import (
 )
 from .models import FriendRequest, SocialUser, UserCode
 from utils.main_utils import generate_verify_code
+from asgiref.sync import sync_to_async
+from chat.models import Notification
+import asyncio
 
 
 class UserProfileApi(APIView):
@@ -91,6 +97,7 @@ class UserAuthAPI(APIView):
             return Response({"error": "This account is not Active, please contact us if you think this is a mistake"}, status=status.HTTP_403_FORBIDDEN)
         
         refresh_token = RefreshToken.for_user(user)
+        auth.login(request._request, user)
         return Response(
             {
                 'access': str(refresh_token.access_token), 
@@ -216,10 +223,32 @@ class UserForgotPasswordApi(APIView):
         if password != confirm_password:
             return Response({"passwordError": "passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
         
+        user: SocialUser = get_object_or_404(SocialUser, email=email)
+        user.set_password(password)
+        user.save()
+        return Response(status=200)
+
+
+class GetUserNotification(AsyncAPIView):
+
+    async def get(self, request: Request) -> Response:
+        friends_requests_count, notifications = await asyncio.gather(
+            FriendRequest.objects.filter(friend=request.user).acount(),
+            sync_to_async(lambda: Notification.objects.filter(to_user=request.user).order_by('-created_at'))()
+        )
+        notifications_data = await sync_to_async(lambda: NotificationSerializer(notifications, many=True).data)()
+        return Response({"friends_requests_count": friends_requests_count, "notifications": notifications_data})
+    
+    async def delete(self, request: Request) -> Response:
+        id = request.data.get("id") # type: ignore
+        if not id:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
-            user: SocialUser = SocialUser.objects.get(email=email)
-            user.set_password(password)
-            user.save()
-            return Response(status=200)
-        except SocialUser.DoesNotExist:
+            await Notification.objects.filter(id=id).adelete()
+            return Response(status=status.HTTP_200_OK)
+        except Notification.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        

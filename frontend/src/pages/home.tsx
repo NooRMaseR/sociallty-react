@@ -1,5 +1,5 @@
 import React, { memo, Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { appendPosts, setCount, setPosts } from "../utils/store";
+import { appendPosts, setPosts } from "../utils/store";
 import { ApiUrls, PostsStateType } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import PostSkelaton from "../components/post_skelaton";
@@ -47,12 +47,10 @@ export default function Home() {
       const res = await api.get<{
         posts: PostProps[];
         has_next: boolean;
-        friends_requests_count: number;
       }>(ApiUrls.posts_today + pageNumebr.toString());
       if (res.status === 200) {
         if (firstInit) {
           dispatch(setPosts(res.data.posts));
-          dispatch(setCount(res.data.friends_requests_count));
           setFirstInit(false);
           setLoaded(true);
           complete();

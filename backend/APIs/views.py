@@ -1,5 +1,5 @@
 # Django
-from django.core.files.uploadedfile import InMemoryUploadedFile, UploadedFile
+from django.core.files.uploadedfile import UploadedFile
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from django.db import transaction
@@ -16,14 +16,9 @@ from APIs.serializers import CommentSerializer, PostSerializer
 from main_page.models import Post, PostContent, Comment
 from users.models import SocialUser
 # from .AI import MaseR_Response
-from io import BytesIO
-import logging
-import os
 
-logging.basicConfig(filename="log.log", filemode='a')
-
-class PostApi(APIView):
-    "`restful API` for handling post apis `GET` for getting the post info `POST` for adding a post `PUT` for updating the post `DELETE` for deleting the post"
+class GetPostApi(APIView):
+    "`restful API` for handling post apis `GET` for getting the post info"
     
     def get(self, _: Request, postID: int) -> Response:
         "`(API)` to get the post info and content (photos, videos)"
@@ -41,6 +36,10 @@ class PostApi(APIView):
 
         post_serializer = PostSerializer(post)
         return Response(post_serializer.data, status=200)
+    
+    
+class PostApi(APIView):
+    "`restful API` for handling post apis `POST` for adding a post `PUT` for updating the post `DELETE` for deleting the post"
         
     def save_content(self, files: list[UploadedFile], post: Post) -> Response | None:
         """A Function to save the `PostContent`
@@ -74,7 +73,6 @@ class PostApi(APIView):
             PostContent.objects.bulk_create(contents)
             
         except Exception as e:
-            logging.error(str(e))
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
     @transaction.atomic

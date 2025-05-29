@@ -58,13 +58,11 @@ class PostsApi(APIView):
             "-created_at"
         )  # order by created_at desc
         
-        friends_requests_count = FriendRequest.objects.filter(friend=request.user).count()
-        
         pagenator = Paginator(posts, 10)
         pagenator_data = pagenator.get_page(request.GET.get('page', 1))
         
         post_serialiizer = PostSerializer(pagenator_data, many=True)
-        return Response({"has_next": pagenator_data.has_next(),"friends_requests_count": friends_requests_count, "posts": post_serialiizer.data})
+        return Response({"has_next": pagenator_data.has_next(), "posts": post_serialiizer.data})
 
 
 class PostApi(APIView):

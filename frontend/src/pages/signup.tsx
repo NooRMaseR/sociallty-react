@@ -1,15 +1,20 @@
 import { ChangeEvent, memo, useCallback, useEffect, useRef, useState } from "react";
 import { Box, Button, Step, StepLabel, Stepper, Typography } from "@mui/material";
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { ACCESS, ApiUrls, REFRESH, TokenResponse } from "../utils/constants";
 import FloatingLabelInput from "../components/floating_input_label";
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LazyAvatar } from "../components/media_skelatons";
+import { FieldErrors, useForm } from "react-hook-form";
+import { useLoadingBar } from "react-top-loading-bar";
 import { Link, useNavigate } from "react-router-dom";
 import { setHasToken } from "../utils/store";
 import { useDispatch } from "react-redux";
 import { Helmet } from "react-helmet";
 import api from "../utils/api";
+import dayjs from "dayjs";
 
-import { useLoadingBar } from "react-top-loading-bar";
 import Person2Icon from "@mui/icons-material/Person2";
 import Person3Icon from "@mui/icons-material/Person3";
 import PersonIcon from "@mui/icons-material/Person";
@@ -18,7 +23,6 @@ import PhoneIcon from "@mui/icons-material/Phone";
 import CakeIcon from "@mui/icons-material/Cake";
 import InfoIcon from "@mui/icons-material/Info";
 import LockIcon from "@mui/icons-material/Lock";
-import { useForm } from "react-hook-form";
 import "../styles/signup.css";
 
 interface UserSignupProps {
@@ -34,17 +38,16 @@ interface UserSignupProps {
 }
 
 export default function Signup() {
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [serverErrors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(0);
   const avatarRef = useRef<HTMLImageElement>(null);
-  const { register, handleSubmit, setValue } = useForm<UserSignupProps>();
+  const { register, handleSubmit, setValue, formState: {errors}, setError } = useForm<UserSignupProps>();
   const { start, complete } = useLoadingBar();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
   
-  const getMinErrorStep = useCallback((errors: Record<string, string>): number => {
+  const getMinErrorStep = useCallback((errors: FieldErrors<UserSignupProps>): number => {
     const fieldsStepNumbers = {
       first_name: 0,
       last_name: 0,
@@ -70,21 +73,13 @@ export default function Signup() {
       setValue("profile_picture", e.target.files[0]);
     }
   }, [setValue]);
-
+  
   const handelOnSubmit = useCallback(async (e: UserSignupProps) => {
     setLoading(true);
-    const er: Record<string, string> = {};
     try {
-      for (const [key, value] of Object.entries(e)) {
-        if (!value) {
-          er[key] = "This field is Required.";
-        }
-      }
 
-      setErrors(er);
-
-      if (er.length as unknown as number > 0) {
-        setActiveStep(getMinErrorStep(er));
+      if (Object.entries(errors).length > 0) {
+        setActiveStep(getMinErrorStep(errors));
         return;
       }
       const res = await api.put<TokenResponse>(
@@ -110,10 +105,10 @@ export default function Signup() {
         for (const [key, value] of Object.entries<string>(
           error.response.data
         )) {
+          setError(key as keyof UserSignupProps, { message: Array.isArray(value) ? value.join(" and ") : value })
           errorsNow[key] = Array.isArray(value) ? value.join(" and ") : value;
         }
 
-        setErrors(errorsNow);
         setActiveStep(getMinErrorStep(errorsNow));
       } else {
         setErrors({ error: "Somthing went wrong, please try Again." });
@@ -121,7 +116,12 @@ export default function Signup() {
     } finally {
       setLoading(false);
     }
-  }, [dispatch, getMinErrorStep, navigate, start]);
+  }, [dispatch, getMinErrorStep, navigate, start, errors]);
+
+
+  const handelOnError = useCallback((e: FieldErrors<UserSignupProps>) => {
+    if (e.birth) setError("birth", {message: "Please enter your real birth"})
+  }, [])
 
   useEffect(() => {
     complete();
@@ -167,9 +167,9 @@ export default function Signup() {
               suffexIcon={<PersonIcon sx={{ color: "#fff" }} />}
               inputProps={{
                 error: !!errors.first_name,
-                helperText: errors.first_name,
+                helperText: errors.first_name?.message,
               }}
-              {...register("first_name")}
+              {...register("first_name", {required: true})}
               required
             />
             <FloatingLabelInput
@@ -177,10 +177,10 @@ export default function Signup() {
               label="Last Name"
               autoComplete="family-name"
               suffexIcon={<Person2Icon sx={{ color: "#fff" }} />}
-              {...register("last_name")}
+              {...register("last_name", {required: true})}
               inputProps={{
                 error: !!errors.last_name,
-                helperText: errors.last_name,
+                helperText: errors.last_name?.message,
               }}
               required
             />
@@ -189,10 +189,10 @@ export default function Signup() {
               label="User Name"
               autoComplete="username"
               suffexIcon={<Person3Icon sx={{ color: "#fff" }} />}
-              {...register("username")}
+              {...register("username", {required: true})}
               inputProps={{
                 error: !!errors.username,
-                helperText: errors.username,
+                helperText: errors.username?.message,
               }}
               required
             />
@@ -206,11 +206,11 @@ export default function Signup() {
               label="Email"
               autoComplete="email"
               suffexIcon={<EmailIcon sx={{ color: "#fff" }} />}
-              {...register("email")}
+              {...register("email", {required: true})}
               inputProps={{
                 inputMode: "email",
                 error: !!errors.email,
-                helperText: errors.email,
+                helperText: errors.email?.message,
               }}
               disableDetectTextDir
               required
@@ -220,10 +220,10 @@ export default function Signup() {
               label="Password"
               suffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
               autoComplete="current-password"
-              {...register("password")}
+              {...register("password", {required: true})}
               inputProps={{
                 error: !!errors.password,
-                helperText: errors.password,
+                helperText: errors.password?.message,
               }}
               slotProps={{
                 htmlInput: {
@@ -238,28 +238,37 @@ export default function Signup() {
       case 2:
         return (
           <>
-            <FloatingLabelInput
-              type="date"
-              suffexIcon={<CakeIcon sx={{ color: "#fff" }} />}
-              {...register("birth")}
-              inputProps={{
-                error: !!errors.birth,
-                helperText: errors.birth,
-              }}
-              disableDetectTextDir
-              required
-            />
+            <Box className="d-flex align-items-center gap-2">
+              <CakeIcon sx={{ color: "#fff" }} />
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  name="birth"
+                  maxDate={dayjs().add(-5, 'year')}
+                  minDate={dayjs().add(-110, 'year')}
+                  slotProps={{
+                    textField: {
+                      ...{ ...register('birth', { required: true }) },
+                      variant: "filled",
+                      error: errors.birth ? true : false,
+                      helperText: errors.birth?.message,
+                      required: true
+                    }
+                  }}
+                  sx={{width: "100%"}}
+                />
+              </LocalizationProvider>
+            </Box>
             <FloatingLabelInput
               type="tel"
               label="Phone Number"
               placeholder="+20XXXXX"
               autoComplete="tel"
               suffexIcon={<PhoneIcon sx={{ color: "#fff" }} />}
-              {...register("phone")}
+              {...register("phone",  {required: true})}
               inputProps={{
                 inputMode: "tel",
                 error: !!errors.phone,
-                helperText: errors.phone,
+                helperText: errors.phone?.message,
               }}
               disableDetectTextDir
               required
@@ -313,11 +322,11 @@ export default function Signup() {
         </Step>
       </Stepper>
 
-      <form onSubmit={handleSubmit(handelOnSubmit)}>
+      <form onSubmit={handleSubmit(handelOnSubmit, handelOnError)}>
         <Steps />
-        {errors && (
+        {serverErrors ? (
           <ul>
-            {Object.entries(errors).map(
+            {Object.entries(serverErrors).map(
               ([key, value]) =>
                 key === "error" && (
                   <li style={{ color: "red" }} key={key}>
@@ -326,7 +335,7 @@ export default function Signup() {
                 )
             )}
           </ul>
-        )}
+        ) : null}
 
         {activeStep !== 2 && (
           <Button variant="contained" onClick={handelNextStep}>

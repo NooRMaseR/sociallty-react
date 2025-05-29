@@ -16,6 +16,7 @@ interface FloatingLabelInputProps {
   children?: react.ReactNode[];
   disableDetectTextDir?: boolean;
   sx?: SxProps;
+  boxSx?: SxProps;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
@@ -34,10 +35,11 @@ export default function FloatingLabelInput({
   children,
   disableDetectTextDir = false,
   sx,
+  boxSx,
   ...props
 }: FloatingLabelInputProps) {
   return (
-    <Box className="d-flex align-items-center gap-2">
+    <Box className="d-flex align-items-center gap-2" sx={boxSx}>
       {suffexIcon}
       <LangTextField
         fullWidth

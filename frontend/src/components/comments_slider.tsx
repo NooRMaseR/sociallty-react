@@ -12,6 +12,15 @@ import { setSliderOpen, UpdatePostCommentsCount } from "../utils/store";
 import { ApiUrls, CommentProps, commentSliderType } from "../utils/constants";
 import { Box, Dialog, easing, IconButton, Slide, Tooltip } from "@mui/material";
 
+
+interface CommantProps {
+  loaded: boolean;
+  comments: CommentProps[];
+  postID: number;
+  commentsUpdater: (comments: React.SetStateAction<CommentProps[]>) => void;
+}
+
+
 const Transition = React.forwardRef(
   (
     props: TransitionProps & {
@@ -33,18 +42,7 @@ const CommentSkeletons = React.memo(() =>
   Array.from({ length: 5 }).map((_, i) => <CommentSkeleton key={i} />)
 );
 
-const Comments = React.memo(
-  ({
-    loaded,
-    comments,
-    postID,
-    commentsUpdater,
-  }: {
-    loaded: boolean;
-    comments: CommentProps[];
-    postID: number;
-    commentsUpdater: (comments: React.SetStateAction<CommentProps[]>) => void;
-  }) => {
+const Comments = React.memo(({loaded,  comments,  postID,  commentsUpdater}: CommantProps) => {
     if (loaded) {
       if (comments.length > 0)
         return comments.map((commentObj) => (
@@ -91,8 +89,19 @@ export default function CommentsSlider() {
     }
   }, [last_post_id]);
 
+  const closeSlide = React.useCallback(
+    () => dispatch(setSliderOpen({ last_post_id: -1, value: false })),
+    [dispatch]
+  );
+  const handelOnCommentChange = React.useCallback(
+    (value: string) => setComment(value),
+    []
+  );
+
   React.useEffect(() => {
-    if (opened) getComments();
+    if (opened) {
+      getComments();
+    }
   }, [opened, getComments]);
 
   const sendComment = React.useCallback(async () => {
@@ -113,14 +122,6 @@ export default function CommentsSlider() {
     }
   }, [comment, comments.length, last_post_id]);
 
-  const closeSlide = React.useCallback(
-    () => dispatch(setSliderOpen({ last_post_id: -1, value: false })),
-    [dispatch]
-  );
-  const handelOnCommentChange = React.useCallback(
-    (value: string) => setComment(value),
-    []
-  );
 
   return (
     <Dialog

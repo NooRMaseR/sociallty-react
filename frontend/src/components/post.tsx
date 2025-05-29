@@ -19,8 +19,8 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import { textDir, formatNumbers, share, formatDate } from "../utils/functions";
 import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
-import { textDir, formatNumbers, share } from "../utils/functions";
 import { memo, ReactNode, useCallback, useState } from "react";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { useInView } from "react-intersection-observer";
@@ -217,7 +217,7 @@ export default function Post({ post }: { post: PostProps }) {
             />
             <div className="profile-name" style={{ textAlign: "end" }}>
               <Typography sx={{ color: "#8f8f8f" }}>
-                {new Date(post.created_at).toLocaleString()}
+                {formatDate(post.created_at)}
               </Typography>
               <Link
                 to={{

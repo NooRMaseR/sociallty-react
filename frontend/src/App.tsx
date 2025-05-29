@@ -4,7 +4,6 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedView from "./components/protected_view";
@@ -29,6 +28,8 @@ const LazySocialFriendsPage = React.lazy(() => import("./pages/social_friends"))
 const LazyForgetPasswordPage = React.lazy(() => import("./pages/forget_password"));
 const LazySeeUserFriendsPage = React.lazy(() => import("./pages/see_user_friends"));
 const LazySeeUserFriendsRequestsPage = React.lazy(() => import("./pages/see_user_friends_requests"));
+const LazyChatPage = React.lazy(() => import("./pages/Chat"));
+const LazyChatsPage = React.lazy(() => import("./pages/Chats"));
 
 function App() {
   useLoadingBar({
@@ -107,9 +108,7 @@ function App() {
           path="/social-user-profile"
           element={
             <ProtectedView>
-              {/* <React.Suspense fallback={<Profileskeleton />}> */}
               <LazyProfilePage />
-              {/* </React.Suspense> */}
             </ProtectedView>
           }
         />
@@ -126,6 +125,22 @@ function App() {
           element={
             <ProtectedView>
               <LazySettingsPage />
+            </ProtectedView>
+          }
+        />
+        <Route
+          path="/chat/:userId"
+          element={
+            <ProtectedView>
+              <LazyChatPage />
+            </ProtectedView>
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            <ProtectedView>
+              <LazyChatsPage />
             </ProtectedView>
           }
         />
