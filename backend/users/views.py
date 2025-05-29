@@ -1,5 +1,6 @@
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
+from adrf.views import APIView as AsyncAPIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -9,12 +10,14 @@ from django.template.loader import render_to_string
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 from django.core.mail import send_mail
+from asgiref.sync import sync_to_async
 from django.db.models import Count, Q
 from django.db import transaction
 from django.contrib import auth
 
 
 from APIs.serializers import (
+    NotificationSerializer,
     SocialUserSettingsSerializer,
     UserProfileSerializer,
     SocialUserSerializer,
@@ -22,38 +25,56 @@ from APIs.serializers import (
 )
 from .models import FriendRequest, SocialUser, UserCode
 from utils.main_utils import generate_verify_code
+from asgiref.sync import sync_to_async
+from chat.models import Notification
+import asyncio
 
 
-class UserProfileApi(APIView):
+class UserProfileApi(AsyncAPIView):
     
-    def get(self, request: Request, username: str, id: int) -> Response:
-        user = get_object_or_404((
-            SocialUser
-            .objects
-            .prefetch_related("posts", "posts__likes", "posts__media", "posts__comments")
-            .annotate(friends_count=Count('friend'))
-        ), id=id, username=username)
+    async def get(self, request: Request, username: str, id: int) -> Response:
+        """
+        Get the profile of a user
+
+        Args:
+            request (Request): The HTTP request object.
+            username (str): The username of the user to get the profile of.
+            id (int): The id of the user to get the profile of.
+
+        Returns:
+            Response: The profile of the user.
+        """
         
-        posts = user.posts.annotate( # type: ignore
+        user = await sync_to_async(get_object_or_404)(SocialUser.objects.prefetch_related("posts").select_related("settings").annotate(friends_count=Count('friend')), id=id, username=username)
+        
+        posts = await sync_to_async(lambda: user.posts.prefetch_related("media").select_related("user").annotate( # type: ignore
             comments_count=Count('comments', distinct=True),
             likes_count=Count('likes', distinct=True)
-        ).order_by("-created_at")
+        ).order_by("-created_at"))()
         
         paginator = Paginator(posts, '10')
-        post_page = paginator.get_page(request.GET.get('page', 1))
+        post_page = await sync_to_async(paginator.get_page)(request.GET.get('page', 1))
         
-        is_friend: bool = user.friend.filter(Q(user=request.user) | Q(friend=request.user)).exists() # type: ignore
-        has_request: bool = FriendRequest.objects.filter(Q(user=request.user) | Q(friend=request.user)).exists()
+        has_next: bool
+        is_friend: bool
+        has_request: bool
+        user_serializer: UserProfileSerializer
+        post_serializer: PostSerializer
         
-        user_serializer = UserProfileSerializer(user)
-        post_serializer = PostSerializer(post_page, many=True)
+        has_next, is_friend, has_request, user_serializer, post_serializer = await asyncio.gather(
+            sync_to_async(post_page.has_next)(),
+            user.friend.only("user__id", "friend__id").filter(Q(user=request.user) | Q(friend=request.user)).aexists(), # type: ignore
+            FriendRequest.objects.only("user__id", "friend__id").filter(Q(user=request.user) | Q(friend=request.user)).aexists(),
+            sync_to_async(lambda: UserProfileSerializer(user).data)(),
+            sync_to_async(lambda: PostSerializer(post_page, many=True).data)()
+        )
         
         return Response({
-            "user": user_serializer.data,
-            "posts": post_serializer.data,
+            "user": user_serializer,
+            "posts": post_serializer,
             "is_friend": is_friend,
             "has_request": has_request,
-            "has_next": post_page.has_next()
+            "has_next": has_next
         }, status=status.HTTP_200_OK)
 
 
@@ -91,6 +112,7 @@ class UserAuthAPI(APIView):
             return Response({"error": "This account is not Active, please contact us if you think this is a mistake"}, status=status.HTTP_403_FORBIDDEN)
         
         refresh_token = RefreshToken.for_user(user)
+        auth.login(request._request, user)
         return Response(
             {
                 'access': str(refresh_token.access_token), 
@@ -216,10 +238,32 @@ class UserForgotPasswordApi(APIView):
         if password != confirm_password:
             return Response({"passwordError": "passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
         
+        user: SocialUser = get_object_or_404(SocialUser, email=email)
+        user.set_password(password)
+        user.save()
+        return Response(status=200)
+
+
+class GetUserNotification(AsyncAPIView):
+
+    async def get(self, request: Request) -> Response:
+        friends_requests_count, notifications = await asyncio.gather(
+            FriendRequest.objects.filter(friend=request.user).acount(),
+            sync_to_async(lambda: Notification.objects.filter(to_user=request.user).order_by('-created_at'))()
+        )
+        notifications_data = await sync_to_async(lambda: NotificationSerializer(notifications, many=True).data)()
+        return Response({"friends_requests_count": friends_requests_count, "notifications": notifications_data})
+    
+    async def delete(self, request: Request) -> Response:
+        id = request.data.get("id") # type: ignore
+        if not id:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
-            user: SocialUser = SocialUser.objects.get(email=email)
-            user.set_password(password)
-            user.save()
-            return Response(status=200)
-        except SocialUser.DoesNotExist:
+            await Notification.objects.filter(id=id).adelete()
+            return Response(status=status.HTTP_200_OK)
+        except Notification.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        

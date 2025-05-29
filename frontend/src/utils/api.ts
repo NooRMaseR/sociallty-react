@@ -23,6 +23,8 @@ let is_first = true;
 
 const api = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
+  withXSRFToken: true,
 });
 
 api.interceptors.request.use(
@@ -47,8 +49,7 @@ api.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${localStorage.getItem(ACCESS)}`;
           return api(originalRequest)
         }
-      } catch (error) {
-        console.error(`error here: ${error}`);
+      } catch {
         location.href = "/login";
       }
     } else {

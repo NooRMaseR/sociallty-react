@@ -33,21 +33,21 @@ from .models import Post
 # Create your views here.
 
 class PostsApi(APIView):
-    "`restAPi` used for home page to paginate the posts"
+    "`restAPi` used for home page (getting the posts)"
     
     def get(self, request: Request) -> Response:
         # getting all user friends usernames
         friends_usernames = (
             Friend.objects
             .select_related("friend")
-            .only('friend__username')
+            .only('id', 'friend__username', "friend__id", "user__id")
             .filter(Q(user=request.user) | Q(friend=request.user))
             .values_list("friend__username", flat=True)
             .iterator(10)
         )
 
         # getting the posts of the user, the posts must be public or friends only
-        posts = Post.objects.select_related("user").prefetch_related("likes", "media", "comments").filter(
+        posts = Post.objects.select_related("user").prefetch_related("media").filter(
             Q(visibility=Post.PostVisibility.PUBLIC)  # get all posts with visibillty public or
             | Q(user=request.user)  # get the user itself posts or
             | (Q(user__username__in=friends_usernames) & Q(visibility=Post.PostVisibility.FRIENDS_ONLY))  # get the friends posts and check if the visibility is friends only, the public posts is already defined
@@ -58,29 +58,28 @@ class PostsApi(APIView):
             "-created_at"
         )  # order by created_at desc
         
-        friends_requests_count = FriendRequest.objects.filter(friend=request.user).count()
-        
         pagenator = Paginator(posts, 10)
         pagenator_data = pagenator.get_page(request.GET.get('page', 1))
         
         post_serialiizer = PostSerializer(pagenator_data, many=True)
-        return Response({"has_next": pagenator_data.has_next(),"friends_requests_count": friends_requests_count, "posts": post_serialiizer.data})
+        return Response({"has_next": pagenator_data.has_next(), "posts": post_serialiizer.data})
 
 
 class PostApi(APIView):
     "`restApi` used for grtting one post only"
     
     def get(self, _: Request, postID: int) -> Response:
-        POST: Post = get_object_or_404(Post.objects.select_related("user").prefetch_related("media", "likes", "comments"), id=postID)
+        POST: Post = get_object_or_404(Post.objects.select_related("user").prefetch_related("media"), id=postID)
         post_serializer = PostSerializer(POST)
         
         return Response(post_serializer.data)
     
     
 class EditPostAPI(APIView):
+    "`restApi` used for editing a post (get the post and then edit it in another request)"
     
     def get(self, request: Request, postID: int) -> Response:
-        POST: Post = get_object_or_404(Post.objects.select_related("user").prefetch_related("media", "likes", "comments"), id=postID)
+        POST: Post = get_object_or_404(Post.objects.select_related("user").prefetch_related("media"), id=postID)
         
         if POST.user.pk != request.user.pk:
             return Response(status=status.HTTP_403_FORBIDDEN)
@@ -90,12 +89,13 @@ class EditPostAPI(APIView):
     
 
 class SeeUserFirendsApi(APIView):
+    "`restApi` used for getting the user friends"
     
     def get(self, request: Request) -> Response:
         friends_usernames = (
             Friend.objects
             .select_related("friend")
-            .only("friend__username")
+            .only("id", "friend__username")
             .filter(user=request.user)
             .values_list("friend__username", flat=True)
         )
@@ -127,9 +127,6 @@ class SeeUserFirendsApi(APIView):
     def delete(self, request: Request) -> Response:
         """
         `(API)` for removing a friend
-
-        Args:
-            friend: the friend username followed by id
         """
         friendID = request.data.get('friendID') # type: ignore
 
@@ -142,6 +139,7 @@ class SeeUserFirendsApi(APIView):
     
 
 class SeeFirendsRequestsApi(APIView):
+    "`restApi` used for getting the user friends requests"
     
     def get(self, request: Request) -> Response:
         friends_requests = (
@@ -211,6 +209,7 @@ class SeeFirendsRequestsApi(APIView):
     
 
 class SocialUsersApi(APIView):
+    "`restApi` used for getting the social users"
     
     def get(self, request: Request) -> Response:
         user_friends = (

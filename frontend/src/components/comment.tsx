@@ -1,9 +1,9 @@
 import { ApiUrls, CommentProps, MEDIA_URL, PostsStateType } from "../utils/constants";
 import { Box, Card, ClickAwayListener, Tooltip, Typography } from "@mui/material";
+import { setSliderOpen, UpdatePostCommentsCount } from "../utils/store";
+import { textDir, formatNumbers, formatDate } from "../utils/functions";
 import { SetStateAction, useCallback, useState } from "react";
-import { textDir, formatNumbers } from "../utils/functions";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import { UpdatePostCommentsCount } from "../utils/store";
 import { useDispatch, useSelector } from "react-redux";
 import { LazyAvatar } from "./media_skelatons";
 import { Link } from "react-router-dom";
@@ -15,13 +15,9 @@ interface ICommentProps {
   setCommentsUpdater: (value: SetStateAction<CommentProps[]>) => void;
 }
 
-export default function Comment({
-  postID,
-  comment,
-  setCommentsUpdater,
-}: ICommentProps) {
+export default function Comment({postID,  comment,  setCommentsUpdater}: ICommentProps) {
   const [optionsOpened, setOptionsOpened] = useState<boolean>(false);
-  const [likes, setLikes] = useState<number>(comment.comment_likes);
+  const [likes, setLikes] = useState<number>(comment.comment_likes || 0);
   const comments_Count = useSelector(
     (state: PostsStateType) =>
       state.postsState.value.find((po) => po.id === postID)?.comments_count
@@ -86,21 +82,17 @@ export default function Comment({
   return (
     <>
       <Card className="user-comment" sx={{backgroundColor: "#161616"}}>
-        <div
-          className={`comment-container-options ${
-            optionsOpened ? "options-opened" : ""
-          }`}
-        >
-          <div className="option" onClick={addCommentLike}>
-            <Typography>Like</Typography>
+        <div className={`comment-container-options ${optionsOpened ? "options-opened" : ""}`}>
+          <div className="option" onClick={addCommentLike} onTouchEnd={addCommentLike} role="button">
+            <Typography onClick={addCommentLike}>Like</Typography>
             <Typography>{formatNumbers(likes ?? 0)}</Typography>
           </div>
           {/* check if the comment belong to the user or the post belong to the user */}
-          {comment.user.id === +(localStorage.getItem("id") ?? 0) && (
-            <Typography className="option" onClick={deleteComment}>
+          {comment.user.id === +(localStorage.getItem("id") ?? 0) ? (
+            <Typography className="option" onClick={deleteComment} onTouchEnd={deleteComment}>
               Delete
             </Typography>
-          )}
+          ): null}
         </div>
         <ClickAwayListener onClickAway={closeOptions}>
           <Tooltip title="Options">
@@ -118,6 +110,7 @@ export default function Comment({
               pathname: `/social-user-profile`,
               search: `?username=${comment.user.username}&id=${comment.user.id}`,
             }}
+            onClick={() => dispatch(setSliderOpen({last_post_id: -1, value: false}))}
           >
             {comment.user.username}
           </Link>
@@ -125,7 +118,7 @@ export default function Comment({
         <Typography className="comment-text" dir={textDir(comment.content)} sx={{margin: ".5rem"}}>{comment.content}</Typography>
         <Box sx={{ width: "100%", display: "flex", justifyContent: "end" }}>
           <Typography className="comment-time">
-            {new Date(comment.created_at).toLocaleString()}
+            {formatDate(comment.created_at)}
           </Typography>
         </Box>
       </Card>

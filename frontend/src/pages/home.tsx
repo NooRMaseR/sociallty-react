@@ -1,6 +1,6 @@
-import React, { memo, Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { appendPosts, setCount, setPosts } from "../utils/store";
+import React, { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ApiUrls, PostsStateType } from "../utils/constants";
+import { appendPosts, setPosts } from "../utils/store";
 import { useDispatch, useSelector } from "react-redux";
 import PostSkelaton from "../components/post_skelaton";
 import { useLoadingBar } from "react-top-loading-bar";
@@ -32,28 +32,24 @@ const Posts = memo(({ posts }: { posts: PostProps[] }) => {
 
 export default function Home() {
   const posts = useSelector((state: PostsStateType) => state.postsState.value);
-  const [firstInit, setFirstInit] = useState(true);
   const [pageNumebr, setPageNumber] = useState<number>(1);
-  const [hasNext, setHasNext] = useState<boolean | null>(null);
+  const [hasNext, setHasNext] = useState<boolean>(false);
   const [loaded, setLoaded] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
+  const loadingRef = useRef<boolean>(false);
   const { start, complete } = useLoadingBar();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const getPosts = useCallback(async () => {
-    setLoading(true);
+    loadingRef.current = true;
     try {
       const res = await api.get<{
         posts: PostProps[];
         has_next: boolean;
-        friends_requests_count: number;
       }>(ApiUrls.posts_today + pageNumebr.toString());
       if (res.status === 200) {
-        if (firstInit) {
+        if (pageNumebr === 1) {
           dispatch(setPosts(res.data.posts));
-          dispatch(setCount(res.data.friends_requests_count));
-          setFirstInit(false);
           setLoaded(true);
           complete();
         } else {
@@ -63,14 +59,32 @@ export default function Home() {
       }
     } catch {
       console.error("error fetching the posts");
+    } finally {
+      setTimeout(() => {
+        loadingRef.current = false;
+      }, 3000);
     }
-    setLoading(false);
   }, [pageNumebr]);
+
+
+  const handleScrollEvent = useCallback(() => {
+    if (window.scrollY + innerHeight >= document.documentElement.scrollHeight - 800 && hasNext && !loadingRef.current) {
+      setPageNumber((prev) => prev + 1);
+    }
+  }, [hasNext]);
 
   // fetch the posts
   useEffect(() => {
     getPosts();
-  }, [getPosts, pageNumebr]);
+  }, [pageNumebr, getPosts]);
+
+  // setup scroll listener
+  useEffect(() => {
+    window.addEventListener("scroll", handleScrollEvent);
+    return () => {
+      window.removeEventListener("scroll", handleScrollEvent);
+    };
+  }, [handleScrollEvent]);
 
   return (
     <main>
@@ -114,7 +128,7 @@ export default function Home() {
         ) : (
           <>
             <Posts posts={posts}/>
-            <div>
+            {/* <div>
               {hasNext ? (
                 <Button
                   type="button"
@@ -128,7 +142,7 @@ export default function Home() {
               ) : (
                 hasNext === false ? <p>No More Posts...</p> : null
               )}
-            </div>
+            </div> */}
           </>
         )}
       </Box>

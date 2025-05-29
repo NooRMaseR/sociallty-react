@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ApiUrls, AR } from "./constants";
 import api from "./api";
+import dayjs from "dayjs";
 
 interface ShareOptions {
   text?: string;
@@ -117,3 +118,7 @@ export function textDir(text: string): "rtl" | "ltr" {
   if (text.length > 0 && AR.includes(text[0].toLowerCase())) return "rtl";
   else return "ltr";
 };
+
+export function formatDate(date: string, format: string = "YYYY/MM/DD hh:mm A"): string {
+  return dayjs(date).format(format);
+}

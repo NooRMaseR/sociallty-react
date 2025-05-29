@@ -3,9 +3,10 @@ import { Media, PostProps } from "../components/post";
 const DEBUG: boolean = false;
 export const ACCESS: string = "access";
 export const REFRESH: string = "refresh";
-export const API_URL: string = DEBUG ? "http://192.168.1.8:8000" : "https://minimum-lauretta-noormaser-0d773dac.koyeb.app/";
-export const MEDIA_URL: string = DEBUG ? "http://192.168.1.8:8000" : '';
-export const AR: string[] = ['ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'];
+export const API_URL: string = DEBUG ? "http://192.168.1.5:8000" : "https://minimum-lauretta-noormaser-0d773dac.koyeb.app/";
+export const MEDIA_URL: string = DEBUG ? "http://192.168.1.5:8000" : '';
+export const WEBSOCKET_URL: string = DEBUG ? "ws://192.168.1.5:8000/ws" : `wss://minimum-lauretta-noormaser-0d773dac.koyeb.app/ws`;
+export const AR: string[] = ["إ", 'أ', 'ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي', 'ى' , 'ء'];
 
 export interface TokenResponse {
   readonly id: number;
@@ -58,8 +59,10 @@ export enum Visibility {
 export enum ApiUrls {
   user_log_sign = "user/",
   api = "api/",
-
+  chat = "chat/",
+  messageReact = `${chat}message-react/`,
   user_refresh_token = `${user_log_sign}refresh/`,
+  user_requests_count = `${user_log_sign}recive-requests/`,
   see_user_friends = "see-user-friends/?list=",
   see_friends_requests = 'see-friends-request/',
   edit_user = `${user_log_sign}edit-user/`,
@@ -139,4 +142,15 @@ export type FriendsRequestsCountStateType = {
   friends_requests_count: {
     count: number;
   };
+};
+
+export const reactionsEmojis = {
+  like: "👍",
+  dislike: "👎",
+  love: "❤️",
+  haha: "😂",
+  wow: "😮",
+  sad: "😢",
+  angry: "😠",
+  cool: "😎",
 };

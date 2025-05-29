@@ -30,40 +30,48 @@ SECRET_KEY = os.getenv("SOCIALLTY_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 MAX_UPLOAD_SIZE = 20971520 # 20MB
-ALLOWED_HOSTS = ['*' if DEBUG else "minimum-lauretta-noormaser-0d773dac.koyeb.app"]
+ALLOWED_HOSTS = ('*',) if DEBUG else ("minimum-lauretta-noormaser-0d773dac.koyeb.app",)
 AUTH_USER_MODEL = "users.SocialUser"
 
 # Application definition
 
 INSTALLED_APPS = [
-    "unfold",  # before django.contrib.admin
-    "unfold.contrib.filters",  # optional, if special filters are needed
-    "unfold.contrib.forms",  # optional, if special form elements are needed
+    'unfold',
+    'unfold.contrib.filters',
+    'unfold.contrib.forms',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    "whitenoise.runserver_nostatic",
+    'whitenoise.runserver_nostatic',
+    'daphne',
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
     'users',
-    "main_page",
-    "whitenoise",
-    "phonenumber_field",  
+    'main_page',
+    'chat',
+    'whitenoise',
+    'phonenumber_field',
     'corsheaders',
+    'channels',
+    'adrf',
 ]
 
 if not DEBUG:
     INSTALLED_APPS.extend(('cloudinary_storage','cloudinary'))
 if DEBUG:
-    INSTALLED_APPS.append("django_extensions")
+    INSTALLED_APPS.extend(("django_extensions", 'drf_yasg', "debug_toolbar"))
+    INTERNAL_IPS = (
+        "127.0.0.1",
+    )
 
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication'
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -74,6 +82,7 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = (
+    # "debug_toolbar.middleware.DebugToolbarMiddleware", #! remove in production
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -106,6 +115,8 @@ TEMPLATES = (
 )
 
 WSGI_APPLICATION = 'sociallty.wsgi.application'
+ASGI_APPLICATION = 'sociallty.asgi.application'
+
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend" if DEBUG else "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
@@ -162,18 +173,12 @@ USE_I18N = True
 USE_TZ = True
 
 
-if DEBUG:
-    CORS_ALLOWED_ORIGINS = (
-        "http://localhost:5173",
-        "http://localhost:4173",
-        "http://192.168.1.8:5173",
-        "http://192.168.1.8:4173"
-    )
-else:
-    CORS_ALLOWED_ORIGINS = (
-        "https://9656c254-d986-4e95-82b2-fcaf37f7825e.e1-us-east-azure.choreoapps.dev",
-        "https://bdc0b1d4-0436-4c85-8ed1-6cc4e436a14a.e1-us-east-azure.choreoapps.dev"
-    )
+CORS_ALLOWED_ORIGINS = (
+    "http://localhost:5173",
+    "http://localhost:4173",
+    "http://192.168.1.5:5173",
+    "http://192.168.1.5:4173",
+) if DEBUG else os.getenv("ALLOWED_CORS", "").split("|")
     
 CORS_ALLOW_CREDENTIALS = True
 
@@ -189,6 +194,24 @@ SIMPLE_JWT = {
     "REFRESH_TOEKN_LIFETIME": timedelta(days=5)
 }
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    } 
+    # if DEBUG else {
+    #     "BACKEND": "channels_redis.core.RedisChannelLayer",
+    #     "CONFIG": {
+    #         "hosts": [("127.0.0.1", 6379)],
+    #         "expiry": 3600,  # Key expiration in seconds
+    #         "group_expiry": 86400,  # Group expiration
+    #         "capacity": 1000,  # Default 100
+    #         "channel_capacity": {
+    #             "specific.channel": 2000  # Higher capacity for important channels
+    #         }
+    #     }
+    # }
+}
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
@@ -196,8 +219,8 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "static_files"
 STATICFILES_DIRS = (BASE_DIR / "static",)
 
-LOGIN_URL = "login-page"
-LOGIN_REDIRECT_URL = "/"
+# LOGIN_URL = "login-page"
+# LOGIN_REDIRECT_URL = "/"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
