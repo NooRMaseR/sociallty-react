@@ -26,12 +26,15 @@ urlpatterns = [
     path("api/", include("APIs.urls"), name="api"),
     path("user/", include("users.urls")),
     path("chat/", include("chat.urls")),
+    path("chat/", include("chat.urls")),
     path("user/token/", TokenObtainPairView.as_view()),
     path("user/refresh/", TokenRefreshView.as_view()),
 ]
 
 
 if settings.DEBUG:
+    from debug_toolbar.toolbar import debug_toolbar_urls
+    from drf_yasg.views import get_schema_view
     from debug_toolbar.toolbar import debug_toolbar_urls
     from drf_yasg.views import get_schema_view
     from django.conf.urls.static import static
@@ -51,6 +54,12 @@ if settings.DEBUG:
         permission_classes=(permissions.IsAuthenticated,)
     )
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += (
+        path('swagger.<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+        path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+        path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    )
+    urlpatterns += debug_toolbar_urls()
     urlpatterns += (
         path('swagger.<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
         path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

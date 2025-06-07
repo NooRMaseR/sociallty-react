@@ -1,6 +1,6 @@
 import { Media, PostProps } from "../components/post";
 
-const DEBUG: boolean = false;
+const DEBUG: boolean = true;
 export const ACCESS: string = "access";
 export const REFRESH: string = "refresh";
 export const API_URL: string = DEBUG ? "http://192.168.1.5:8000" : "https://minimum-lauretta-noormaser-0d773dac.koyeb.app/";
@@ -61,7 +61,10 @@ export enum ApiUrls {
   api = "api/",
   chat = "chat/",
   messageReact = `${chat}message-react/`,
+  chat = "chat/",
+  messageReact = `${chat}message-react/`,
   user_refresh_token = `${user_log_sign}refresh/`,
+  user_requests_count = `${user_log_sign}recive-requests/`,
   user_requests_count = `${user_log_sign}recive-requests/`,
   see_user_friends = "see-user-friends/?list=",
   see_friends_requests = 'see-friends-request/',
@@ -144,6 +147,16 @@ export type FriendsRequestsCountStateType = {
   };
 };
 
+export const reactionsEmojis = {
+  like: "👍",
+  dislike: "👎",
+  love: "❤️",
+  haha: "😂",
+  wow: "😮",
+  sad: "😢",
+  angry: "😠",
+  cool: "😎",
+};
 export const reactionsEmojis = {
   like: "👍",
   dislike: "👎",

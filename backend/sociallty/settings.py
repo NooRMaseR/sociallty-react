@@ -28,14 +28,18 @@ load_dotenv()
 SECRET_KEY = os.getenv("SOCIALLTY_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 MAX_UPLOAD_SIZE = 20971520 # 20MB
+ALLOWED_HOSTS = ('*',) if DEBUG else ("minimum-lauretta-noormaser-0d773dac.koyeb.app",)
 ALLOWED_HOSTS = ('*',) if DEBUG else ("minimum-lauretta-noormaser-0d773dac.koyeb.app",)
 AUTH_USER_MODEL = "users.SocialUser"
 
 # Application definition
 
 INSTALLED_APPS = [
+    'unfold',
+    'unfold.contrib.filters',
+    'unfold.contrib.forms',
     'unfold',
     'unfold.contrib.filters',
     'unfold.contrib.forms',
@@ -46,6 +50,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'daphne',
+    'whitenoise.runserver_nostatic',
+    'daphne',
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
@@ -54,7 +60,13 @@ INSTALLED_APPS = [
     'chat',
     'whitenoise',
     'phonenumber_field',
+    'main_page',
+    'chat',
+    'whitenoise',
+    'phonenumber_field',
     'corsheaders',
+    'channels',
+    'adrf',
     'channels',
     'adrf',
 ]
@@ -66,11 +78,16 @@ if DEBUG:
     INTERNAL_IPS = (
         "127.0.0.1",
     )
+    INSTALLED_APPS.extend(("django_extensions", 'drf_yasg', "debug_toolbar"))
+    INTERNAL_IPS = (
+        "127.0.0.1",
+    )
 
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication'
         'rest_framework.authentication.SessionAuthentication'
     ),
     'DEFAULT_PERMISSION_CLASSES': (
@@ -115,6 +132,8 @@ TEMPLATES = (
 )
 
 WSGI_APPLICATION = 'sociallty.wsgi.application'
+ASGI_APPLICATION = 'sociallty.asgi.application'
+
 ASGI_APPLICATION = 'sociallty.asgi.application'
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend" if DEBUG else "django.core.mail.backends.smtp.EmailBackend"
@@ -219,6 +238,8 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "static_files"
 STATICFILES_DIRS = (BASE_DIR / "static",)
 
+# LOGIN_URL = "login-page"
+# LOGIN_REDIRECT_URL = "/"
 # LOGIN_URL = "login-page"
 # LOGIN_REDIRECT_URL = "/"
 
