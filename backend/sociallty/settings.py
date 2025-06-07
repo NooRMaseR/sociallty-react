@@ -28,18 +28,14 @@ load_dotenv()
 SECRET_KEY = os.getenv("SOCIALLTY_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 MAX_UPLOAD_SIZE = 20971520 # 20MB
-ALLOWED_HOSTS = ('*',) if DEBUG else ("minimum-lauretta-noormaser-0d773dac.koyeb.app",)
 ALLOWED_HOSTS = ('*',) if DEBUG else ("minimum-lauretta-noormaser-0d773dac.koyeb.app",)
 AUTH_USER_MODEL = "users.SocialUser"
 
 # Application definition
 
 INSTALLED_APPS = [
-    'unfold',
-    'unfold.contrib.filters',
-    'unfold.contrib.forms',
     'unfold',
     'unfold.contrib.filters',
     'unfold.contrib.forms',
@@ -50,8 +46,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'daphne',
-    'whitenoise.runserver_nostatic',
-    'daphne',
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
@@ -60,13 +54,7 @@ INSTALLED_APPS = [
     'chat',
     'whitenoise',
     'phonenumber_field',
-    'main_page',
-    'chat',
-    'whitenoise',
-    'phonenumber_field',
     'corsheaders',
-    'channels',
-    'adrf',
     'channels',
     'adrf',
 ]
@@ -78,16 +66,11 @@ if DEBUG:
     INTERNAL_IPS = (
         "127.0.0.1",
     )
-    INSTALLED_APPS.extend(("django_extensions", 'drf_yasg', "debug_toolbar"))
-    INTERNAL_IPS = (
-        "127.0.0.1",
-    )
 
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication'
         'rest_framework.authentication.SessionAuthentication'
     ),
     'DEFAULT_PERMISSION_CLASSES': (
