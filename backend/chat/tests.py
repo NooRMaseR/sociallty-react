@@ -1,4 +1,3 @@
-from pprint import pprint
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -10,7 +9,7 @@ class Test(TestCase):
     def setUp(self) -> None:
         self.api = APIClient()
         self.respone = self.api.put(reverse("user-auth"), {"username":"testuser", "password":"testpassword", "email":"testuser@test.com", "first_name":"test", "last_name":"user", "phone":"+201234567890"})
-        self.data = self.respone.json()
+        self.data = self.respone.json() # type: ignore
         return super().setUp()
     
     async def test_chat_connect(self):

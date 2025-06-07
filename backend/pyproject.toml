@@ -22,7 +22,7 @@ dependencies = [
     "pydantic>=2.11.2",
     "adrf>=0.1.9",
     "drf-yasg>=1.21.10",
-    "twisted[http2,tls]>=24.11.0",
+    "twisted[http2,tls]>=25.5.0",
 ]
 
 [dependency-groups]

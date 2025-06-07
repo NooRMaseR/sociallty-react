@@ -58,7 +58,7 @@ export default function SeeUserFriendsPage() {
       );
     }
     setButtonLoading(false);
-  }, [pageNumber, complete]);
+  }, [pageNumber]);
 
   useEffect(() => {
     getAccounts();

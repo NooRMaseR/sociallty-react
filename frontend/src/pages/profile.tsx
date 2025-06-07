@@ -20,11 +20,12 @@ import React, {
   useState,
 } from "react";
 import { Backdrop, Box, Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from "@mui/material";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Profileskeleton from "../components/profile_page_skelaton";
-import { Link, useSearchParams } from "react-router-dom";
 import PostSkelaton from "../components/post_skelaton";
 import { useLoadingBar } from "react-top-loading-bar";
 import { Image } from "../components/media_skelatons";
+import MessageIcon from '@mui/icons-material/Message';
 import QrCodeIcon from "@mui/icons-material/QrCode";
 import styles from "../styles/profile.module.css";
 import EditIcon from "@mui/icons-material/Edit";
@@ -127,6 +128,7 @@ export default function ProfilePage() {
   const [pageNumber, setPageNumber] = useState<number>(1);
   const { start, complete } = useLoadingBar();
   const [params] = useSearchParams();
+  const navigate = useNavigate();
 
   const isAuthor = user.id == +(localStorage.getItem("id") ?? 0);
 
@@ -272,6 +274,10 @@ export default function ProfilePage() {
                       <Button onClick={() => setOpenQr(true)}>
                         <QrCodeIcon />
                         Qr Code
+                      </Button>
+                      <Button onClick={() => navigate(`/chat/${user.id}?username=${user.username}`)}>
+                        <MessageIcon />
+                        Chat
                       </Button>
                     </ButtonGroup>
                   ) : requestSent || has_request ? (

@@ -33,7 +33,7 @@ interface UserSignupProps {
   password: string;
   bio: string;
   phone: string;
-  birth: Date;
+  birth: string;
   profile_picture: File;
 }
 
@@ -245,13 +245,14 @@ export default function Signup() {
                   name="birth"
                   maxDate={dayjs().add(-5, 'year')}
                   minDate={dayjs().add(-110, 'year')}
+                  onChange={(v) => v && setValue("birth", v.format("YYYY-MM-DD"))}
                   slotProps={{
                     textField: {
-                      ...{ ...register('birth', { required: true }) },
                       variant: "filled",
                       error: errors.birth ? true : false,
                       helperText: errors.birth?.message,
-                      required: true
+                      required: true,
+                      ...{ ...register('birth', {required: true}) }
                     }
                   }}
                   sx={{width: "100%"}}

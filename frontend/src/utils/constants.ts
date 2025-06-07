@@ -1,11 +1,13 @@
 import { Media, PostProps } from "../components/post";
 
-const DEBUG: boolean = true;
-export const ACCESS: string = "access";
-export const REFRESH: string = "refresh";
-export const API_URL: string = DEBUG ? "http://192.168.1.5:8000" : "https://minimum-lauretta-noormaser-0d773dac.koyeb.app/";
-export const MEDIA_URL: string = DEBUG ? "http://192.168.1.5:8000" : '';
-export const WEBSOCKET_URL: string = DEBUG ? "ws://192.168.1.5:8000/ws" : `wss://minimum-lauretta-noormaser-0d773dac.koyeb.app/ws`;
+export const DEBUG: boolean = false;
+const USELOCAL: boolean = false;
+const LOCAL_URL = "http://127.0.0.1:8000";
+export const ACCESS = "access";
+export const REFRESH = "refresh";
+export const API_URL = DEBUG ? USELOCAL ? LOCAL_URL : "http://192.168.1.8:8000" : "https://successful-carlene-noormaser-5d3a002e.koyeb.app";
+export const MEDIA_URL = DEBUG ? USELOCAL ? LOCAL_URL : "http://192.168.1.8:8000" : '';
+export const WEBSOCKET_URL = DEBUG ? USELOCAL ? `${LOCAL_URL}/ws` : "ws://192.168.1.8:8000/ws" : `wss://successful-carlene-noormaser-5d3a002e.koyeb.app/ws`;
 export const AR: string[] = ["إ", 'أ', 'ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي', 'ى' , 'ء'];
 
 export interface TokenResponse {
@@ -61,10 +63,7 @@ export enum ApiUrls {
   api = "api/",
   chat = "chat/",
   messageReact = `${chat}message-react/`,
-  chat = "chat/",
-  messageReact = `${chat}message-react/`,
   user_refresh_token = `${user_log_sign}refresh/`,
-  user_requests_count = `${user_log_sign}recive-requests/`,
   user_requests_count = `${user_log_sign}recive-requests/`,
   see_user_friends = "see-user-friends/?list=",
   see_friends_requests = 'see-friends-request/',
@@ -147,16 +146,6 @@ export type FriendsRequestsCountStateType = {
   };
 };
 
-export const reactionsEmojis = {
-  like: "👍",
-  dislike: "👎",
-  love: "❤️",
-  haha: "😂",
-  wow: "😮",
-  sad: "😢",
-  angry: "😠",
-  cool: "😎",
-};
 export const reactionsEmojis = {
   like: "👍",
   dislike: "👎",
