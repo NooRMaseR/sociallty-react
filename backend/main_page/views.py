@@ -1,6 +1,6 @@
+from django.db.models import Q, Count, Subquery, OuterRef
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
-from django.db.models import Q, Count
 from django.db import transaction
 
 from rest_framework.response import Response
@@ -10,25 +10,8 @@ from rest_framework import status
 
 from APIs.serializers import PostSerializer, SocialUserOnlySerializer
 from users.models import SocialUser, Friend, FriendRequest
+from chat.models import Message
 from .models import Post
-
-# from icecream import ic #! for debugging
-
-# * Todo: let the user be able to edit his profile ✔
-# * Todo: display in the social user profile add friend button if he is not friends, otherwise add remove friend ✔
-# * Todo: display in the user profile how many friends ✔
-# * Todo: add some animations to the comments and likes ✔
-# * Todo: add some icons instead of text when you renew your internet ✔
-# * Todo: add darkmode ✔
-# * Todo: add Restfull API to control the api ✔
-# * Todo: add video support ✔
-# * Todo: change the login algorithm ✔
-# * Todo: change the signup algorithm ✔
-# Todo: send a code via gmail to verify if the user is realy want's to change his password
-# ? Todo: send a code via gmail to verify if the user is realy want's to remove his account
-# Todo: let the users see the likers
-# Todo last: boost the performance by lower the files per request and lower the reslution of the images and videos to save some space and lower the request internet
-
 
 # Create your views here.
 
@@ -36,13 +19,13 @@ class PostsApi(APIView):
     "`restAPi` used for home page (getting the posts)"
     
     def get(self, request: Request) -> Response:
-        # getting all user friends usernames
-        friends_usernames = (
+        # getting all user friends ids
+        friends_ids = (
             Friend.objects
             .select_related("friend")
-            .only('id', 'friend__username', "friend__id", "user__id")
+            .only('id', 'friend__id', "friend__id", "user__id")
             .filter(Q(user=request.user) | Q(friend=request.user))
-            .values_list("friend__username", flat=True)
+            .values_list("friend__id", flat=True)
             .iterator(10)
         )
 
@@ -50,7 +33,7 @@ class PostsApi(APIView):
         posts = Post.objects.select_related("user").prefetch_related("media").filter(
             Q(visibility=Post.PostVisibility.PUBLIC)  # get all posts with visibillty public or
             | Q(user=request.user)  # get the user itself posts or
-            | (Q(user__username__in=friends_usernames) & Q(visibility=Post.PostVisibility.FRIENDS_ONLY))  # get the friends posts and check if the visibility is friends only, the public posts is already defined
+            | (Q(user__id__in=friends_ids) & Q(visibility=Post.PostVisibility.FRIENDS_ONLY))  # get the friends posts and check if the visibility is friends only, the public posts is already defined
         ).annotate(
             comments_count=Count('comments', distinct=True),
             likes_count=Count('likes', distinct=True)
@@ -92,16 +75,36 @@ class SeeUserFirendsApi(APIView):
     "`restApi` used for getting the user friends"
     
     def get(self, request: Request) -> Response:
-        friends_usernames = (
+        
+        friends_ids = (
             Friend.objects
             .select_related("friend")
-            .only("id", "friend__username")
+            .only("id", "friend__id")
             .filter(user=request.user)
-            .values_list("friend__username", flat=True)
+            .values_list("friend__id", flat=True)
         )
-
-        friends = SocialUser.objects.filter(username__in=friends_usernames)
-        
+        if request.GET.get("request-type") == "with-message":
+            last_message_subquery = (
+                Message.objects
+                .only("id", "message", "from_user")
+                .filter(
+                    Q(from_user_id=OuterRef("id"), to_user=request.user)
+                    | Q(to_user_id=OuterRef("id"), from_user=request.user)
+                )
+                .order_by("-sent_at")
+            )
+            
+            friends = (
+                SocialUser.objects
+                .filter(id__in=friends_ids)
+                .annotate(
+                    last_message=Subquery(last_message_subquery.values("message")[:1]),
+                    last_message_from_id=Subquery(last_message_subquery.values("from_user_id")[:1])
+                )
+            )
+        else:
+            friends = SocialUser.objects.filter(id__in=friends_ids)
+            
         paginator = Paginator(friends, 10)
         friends_page = paginator.get_page(request.GET.get('list', 1))
         friends_serializer = SocialUserOnlySerializer(friends_page, many=True)
@@ -215,13 +218,13 @@ class SocialUsersApi(APIView):
         user_friends = (
             Friend.objects
             .select_related("friend")
-            .only('id', "friend__username")
+            .only('id', "friend__id")
             .filter(user=request.user)
-            .values_list("friend__username", flat=True)
+            .values_list("friend__id", flat=True)
         )
         users = SocialUser.objects.exclude(
             Q(is_staff=True)
-            | Q(username__in=user_friends)
+            | Q(id__in=user_friends)
             | Q(id=request.user.id)  # type: ignore
             | Q(friend_request__in = request.user.user_request.all())
             | Q(user_request__in = request.user.friend_request.all())

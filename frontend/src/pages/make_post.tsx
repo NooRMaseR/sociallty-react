@@ -52,7 +52,7 @@ export default function MakePostPage() {
     for (let i = 0; i < selectedMedia.length; i++) {
       const file = selectedMedia[i];
       const sizeInMB: number = (file.size / 1024) / 1024;
-      if (sizeInMB > 20) {
+      if (sizeInMB > 100) {
         setOpenDlg(true);
         return;
       }

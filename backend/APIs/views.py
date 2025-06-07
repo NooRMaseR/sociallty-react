@@ -5,7 +5,7 @@ from django.db.models import Count
 from django.db import transaction
 
 # Restful API
-from rest_framework.parsers import MultiPartParser
+from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -21,7 +21,7 @@ from drf_yasg import openapi
     
 class PostApi(APIView):
     "`restful API` for handling post apis `POST` for adding a post `PUT` for updating the post `DELETE` for deleting the post"
-    parser_classes = (MultiPartParser, )
+    parser_classes = (MultiPartParser, JSONParser)
     
     def save_content(self, files: list[UploadedFile], post: Post) -> Response | None:
         """A Function to save the `PostContent`
@@ -59,43 +59,32 @@ class PostApi(APIView):
     
     
     @swagger_auto_schema(
-        manual_parameters=[
-          openapi.Parameter(
-            "files",
-            openapi.IN_FORM,
-            type=openapi.TYPE_ARRAY,
-            items=openapi.Items(type=openapi.TYPE_FILE),
-            description="The files to add to the post",
-            required=False
-          ),
-          openapi.Parameter(
-            "desc",
-            openapi.IN_FORM,
-            type=openapi.TYPE_STRING,
-            description="The description of the post",
-            required=False
-          ),
-          openapi.Parameter(
-            "visibility",
-            openapi.IN_FORM,
-            type=openapi.TYPE_STRING,
-            enum=Post.PostVisibility.values,
-            description="The visibility of the post",
-            default=Post.PostVisibility.PUBLIC,
-            required=True
-          )
-        ],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["visibility"],
+            properties={
+                "files": openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Items(type=openapi.TYPE_FILE),
+                    description="The files to add to the post",
+                ),
+                "desc": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="The description of the post"
+                ),
+                "visibility": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    enum=list(Post.PostVisibility.values),
+                    description="The visibility of the post",
+                    default=Post.PostVisibility.PUBLIC,
+                )
+            }
+        ),
         responses={
-            201: openapi.Response(
-                description="Post created successfully",
-            ),
-            400: openapi.Response(
-                description="Invalid request",
-            ),
-            415: openapi.Response(
-                description="Unsupported media type",
-            )
-        },
+            201: openapi.Response(description="Post created successfully"),
+            400: openapi.Response(description="Invalid request"),
+            415: openapi.Response(description="Unsupported media type"),
+        }
     )
     @transaction.atomic
     def post(self, request: Request) -> Response:
@@ -121,46 +110,35 @@ class PostApi(APIView):
 
 
     @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "postID",
-                openapi.IN_FORM,
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["postID", "visibility"],
+            properties={
+                "postID": openapi.Schema(
                 type=openapi.TYPE_INTEGER,
                 description="The ID of the post to update",
-                required=True
             ),
-            openapi.Parameter(
-                "delete_media",
-                openapi.IN_FORM,
+                "delete_media": openapi.Schema(
                 type=openapi.TYPE_ARRAY,
                 items=openapi.Items(type=openapi.TYPE_INTEGER),
                 description="The IDs of the media to delete",
-                required=False
             ),
-            openapi.Parameter(
-                "files",
-                openapi.IN_FORM,
+                "files": openapi.Schema(
                 type=openapi.TYPE_ARRAY,
                 items=openapi.Items(type=openapi.TYPE_FILE),
                 description="The files to add to the post",
-                required=False
             ),
-            openapi.Parameter(
-                "visibility",
-                openapi.IN_FORM,
+                "visibility": openapi.Schema(
                 type=openapi.TYPE_STRING,
                 enum=Post.PostVisibility.values,
                 description="The visibility of the post",
-                required=True
             ),
-            openapi.Parameter(
-                "desc",
-                openapi.IN_FORM,
+                "desc": openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description="The description of the post",
-                required=False
             )
-        ],
+            }
+        ),
         responses={
             200: openapi.Response(
                 description="Post updated successfully",
@@ -207,28 +185,28 @@ class PostApi(APIView):
         return Response(status=status.HTTP_200_OK)
     
     
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "postID",
-                openapi.IN_FORM,
-                type=openapi.TYPE_INTEGER,
-                description="The ID of the post to delete",
-                required=True
-            )
-        ],
-        responses={
-            200: openapi.Response(
-                description="Post deleted successfully",
-            ),
-            404: openapi.Response(
-                description="Post not found",
-            ),
-            500: openapi.Response(
-                description="Internal server error",
-            )
-        }
-    )
+    # @swagger_auto_schema(
+    #     manual_parameters=[
+    #         openapi.Parameter(
+    #             "postID",
+    #             openapi.IN_FORM,
+    #             type=openapi.TYPE_INTEGER,
+    #             description="The ID of the post to delete",
+    #             required=True
+    #         )
+    #     ],
+    #     responses={
+    #         200: openapi.Response(
+    #             description="Post deleted successfully",
+    #         ),
+    #         404: openapi.Response(
+    #             description="Post not found",
+    #         ),
+    #         500: openapi.Response(
+    #             description="Internal server error",
+    #         )
+    #     }
+    # )
     @transaction.atomic
     def delete(self, request: Request) -> Response:
         "`(API)` for removing a post using the post id"

@@ -1,0 +1,9 @@
+.venv
+.choreo
+__pycache__
+
+locustfile.py
+Procfile
+README.md
+test.py
+test.rest

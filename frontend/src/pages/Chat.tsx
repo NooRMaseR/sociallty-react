@@ -14,6 +14,7 @@ import MessageBubble, {
   Reaction,
 } from "../components/chat/message_bubble";
 import {
+  ACCESS,
   ApiUrls,
   FullUser,
   MEDIA_URL,
@@ -186,9 +187,11 @@ export default function Chat() {
 
   const connect_socket = useCallback(() => {
     if (!userToChat?.username || !userToChat?.id) return null;
-    
+
+    const token = localStorage.getItem(ACCESS);
     const sw = new WebSocket(
-      `${WEBSOCKET_URL}/chat/${userToChat.username}/${userToChat.id}/`
+      `${WEBSOCKET_URL}/chat/${userToChat.username}/${userToChat.id}/`,
+      token ? [token + token.substring(0, 5)] : undefined
     );
 
     sw.onmessage = (e) => {

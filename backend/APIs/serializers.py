@@ -47,6 +47,8 @@ class PostContentSerializer(serializers.ModelSerializer):
         fields = "__all__"
         
 class SocialUserOnlySerializer(serializers.ModelSerializer):
+    last_message = serializers.CharField(read_only=True, default=None)
+    last_message_from_id = serializers.IntegerField(read_only=True, default=None)
     class Meta:
         model = SocialUser
         fields = (
@@ -54,7 +56,9 @@ class SocialUserOnlySerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "username",
-            "profile_picture"
+            "profile_picture",
+            "last_message",
+            "last_message_from_id",
         )
 
 class CommentSerializer(serializers.ModelSerializer):

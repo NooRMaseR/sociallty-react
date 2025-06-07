@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ApiUrls, AR } from "./constants";
+import { ACCESS, ApiUrls, AR } from "./constants";
 import api from "./api";
 import dayjs from "dayjs";
 
@@ -112,6 +112,14 @@ export function formatNumbers(value: number): string {
     const _value = value / 1_000_000_000;
     return `${Math.floor(_value)}B`;
   }
+}
+
+export function formatToken(token:string, from_: number = 0, to: number = 5): string {
+  return token + token.substring(from_, to)
+}
+
+export function getFormatedToken(): string {
+  return formatToken(localStorage.getItem(ACCESS) ?? "")
 }
 
 export function textDir(text: string): "rtl" | "ltr" {

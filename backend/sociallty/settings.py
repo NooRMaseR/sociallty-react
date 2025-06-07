@@ -19,7 +19,6 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# load_dotenv(BASE_DIR / ".env")
 load_dotenv()
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -28,18 +27,14 @@ load_dotenv()
 SECRET_KEY = os.getenv("SOCIALLTY_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-MAX_UPLOAD_SIZE = 20971520 # 20MB
-ALLOWED_HOSTS = ('*',) if DEBUG else ("minimum-lauretta-noormaser-0d773dac.koyeb.app",)
-ALLOWED_HOSTS = ('*',) if DEBUG else ("minimum-lauretta-noormaser-0d773dac.koyeb.app",)
+DEBUG = False
+MAX_UPLOAD_SIZE = 104857600 # 100MB
+ALLOWED_HOSTS = ('*',) if DEBUG else ("successful-carlene-noormaser-5d3a002e.koyeb.app", "127.0.0.1", *os.getenv("ALLOWED_CORS", "").split("|"))
 AUTH_USER_MODEL = "users.SocialUser"
 
 # Application definition
 
 INSTALLED_APPS = [
-    'unfold',
-    'unfold.contrib.filters',
-    'unfold.contrib.forms',
     'unfold',
     'unfold.contrib.filters',
     'unfold.contrib.forms',
@@ -50,8 +45,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'daphne',
-    'whitenoise.runserver_nostatic',
-    'daphne',
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
@@ -60,13 +53,7 @@ INSTALLED_APPS = [
     'chat',
     'whitenoise',
     'phonenumber_field',
-    'main_page',
-    'chat',
-    'whitenoise',
-    'phonenumber_field',
     'corsheaders',
-    'channels',
-    'adrf',
     'channels',
     'adrf',
 ]
@@ -78,16 +65,11 @@ if DEBUG:
     INTERNAL_IPS = (
         "127.0.0.1",
     )
-    INSTALLED_APPS.extend(("django_extensions", 'drf_yasg', "debug_toolbar"))
-    INTERNAL_IPS = (
-        "127.0.0.1",
-    )
 
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication'
         'rest_framework.authentication.SessionAuthentication'
     ),
     'DEFAULT_PERMISSION_CLASSES': (
@@ -132,8 +114,6 @@ TEMPLATES = (
 )
 
 WSGI_APPLICATION = 'sociallty.wsgi.application'
-ASGI_APPLICATION = 'sociallty.asgi.application'
-
 ASGI_APPLICATION = 'sociallty.asgi.application'
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend" if DEBUG else "django.core.mail.backends.smtp.EmailBackend"
@@ -195,8 +175,8 @@ USE_TZ = True
 CORS_ALLOWED_ORIGINS = (
     "http://localhost:5173",
     "http://localhost:4173",
-    "http://192.168.1.5:5173",
-    "http://192.168.1.5:4173",
+    "http://192.168.1.8:5173",
+    "http://192.168.1.8:4173",
 ) if DEBUG else os.getenv("ALLOWED_CORS", "").split("|")
     
 CORS_ALLOW_CREDENTIALS = True
@@ -217,18 +197,18 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer"
     } 
-    # if DEBUG else {
-    #     "BACKEND": "channels_redis.core.RedisChannelLayer",
-    #     "CONFIG": {
-    #         "hosts": [("127.0.0.1", 6379)],
-    #         "expiry": 3600,  # Key expiration in seconds
-    #         "group_expiry": 86400,  # Group expiration
-    #         "capacity": 1000,  # Default 100
-    #         "channel_capacity": {
-    #             "specific.channel": 2000  # Higher capacity for important channels
-    #         }
-    #     }
-    # }
+    if DEBUG else {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+            "expiry": 3600,  # Key expiration in seconds
+            "group_expiry": 86400,  # Group expiration
+            "capacity": 1000,  # Default 100
+            "channel_capacity": {
+                "specific.channel": 2000  # Higher capacity for important channels
+            }
+        }
+    }
 }
 
 # Static files (CSS, JavaScript, Images)
@@ -238,8 +218,6 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "static_files"
 STATICFILES_DIRS = (BASE_DIR / "static",)
 
-# LOGIN_URL = "login-page"
-# LOGIN_REDIRECT_URL = "/"
 # LOGIN_URL = "login-page"
 # LOGIN_REDIRECT_URL = "/"
 
@@ -285,5 +263,8 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_SAMESITE = 'None'
     SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = 'None'
     SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

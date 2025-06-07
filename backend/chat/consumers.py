@@ -1,9 +1,9 @@
 from .models import Message, MessageReact, MessageReactReceive, MessageReceiveForSend, MessageReciveForDelete, Notification, OnlineUser, Reactions
+from APIs.serializers import MessageReactSerializer, NotificationSerializer
 from channels.generic.websocket import AsyncWebsocketConsumer
-from APIs.serializers import MessageReactSerializer
+from users.models import FriendRequest, SocialUser
 from asgiref.sync import sync_to_async
 from django.db import IntegrityError
-from users.models import SocialUser
 import asyncio, json
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -14,6 +14,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         try:
             self.user: SocialUser = self.scope['user']
+            if not self.user.is_authenticated:
+                await self.close()
             
             self.to_user = await SocialUser.objects.aget(id=channel_id, username=channel_name)
             self.chat_name = f"chat_{channel_name.strip().replace(' ', '_')}{channel_id}"
@@ -34,7 +36,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
         
-        await self.accept()
+        await self.accept(subprotocol=self.scope['org_subprotocols'])
     
     async def disconnect(self, code):
         try:
@@ -212,7 +214,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.channel_layer.group_send( # type: ignore
                 self.chat_name,
                 {
-                    "type": "send_message",
+                    "type": "send.message",
                     "data": data
                 }
             ),
@@ -220,7 +222,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.channel_layer.group_send( # type: ignore
                 self.reverse_chat_name,
                 {
-                    "type": "send_message",
+                    "type": "send.message",
                     "data": data
                 }
             )
@@ -230,3 +232,78 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(
             json.dumps(event["data"])
         )
+
+
+class NotificationConsumer(AsyncWebsocketConsumer):
+    
+    async def connect(self):
+        self.user: SocialUser = self.scope['user']
+        if not self.user.is_authenticated:
+            await self.close()
+            
+        self.username = self.user.username.replace(" ", "")
+        self.user_channel = f"notif_{self.username}_{self.user.id}" # type: ignore
+        
+        await self.channel_layer.group_add(self.user_channel, self.channel_name) # type: ignore
+        await self.accept(subprotocol=self.scope["org_subprotocols"])
+        
+    async def disconnect(self, code):
+        await asyncio.gather(
+            self.channel_layer.group_discard(self.user_channel, self.channel_name), # type: ignore
+            self.close()
+        )
+        
+    async def receive(self, text_data: str | None=None, bytes_data=None):
+        if not text_data:
+            return
+        
+        data: dict[str, str] = json.loads(text_data)
+        
+        match (data.get("event_type")):
+            case "get_notifi":
+                await self.channel_layer.group_send( # type: ignore
+                    self.user_channel,
+                    {
+                        "type": "notifi.send",
+                        "data": {}
+                    }
+                )
+            case "delete_notifi":
+                
+                await self.channel_layer.group_send( # type: ignore
+                    self.user_channel,
+                    {
+                        "type": "notifi.delete",
+                        "data": {
+                            "ids": data.get("ids"),
+                            "status": True
+                        }
+                    }
+                )
+
+    async def notifi_send(self, event):
+        friends_requests_count, notifications = await asyncio.gather(
+            FriendRequest.objects.filter(friend=self.user).acount(),
+            sync_to_async(lambda: Notification.objects.filter(to_user=self.user).order_by('-created_at'))()
+        )
+        notifications_data = await sync_to_async(lambda: NotificationSerializer(notifications, many=True).data)()
+        await self.send(json.dumps({
+            "event_type": "notifi_recived",
+            "friends_requests_count": friends_requests_count, 
+            "notifications": notifications_data
+        }))
+    
+    async def notifi_delete(self, event: dict):
+        ids: list[int] = event["data"].get("ids")
+        event["data"]["event_type"] = "notifi_deleted",
+        if not ids:
+            return
+        
+        try:
+            await Notification.objects.filter(id__in=ids).adelete()
+        except:
+            event["data"]["status"] = False
+        finally:
+            await self.send(json.dumps(event["data"]))
+        
+        
