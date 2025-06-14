@@ -1,19 +1,28 @@
 FROM python:3.13-slim-bookworm
 
-COPY --from=ghcr.io/astral-sh/uv:0.4.29 /uv /uvx /bin/
+# COPY --from=ghcr.io/astral-sh/uv:0.4.29 /uv /uvx /bin/
 
-WORKDIR /code
+WORKDIR /app
 
 ENV PYTHONBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
-COPY pyproject.toml pyproject.toml
+# COPY pyproject.toml pyproject.toml
+COPY requirements.txt requirements.txt
 
 RUN apt-get update && apt-get install -y libmagic1 && apt-get clean
-RUN uv sync --group production --no-dev
+# RUN uv sync --group production --no-dev
+RUN pip install -r requirements.txt
 
 COPY . .
 
+# Make entrypoint script executable
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+ENTRYPOINT ["/app/entrypoint.sh"]
+
 EXPOSE 8000
 
-CMD uv run --no-dev manage.py collectstatic --noinput && uv run --no-dev daphne sociallty.asgi:application -b 0.0.0.0 -p 8000
+# ENTRYPOINT ["./entrypoint.sh"]
+
+# CMD ["uv", "run", "--no-dev", "manage.py", "collectstatic", "--noinput", "&&", "uv", "run", "--no-dev", "daphne", "sociallty.asgi:application", "-b", "0.0.0.0", "-p", "8000"]

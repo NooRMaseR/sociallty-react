@@ -1,4 +1,4 @@
-import { Media, PostProps } from "../components/post";
+import { Media, PostProps } from "../components/post.tsx";
 
 export const DEBUG: boolean = false;
 const USELOCAL: boolean = false;
