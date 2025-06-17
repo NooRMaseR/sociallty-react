@@ -7,6 +7,7 @@ services:
       - "8000:8000"
     depends_on:
       - redis
+    image: social:social
     environment:
       - SOCIALLTY_KEY=${SOCIALLTY_KEY}
       - ALLOWED_CORS=${ALLOWED_CORS}

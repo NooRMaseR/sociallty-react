@@ -2,7 +2,6 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.contrib.auth.models import AnonymousUser
 from channels.db import database_sync_to_async
 
-
 class AccessTokenAuthMiddleware:
     """
     Custom middleware that authenticate the user by access token from the query string.
@@ -21,16 +20,19 @@ class AccessTokenAuthMiddleware:
                     scope['org_subprotocols'] = token
                     token = token.removesuffix(token[0:5])
                     
-                    scope['user'] = await self.get_user(token.encode())
+                    scope['user'] = await get_user(token.encode())
         except Exception as e:
             print("token middleware => ", repr(e))
             scope['user'] = AnonymousUser()
             
         return await self.app(scope, receive, send)
-    
-    @database_sync_to_async
-    def get_user(self, token: bytes):
-        auth = JWTAuthentication()
-        access = auth.get_validated_token(token)
-        return auth.get_user(access)
-    
+
+
+@database_sync_to_async
+def get_user(token: bytes):
+    return auth_jwt_token(token)
+
+def auth_jwt_token(token: bytes):
+    auth = JWTAuthentication()
+    access = auth.get_validated_token(token)
+    return auth.get_user(access)

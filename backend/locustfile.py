@@ -1,15 +1,15 @@
 from locust import HttpUser, task
 
 class HelloWorldUser(HttpUser):
-    target = "NooR%20MaseR/64/"
+    # target = "NooR%20MaseR/64/"
     
     def on_start(self) -> None:
-        self.client.headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ4NjM5NjgxLCJpYXQiOjE3NDg2MTgwODEsImp0aSI6IjNhMzRiNGQyNWUzZDRhZmViODhlYWI0ZmQ3OWM3NmNjIiwidXNlcl9pZCI6NjR9.zA-DUZ6jAyO-GzspczvOKllop4IO-GzrF2z6xdBWp7M"}
+        self.client.headers = {"authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUwMTI2MDMwLCJpYXQiOjE3NTAxMDQ0MzAsImp0aSI6ImY0NzI5ZDg4NzUxMDQxOTk5YmExYzBlMTZjOGZhZmNhIiwidXNlcl9pZCI6NjR9.DtNzn_1ynYDXXA8AFQN8BTL67XWC4FVQ1QHhegcSiL4"}
     
     @task
-    def async_user_profile_api(self):
-        self.client.get(f"/user/{self.target}")
-        
+    def async_user_posts_ninja(self):
+        self.client.get(f"/ninja/main/today-posts")
+
     @task
     def user_main_page_api(self):
         self.client.get(f"/today-posts/")

@@ -5,9 +5,9 @@ const USELOCAL: boolean = false;
 const LOCAL_URL = "http://127.0.0.1:8000";
 export const ACCESS = "access";
 export const REFRESH = "refresh";
-export const API_URL = DEBUG ? USELOCAL ? LOCAL_URL : "http://192.168.1.8:8000" : "https://successful-carlene-noormaser-5d3a002e.koyeb.app";
-export const MEDIA_URL = DEBUG ? USELOCAL ? LOCAL_URL : "http://192.168.1.8:8000" : '';
-export const WEBSOCKET_URL = DEBUG ? USELOCAL ? `${LOCAL_URL}/ws` : "ws://192.168.1.8:8000/ws" : `wss://successful-carlene-noormaser-5d3a002e.koyeb.app/ws`;
+export const API_URL = DEBUG ? USELOCAL ? LOCAL_URL : "http://192.168.1.9:8000" : "https://successful-carlene-noormaser-5d3a002e.koyeb.app";
+export const MEDIA_URL = DEBUG ? USELOCAL ? LOCAL_URL : "http://192.168.1.9:8000" : '';
+export const WEBSOCKET_URL = DEBUG ? USELOCAL ? `${LOCAL_URL}/ws` : "ws://192.168.1.9:8000/ws" : `wss://successful-carlene-noormaser-5d3a002e.koyeb.app/ws`;
 export const AR: string[] = ["إ", 'أ', 'ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي', 'ى' , 'ء'];
 
 export interface TokenResponse {
