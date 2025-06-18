@@ -47,12 +47,13 @@ export default function EditUserPage() {
     const formData = new FormData();
     
     Object.keys(e).forEach(key => {
+      const typedKey = key as keyof UserSignupProps;
       if (key == "profile_picture") {
         if (key.length > 0) {
-          formData.set(key, e[key]);
+          formData.set(key, e[typedKey] as Blob | string);
         }
       } else {
-        formData.set(key, e[key]);
+        formData.set(key, e[typedKey] as Blob | string);
       }
     });
 
@@ -86,12 +87,13 @@ export default function EditUserPage() {
 
       if (res.status === 200) {
         setUser(res.data);
-        const data = {}
+        const data: Partial<UserSignupProps> = {}
         Object.keys(res.data).forEach((key) => {
           const userKey = key as keyof UserSignupProps;
           if (!["password", "id", "is_active", "is_staff", "is_superuser", "created_at", "last_login", "groups", "user_permissions", "profile_picture"].includes(key)) {
             setValue(userKey, res.data[userKey]);
-            data[userKey] = res.data[userKey];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            data[userKey] = res.data[userKey] as any;
           }
           reset(data);
         });
@@ -101,7 +103,7 @@ export default function EditUserPage() {
       setErrors(error.response.data);
     }
     complete();
-  }, [complete]);
+  }, []);
 
   useEffect(() => {
     getUserData();
