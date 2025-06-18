@@ -6,8 +6,8 @@ interface FloatingLabelInputProps {
   name?: string;
   type?: react.HTMLInputTypeAttribute;
   label?: string;
-  suffexIcon?: react.ReactNode;
-  updater?: (value: string) => void;
+  preffexIcon?: react.ReactNode;
+  onChangeUpdater?: (value: string) => void;
   variant?: TextFieldVariants;
   autoComplete?: react.HTMLInputAutoCompleteAttribute;
   required?: boolean;
@@ -25,9 +25,9 @@ export default function FloatingLabelInput({
   name,
   type,
   label,
-  updater,
+  onChangeUpdater: updater,
   variant = "filled",
-  suffexIcon,
+  preffexIcon: suffexIcon,
   required = false,
   autoComplete,
   inputProps,

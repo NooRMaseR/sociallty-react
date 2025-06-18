@@ -17,6 +17,7 @@ from APIs.serializers import CommentSerializer
 from drf_yasg.utils import swagger_auto_schema
 from users.models import SocialUser
 from drf_yasg import openapi
+from .models import Report
 
     
 class PostApi(APIView):
@@ -617,3 +618,53 @@ class RemoveUserAPI(APIView):
         return Response(
             {"accept": False, "reson": "wrong password"}, status=status.HTTP_400_BAD_REQUEST
         )
+
+
+class UserReportAPI(APIView):
+    "`API` for reporting a user"
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "user_id": openapi.Schema(
+                    type=openapi.TYPE_INTEGER,
+                    description="The ID of the user to report it"
+                ),
+                "reason": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="The reason for reporting the user"
+                )
+            }
+        ),
+        responses={
+            201: openapi.Response(
+                description="User reported successfully",
+            ),
+            400: openapi.Response(
+                description="Invalid request",
+            ),
+            404: openapi.Response(
+                description="User not found",
+            ),
+            208: openapi.Response(
+                description="User Already Reported",
+            ),
+        }
+    )
+    def post(self, request: Request) -> Response:
+        """
+        `API` for reporting a user
+        """
+        user_id: int = request.data.get("user_id")  # type: ignore
+        reason: str = request.data.get("reason")  # type: ignore
+
+        if not user_id or not reason:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            Report.objects.create(user_reported=request.user, user_id=user_id, reason=reason)
+        except:
+            return Response(status=status.HTTP_208_ALREADY_REPORTED)
+
+        return Response(status=status.HTTP_201_CREATED)

@@ -26,6 +26,7 @@ class SocialUserBasicSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "username",
+            "gender",
             "bio",
             "birth",
             "profile_picture",
@@ -49,6 +50,7 @@ class PostContentSerializer(serializers.ModelSerializer):
 class SocialUserOnlySerializer(serializers.ModelSerializer):
     last_message = serializers.CharField(read_only=True, default=None)
     last_message_from_id = serializers.IntegerField(read_only=True, default=None)
+    reported = serializers.BooleanField(default=False)
     class Meta:
         model = SocialUser
         fields = (
@@ -56,9 +58,11 @@ class SocialUserOnlySerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "username",
+            "gender",
             "profile_picture",
             "last_message",
             "last_message_from_id",
+            "reported",
         )
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -96,6 +100,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "username",
+            "gender",
             "bio",
             "birth",
             "profile_picture",

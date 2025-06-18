@@ -8,4 +8,5 @@ urlpatterns = (
     path("post/<int:postID>", views.PostApi.as_view(), name="post"),
     path("add-post-like/<int:postID>", views.PostLikeAPI.as_view(), name="add-post-like"),
     path("remove-user/", views.RemoveUserAPI.as_view(), name="remove-user"),
+    path("report-user/", views.UserReportAPI.as_view(), name="report-user"),
 )

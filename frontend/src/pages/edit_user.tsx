@@ -1,19 +1,14 @@
-import {
-  ACCESS,
-  MEDIA_URL,
-  ApiUrls,
-  FullUser,
-  REFRESH,
-  TokenResponse,
-} from "../utils/constants";
-import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { ACCESS, MEDIA_URL, ApiUrls, FullUser, REFRESH, TokenResponse} from "../utils/constants";
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import FloatingLabelInput from "../components/floating_input_label";
 import { LazyAvatar } from "../components/media_skelatons";
+import { Box, Button, MenuItem } from "@mui/material";
 import { useLoadingBar } from "react-top-loading-bar";
 import { useNavigate } from "react-router-dom";
 import { setHasToken } from "../utils/store";
-import { Box, Button } from "@mui/material";
+import { UserSignupProps } from "./signup";
 import { useDispatch } from "react-redux";
+import { useForm } from "react-hook-form";
 import { Helmet } from "react-helmet";
 import api from "../utils/api";
 
@@ -25,15 +20,16 @@ import PhoneIcon from "@mui/icons-material/Phone";
 import CakeIcon from "@mui/icons-material/Cake";
 import InfoIcon from "@mui/icons-material/Info";
 import LockIcon from "@mui/icons-material/Lock";
+import WcIcon from '@mui/icons-material/Wc';
 import "../styles/signup.css";
 
 export default function EditUserPage() {
   const [errors, setErrors] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const filePickerRef = useRef<HTMLInputElement>(null);
   const avatarRef = useRef<HTMLImageElement>(null);
   const [user, setUser] = useState<FullUser | null>(null);
   const { start, complete } = useLoadingBar();
+  const { register, handleSubmit, setValue, reset } = useForm<UserSignupProps>();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -41,14 +37,25 @@ export default function EditUserPage() {
     if (e.target.files) {
       const imgSrc = URL.createObjectURL(e.target.files[0]);
       if (avatarRef.current) avatarRef.current.src = imgSrc;
+      setValue("profile_picture", e.target.files[0]);
     }
-  }, []);
+  }, [setValue]);
 
-  const handelOnSubmit = useCallback(async (e: FormEvent) => {
-    e.preventDefault();
+  const handelOnFormSubmit = useCallback(async (e: UserSignupProps) => {
     setLoading(true);
     setErrors([]);
-    const formData = new FormData(e.target as HTMLFormElement);
+    const formData = new FormData();
+    
+    Object.keys(e).forEach(key => {
+      if (key == "profile_picture") {
+        if (key.length > 0) {
+          formData.set(key, e[key]);
+        }
+      } else {
+        formData.set(key, e[key]);
+      }
+    });
+
     try {
       const res = await api.put<TokenResponse>(ApiUrls.edit_user, formData);
 
@@ -57,7 +64,7 @@ export default function EditUserPage() {
         localStorage.setItem(ACCESS, res.data.access);
         localStorage.setItem(REFRESH, res.data.refresh);
         localStorage.setItem("username", res.data.username);
-        localStorage.setItem("profile_picture", res.data.profile_picture);
+        localStorage.setItem("profile_pic", res.data.profile_picture);
         dispatch(setHasToken(true));
         navigate("/");
       }
@@ -79,6 +86,15 @@ export default function EditUserPage() {
 
       if (res.status === 200) {
         setUser(res.data);
+        const data = {}
+        Object.keys(res.data).forEach((key) => {
+          const userKey = key as keyof UserSignupProps;
+          if (!["password", "id", "is_active", "is_staff", "is_superuser", "created_at", "last_login", "groups", "user_permissions", "profile_picture"].includes(key)) {
+            setValue(userKey, res.data[userKey]);
+            data[userKey] = res.data[userKey];
+          }
+          reset(data);
+        });
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -101,12 +117,12 @@ export default function EditUserPage() {
         <meta property="og:url" content={location.href} />
         <meta property="og:type" content="edit" />
       </Helmet>
-      <form onSubmit={handelOnSubmit}>
+      <form onSubmit={handleSubmit(handelOnFormSubmit)} encType="multipart">
         <div id="main-profile-container">
           <label htmlFor="pic-picker" id="pic-label">
             Choose profile picture
           </label>
-          <div id="profile-container" onClick={() => filePickerRef.current?.click()}>
+          <div id="profile-container" onClick={() => document.getElementById("pic-picker")?.click()}>
             <LazyAvatar
               src={`${MEDIA_URL}${user?.profile_picture ?? "/unknown.png"}`}
               slotProps={{ img: { ref: avatarRef } }}
@@ -115,10 +131,9 @@ export default function EditUserPage() {
             />
             <input
               type="file"
-              ref={filePickerRef}
-              name="profile_picture"
               id="pic-picker"
               accept="image/*"
+              {...register("profile_picture")}
               onChange={handelOnFileChange}
               style={{ display: "none", pointerEvents: "none" }}
             />
@@ -126,46 +141,44 @@ export default function EditUserPage() {
         </div>
         <FloatingLabelInput
           type="text"
-          name="first_name"
           label="First Name"
           autoComplete="cc-given-name"
-          suffexIcon={<PersonIcon sx={{ color: "var(--text-color)" }} />}
-          inputProps={{ defaultValue: user?.first_name }}
+          preffexIcon={<PersonIcon sx={{ color: "var(--text-color)" }} />}
+          {...register("first_name", {required: true})}
+          
           required
         />
         <FloatingLabelInput
           type="text"
-          name="last_name"
           label="Last Name"
           autoComplete="family-name"
-          suffexIcon={<Person2Icon sx={{ color: "var(--text-color)" }} />}
-          inputProps={{ defaultValue: user?.last_name }}
+          preffexIcon={<Person2Icon sx={{ color: "var(--text-color)" }} />}
+          {...register("last_name", {required: true})}
           required
         />
         <FloatingLabelInput
           type="text"
-          name="username"
           label="User Name"
           autoComplete="username"
-          suffexIcon={<Person3Icon sx={{ color: "var(--text-color)" }} />}
-          inputProps={{ defaultValue: user?.username }}
+          preffexIcon={<Person3Icon sx={{ color: "var(--text-color)" }} />}
+          {...register("username", {required: true})}
           required
         />
         <FloatingLabelInput
           type="email"
-          name="email"
           label="Email"
-          autoComplete="username"
-          suffexIcon={<EmailIcon sx={{ color: "var(--text-color)" }} />}
-          inputProps={{ inputMode: "email", defaultValue: user?.email }}
+          autoComplete="email"
+          preffexIcon={<EmailIcon sx={{ color: "var(--text-color)" }} />}
+          {...register("email", {required: true})}
+          inputProps={{ inputMode: "email" }}
           required
         />
         <FloatingLabelInput
-          name="password"
           type="password"
           label="Password"
-          suffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
-          autoComplete="password"
+          preffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
+          autoComplete="current-password"
+          {...register("password", {required: true})}
           slotProps={{
             htmlInput: {
               minLength: 8,
@@ -175,30 +188,39 @@ export default function EditUserPage() {
         />
         <FloatingLabelInput
           type="date"
-          name="birth"
-          suffexIcon={<CakeIcon sx={{ color: "var(--text-color)" }} />}
-          inputProps={{ defaultValue: user?.birth }}
+          preffexIcon={<CakeIcon sx={{ color: "var(--text-color)" }} />}
+          {...register("birth", {required: true})}
           required
         />
         <FloatingLabelInput
           type="tel"
-          name="phone"
           label="Phone Number"
           autoComplete="tel"
-          suffexIcon={<PhoneIcon sx={{ color: "var(--text-color)" }} />}
-          inputProps={{ inputMode: "tel", defaultValue: user?.phone }}
+          preffexIcon={<PhoneIcon sx={{ color: "var(--text-color)" }} />}
+          {...register("phone", {required: true})}
+          inputProps={{ inputMode: "tel" }}
           required
         />
         <FloatingLabelInput
-          name="bio"
           label="Bio"
-          suffexIcon={<InfoIcon sx={{ color: "var(--text-color)" }} />}
+          preffexIcon={<InfoIcon sx={{ color: "var(--text-color)" }} />}
+          {...register("bio", {required: true})}
           inputProps={{
             multiline: true,
             placeholder: "i'm a Social Person 😊😁....",
-            defaultValue: user?.bio,
           }}
         />
+        <FloatingLabelInput
+          label="Gender"
+          preffexIcon={<WcIcon sx={{ color: "var(--text-color)" }} />}
+          {...register("gender", { required: true})}
+          value={user?.gender ?? "male"}
+          select
+          required
+        >
+          <MenuItem value="male">Male</MenuItem>
+          <MenuItem value="female">Female</MenuItem>
+        </FloatingLabelInput>
         <Box sx={{ display: "flex", placeContent: "center" }}>
           {errors && (
             <ul>

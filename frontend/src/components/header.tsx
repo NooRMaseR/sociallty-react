@@ -247,7 +247,7 @@ const CheckHead = memo(
 
 export default function Header() {
   const [menuOpened, setMenuOpened] = useState<boolean>(false);
-  const [ws, setWS] = useState<WebSocket | null>(null);
+  const ws = useRef<WebSocket | null>(null);
   const interRef = useRef<NodeJS.Timeout | null>(null);
   const dispatch = useDispatch();
   const location = useLocation();
@@ -317,9 +317,9 @@ export default function Header() {
       location.pathname.includes("user/forgot-password")
     ) {
       clearInterval(interRef.current ?? undefined);
-      if (ws?.readyState === ws?.OPEN) ws?.close();
+      if (ws.current?.readyState === ws.current?.OPEN) ws.current?.close();
       return;
-    } else if (ws?.readyState && ws.readyState === ws.OPEN) {
+    } else if (ws.current?.readyState && ws.current.readyState === ws.current.OPEN) {
       return;
     }
     try {
@@ -327,7 +327,7 @@ export default function Header() {
         `${WEBSOCKET_URL}/notifications/`,
         getFormatedToken() ?? null
       );
-      setWS(newWs);
+      ws.current = newWs;
 
       newWs.onmessage = async (e) => {
         const data: NotificationProps = JSON.parse(e.data);
@@ -380,7 +380,7 @@ export default function Header() {
       return;
     }
     return () =>
-      ws?.OPEN && clearInterval(interRef.current ?? undefined) && ws?.close();
+      ws.current?.OPEN && clearInterval(interRef.current ?? undefined) && ws.current?.close();
   }, [location.pathname, create_notification, dispatch]);
 
   useEffect(() => {

@@ -212,7 +212,7 @@ export default function EditPostPage() {
                   inputProps={{ select: true, value: visibility }}
                   variant="standard"
                   name="visibility"
-                  updater={(value) => setVisibility(value as Visibility)}
+                  onChangeUpdater={(value) => setVisibility(value as Visibility)}
                 >
                   <MenuItem value={Visibility.public}>Public</MenuItem>
                   <MenuItem value={Visibility.private}>Private</MenuItem>
@@ -225,7 +225,7 @@ export default function EditPostPage() {
                 <FloatingLabelInput
                   name="desc"
                   label="Description"
-                  updater={(value) => setDesc(value)}
+                  onChangeUpdater={(value) => setDesc(value)}
                   inputProps={{
                     multiline: true,
                     placeholder: "Description....",

@@ -151,7 +151,7 @@ export default function CommentsSlider() {
           variant="outlined"
           label="Add Comment"
           type="text"
-          updater={handelOnCommentChange}
+          onChangeUpdater={handelOnCommentChange}
           inputProps={{ value: comment, multiline: true, maxRows: 6 }}
           sx={{ maxWidth: "100%" }}
         />

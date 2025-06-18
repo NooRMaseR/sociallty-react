@@ -1,5 +1,5 @@
 from drf_yasg import openapi
-from django.db.models import Q
+from rest_framework import status
 from asgiref.sync import sync_to_async
 from rest_framework.request import Request
 from django.core.paginator import Paginator
@@ -7,9 +7,11 @@ from rest_framework.response import Response
 from adrf.views import APIView as AsyncAPIView
 from drf_yasg.utils import swagger_auto_schema
 from django.shortcuts import get_object_or_404
+from django.db.models import Q, OuterRef, Exists
 
 from APIs.serializers import MessageSerializer, SocialUserOnlySerializer
-from users.models import SocialUser
+from users.models import Friend, SocialUser
+from APIs.models import Report
 from .models import Message
 import asyncio
 
@@ -49,9 +51,21 @@ class UserMessagesApi(AsyncAPIView):
         Returns:
             A response object containing the messages and the user to chat with.
         """
-
+        if not await Friend.objects.filter(Q(friend_id=user_id, user=request.user) | Q(friend=request.user, user_id=user_id)).aexists():
+            return Response(
+                {"error": "You are not friends with this user or the user does not exist."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
         user_to_chat, page_num = await asyncio.gather(
-            sync_to_async(lambda: get_object_or_404(SocialUser.objects.only("id", "username", "first_name", "last_name", "profile_picture"), id=user_id))(),
+            sync_to_async(lambda: 
+                get_object_or_404(
+                    SocialUser.objects
+                    .only("id", "username", "first_name", "last_name", "profile_picture")
+                    .annotate(reported=Exists(Report.objects.filter(user_reported=request.user, user_id=OuterRef("id")))),
+                    id=user_id
+                )
+            )(),
             sync_to_async(lambda: request.GET.get("page", 1))()
         )
         

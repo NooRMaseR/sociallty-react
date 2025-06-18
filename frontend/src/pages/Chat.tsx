@@ -7,6 +7,12 @@ import {
   MenuItem,
   ListItemText,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
 } from "@mui/material";
 import MessageBubble, {
   MessageCommonProps,
@@ -28,9 +34,15 @@ import FloatingLabelInput from "../components/floating_input_label";
 import { LazyAvatar } from "../components/media_skelatons";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { removeFriend } from "../utils/functions";
 import SendIcon from "@mui/icons-material/Send";
 import styles from "../styles/chat.module.css";
 import api from "../utils/api";
+
+interface FullUserWithReport extends FullUser {
+  reported: boolean;
+}
+
 
 interface WSMessageSend {
   from_user: string;
@@ -79,27 +91,42 @@ const UserMenuOptions = React.memo(
     user,
     element,
     handleClose,
+    handelOnReportClick,
+    handelUnfriendClick,
     navigate,
   }: {
-    user: FullUser;
+    user: FullUserWithReport;
     element: HTMLElement | null;
     handleClose: () => void;
+    handelOnReportClick: (value: boolean) => void;
+    handelUnfriendClick: (value: boolean) => void;
     navigate: NavigateFunction;
   }) => {
     const handelUserProfile = useCallback(() => {
       handleClose();
       navigate(`/social-user-profile?username=${user.username}&id=${user.id}`);
     }, [user.id, user.username, navigate, handleClose]);
+
+    const handelReport = useCallback(() => {
+      handelOnReportClick(true);
+      handleClose();
+    }, [handelOnReportClick, handleClose])
+    
+    const handelUnfriend = useCallback(() => {
+      handelUnfriendClick(true);
+      handleClose();
+    }, [handelUnfriendClick, handleClose])
+
     return (
       <Menu open={!!element} anchorEl={element} onClose={handleClose}>
         <MenuItem onClick={handelUserProfile}>
           <ListItemText>Show Profile</ListItemText>
         </MenuItem>
-        <MenuItem onClick={handleClose}>
-          <ListItemText>Report</ListItemText>
+        <MenuItem onClick={handelUnfriend}>
+          <ListItemText sx={{color: 'red'}}>UnFriend</ListItemText>
         </MenuItem>
-        <MenuItem onClick={handleClose}>
-          <ListItemText>Block</ListItemText>
+        <MenuItem onClick={handelReport}>
+          <ListItemText sx={{color: "red"}}>Report</ListItemText>
         </MenuItem>
       </Menu>
     );
@@ -138,10 +165,13 @@ export default function Chat() {
   const { userId: send_to_id } = useParams<{ userId: string }>();
   const [messages, setMessages] = useState<UserMessageOnly[]>([]);
   const [newMessage, setNewMessage] = useState<string>("");
-  const [userToChat, setUserToChat] = useState<FullUser | null>(null);
+  const [userToChat, setUserToChat] = useState<FullUserWithReport | null>(null);
+  const [reportReason, setReportReason] = useState<string>("");
+  const [isReportReady, setIsReportReady] = useState<boolean>(false);
+  const [isUnfriendReady, setIsUnfriendReady] = useState<boolean>(false);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [userMenu, setUserMenu] = useState<HTMLElement | null>(null);
-  const [ws, setWs] = useState<WebSocket | null>(null);
+  const ws = useRef<WebSocket | null>(null);
 
   const [elementToContextMenu, setElementToContextMenu] = useState<{
     element: null | HTMLElement;
@@ -168,7 +198,7 @@ export default function Chat() {
     if (!send_to_id) return;
     try {
       const res = await api.get<{
-        user_to_chat?: FullUser;
+        user_to_chat?: FullUserWithReport;
         messages?: UserMessageOnly[];
         has_more: boolean;
       }>(`${ApiUrls.chat}${send_to_id}/?page=${pageNumber}`);
@@ -295,10 +325,10 @@ export default function Chat() {
   
   useEffect(() => {
     if (userToChat) {
-      if (!ws) {
+      if (!ws.current) {
         const newWs = connect_socket();
         if (newWs) {
-          setWs(newWs);
+          ws.current = newWs;
         }
       }
     }
@@ -339,7 +369,7 @@ export default function Chat() {
 
   const handleSendMessage = useCallback(async () => {
     if (newMessage.trim()) {
-      ws?.send(
+      ws.current?.send(
         JSON.stringify({
           event_type: "send",
           message: newMessage,
@@ -350,7 +380,7 @@ export default function Chat() {
       setNewMessage("");
       scrollToBottom();
     }
-  }, [newMessage, send_to_id, user_id, ws, scrollToBottom]);
+  }, [newMessage, send_to_id, user_id, scrollToBottom]);
 
   const handleKeyPress = useCallback(
     (event: React.KeyboardEvent) => {
@@ -372,7 +402,7 @@ export default function Chat() {
 
   const handleDelete = useCallback(
     async (messageId: number) => {
-      ws?.send(
+      ws.current?.send(
         JSON.stringify({
           event_type: "delete",
           id: messageId,
@@ -381,7 +411,7 @@ export default function Chat() {
         })
       );
     },
-    [send_to_id, user_id, ws]
+    [send_to_id, user_id]
   );
 
   const handleOpenUserMenu = useCallback((e: React.MouseEvent<HTMLElement>) => {
@@ -392,16 +422,40 @@ export default function Chat() {
     setUserMenu(null);
   }, []);
 
-  const handelOnReact = (msg_id: number, value: string) => {
-    ws?.send(
+  const handelOnReact = useCallback((msg_id: number, value: string) => {
+    ws.current?.send(
       JSON.stringify({
         event_type: "react",
         message_id: msg_id,
         reaction: value,
       })
     );
-  };
+  }, []);
 
+  const reportUser = useCallback(async () => {
+      try {
+        const res = await api.post(ApiUrls.report, {
+          user_id: userToChat?.id,
+          reason: reportReason
+        });
+
+        if (res.status === 201) {
+          navigate("/chat");
+        } else if (res.status === 208) {
+          setIsReportReady(false);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }, [userToChat?.id, reportReason])
+
+  const UnfriendUser = useCallback(async () => {
+    const res = await removeFriend(userToChat?.id ?? 0);
+    if (res.success) {
+      navigate("/chat");
+    }
+  }, [userToChat?.id])
+  
   return (
     <Box
       className="d-flex align-items-center flex-column"
@@ -425,7 +479,9 @@ export default function Chat() {
         <UserMenuOptions
           element={userMenu}
           handleClose={handleCloseUserMenu}
-          user={userToChat ?? ({} as FullUser)}
+          handelOnReportClick={setIsReportReady}
+          handelUnfriendClick={setIsUnfriendReady}
+          user={userToChat ?? ({} as FullUserWithReport)}
           navigate={navigate}
         />
         <Tooltip title="More">
@@ -434,6 +490,42 @@ export default function Chat() {
           </IconButton>
         </Tooltip>
       </Box>
+
+      <Dialog open={isReportReady}>
+        {userToChat?.reported
+          ? <>
+            <DialogTitle>{userToChat?.username} Aready Reported</DialogTitle>
+            <DialogContent>
+              <DialogContentText>You Have Already Reported {userToChat?.username}, you can't Report {userToChat?.gender === "male" ? "him" : "her"} Twice</DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setIsReportReady(false)}>Ok</Button>
+            </DialogActions>
+          </> : <>
+              <DialogTitle>Report {userToChat?.username}</DialogTitle>
+              <DialogContent>
+                <DialogContentText>Tell Us Why you want to Report {userToChat?.username}</DialogContentText>
+                <FloatingLabelInput label="Reason" onChangeUpdater={setReportReason} inputProps={{multiline: true}}/>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setIsReportReady(false)}>cancel</Button>
+                <Button color="error" variant="outlined" onClick={reportUser}>Report</Button>
+              </DialogActions>
+          </>}
+      </Dialog>
+      
+      
+      <Dialog open={isUnfriendReady}>
+        <DialogTitle>UnFreind {userToChat?.username}?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Are you sure that you want to UnFreind {userToChat?.username}?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsUnfriendReady(false)}>Cancel</Button>
+          <Button color="error" variant="outlined" onClick={UnfriendUser}>Unfrend</Button>
+        </DialogActions>
+      </Dialog>
+
       <Container maxWidth="md" sx={{ paddingBottom: 10 }}>
         <MessageContextMenu
           element={elementToContextMenu?.element}
@@ -474,7 +566,7 @@ export default function Chat() {
         <FloatingLabelInput
           label="Message"
           value={newMessage}
-          updater={(value: string) => setNewMessage(value)}
+          onChangeUpdater={(value: string) => setNewMessage(value)}
           onKeyUp={handleKeyPress}
           boxSx={{ width: "80vw" }}
           inputProps={{

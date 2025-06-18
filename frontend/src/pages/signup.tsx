@@ -1,7 +1,7 @@
+import { Box, Button, MenuItem, Step, StepLabel, Stepper, Typography } from "@mui/material";
+import { ACCESS, ApiUrls, FullUser, REFRESH, TokenResponse } from "../utils/constants";
 import { ChangeEvent, memo, useCallback, useEffect, useRef, useState } from "react";
-import { Box, Button, Step, StepLabel, Stepper, Typography } from "@mui/material";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { ACCESS, ApiUrls, REFRESH, TokenResponse } from "../utils/constants";
 import FloatingLabelInput from "../components/floating_input_label";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -23,17 +23,19 @@ import PhoneIcon from "@mui/icons-material/Phone";
 import CakeIcon from "@mui/icons-material/Cake";
 import InfoIcon from "@mui/icons-material/Info";
 import LockIcon from "@mui/icons-material/Lock";
+import WcIcon from '@mui/icons-material/Wc';
 import "../styles/signup.css";
 
-interface UserSignupProps {
-  first_name: string;
-  last_name: string;
-  username: string;
-  email: string;
-  password: string;
-  bio: string;
-  phone: string;
-  birth: string;
+export interface UserSignupProps {
+  first_name: FullUser["first_name"];
+  last_name: FullUser["last_name"];
+  username: FullUser["username"];
+  email: FullUser["email"];
+  password: FullUser["password"];
+  gender: FullUser["gender"];
+  bio: FullUser["bio"];
+  phone: FullUser["phone"];
+  birth: FullUser["birth"];
   profile_picture: File;
 }
 
@@ -164,7 +166,7 @@ export default function Signup() {
               type="text"
               label="First Name"
               autoComplete="cc-given-name"
-              suffexIcon={<PersonIcon sx={{ color: "#fff" }} />}
+              preffexIcon={<PersonIcon sx={{ color: "#fff" }} />}
               inputProps={{
                 error: !!errors.first_name,
                 helperText: errors.first_name?.message,
@@ -176,7 +178,7 @@ export default function Signup() {
               type="text"
               label="Last Name"
               autoComplete="family-name"
-              suffexIcon={<Person2Icon sx={{ color: "#fff" }} />}
+              preffexIcon={<Person2Icon sx={{ color: "#fff" }} />}
               {...register("last_name", {required: true})}
               inputProps={{
                 error: !!errors.last_name,
@@ -188,7 +190,7 @@ export default function Signup() {
               type="text"
               label="User Name"
               autoComplete="username"
-              suffexIcon={<Person3Icon sx={{ color: "#fff" }} />}
+              preffexIcon={<Person3Icon sx={{ color: "#fff" }} />}
               {...register("username", {required: true})}
               inputProps={{
                 error: !!errors.username,
@@ -205,7 +207,7 @@ export default function Signup() {
               type="email"
               label="Email"
               autoComplete="email"
-              suffexIcon={<EmailIcon sx={{ color: "#fff" }} />}
+              preffexIcon={<EmailIcon sx={{ color: "#fff" }} />}
               {...register("email", {required: true})}
               inputProps={{
                 inputMode: "email",
@@ -218,7 +220,7 @@ export default function Signup() {
             <FloatingLabelInput
               type="password"
               label="Password"
-              suffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
+              preffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
               autoComplete="current-password"
               {...register("password", {required: true})}
               inputProps={{
@@ -264,7 +266,7 @@ export default function Signup() {
               label="Phone Number"
               placeholder="+20XXXXX"
               autoComplete="tel"
-              suffexIcon={<PhoneIcon sx={{ color: "#fff" }} />}
+              preffexIcon={<PhoneIcon sx={{ color: "#fff" }} />}
               {...register("phone",  {required: true})}
               inputProps={{
                 inputMode: "tel",
@@ -276,13 +278,28 @@ export default function Signup() {
             />
             <FloatingLabelInput
               label="Bio"
-              suffexIcon={<InfoIcon sx={{ color: "#fff" }} />}
+              preffexIcon={<InfoIcon sx={{ color: "#fff" }} />}
               {...register("bio")}
               inputProps={{
                 multiline: true,
                 placeholder: "i'm a Social Person 😊😁....",
               }}
             />
+            <FloatingLabelInput
+              label="Gender"
+              preffexIcon={<WcIcon sx={{ color: "var(--text-color)" }} />}
+              {...register("gender", {required: true, value: "male"})}
+              inputProps={{
+                error: !!errors.gender,
+                helperText: errors.gender?.message,
+              }}
+              defaultValue="male"
+              select
+              required
+            >
+              <MenuItem value="male">Male</MenuItem>
+              <MenuItem value="female">Female</MenuItem>
+            </FloatingLabelInput>
             <Button
               type="submit"
               variant="contained"

@@ -1,13 +1,13 @@
-import { Media, PostProps } from "../components/post.tsx";
+import { Media, PostProps } from "../components/post";
 
 export const DEBUG: boolean = false;
 const USELOCAL: boolean = false;
 const LOCAL_URL = "http://127.0.0.1:8000";
 export const ACCESS = "access";
 export const REFRESH = "refresh";
-export const API_URL = DEBUG ? USELOCAL ? LOCAL_URL : "http://192.168.1.9:8000" : "https://successful-carlene-noormaser-5d3a002e.koyeb.app";
-export const MEDIA_URL = DEBUG ? USELOCAL ? LOCAL_URL : "http://192.168.1.9:8000" : '';
-export const WEBSOCKET_URL = DEBUG ? USELOCAL ? `${LOCAL_URL}/ws` : "ws://192.168.1.9:8000/ws" : `wss://successful-carlene-noormaser-5d3a002e.koyeb.app/ws`;
+export const API_URL = DEBUG ? USELOCAL ? LOCAL_URL : "http://192.168.1.8:8000" : "https://successful-carlene-noormaser-5d3a002e.koyeb.app";
+export const MEDIA_URL = DEBUG ? USELOCAL ? LOCAL_URL : "http://192.168.1.8:8000" : '';
+export const WEBSOCKET_URL = DEBUG ? USELOCAL ? `${LOCAL_URL}/ws` : "ws://192.168.1.8:8000/ws" : `wss://successful-carlene-noormaser-5d3a002e.koyeb.app/ws`;
 export const AR: string[] = ["إ", 'أ', 'ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي', 'ى' , 'ء'];
 
 export interface TokenResponse {
@@ -22,6 +22,7 @@ export interface User {
   readonly id: number;
   readonly username: string;
   readonly profile_picture: string;
+  readonly gender: "male" | "female";
   readonly bio?: string;
 }
 
@@ -29,15 +30,11 @@ export interface UserSettings {
   is_private_account: boolean;
 }
 
-export interface FullUser {
-  readonly id: number;
-  readonly username: string;
+export interface FullUser extends User {
   readonly email?: string;
   readonly password?: string;
-  readonly profile_picture: string;
   readonly first_name: string;
   readonly last_name: string;
-  readonly bio: string;
   readonly birth: string;
   readonly phone?: string;
   readonly friends_count?: number;
@@ -77,6 +74,7 @@ export enum ApiUrls {
   post_comment = `${api}post-comment/`,
   add_comment_like = `${api}add-comment-like/`,
   social_users = "social-users/",
+  report = `${api}report-user/`,
 }
 
 export interface PostFormProps {

@@ -62,7 +62,7 @@ class UserProfileApi(AsyncAPIView):
         has_next, is_friend, has_request, user_serializer, post_serializer = await asyncio.gather(
             sync_to_async(post_page.has_next)(),
             user.friend.only("user__id", "friend__id").filter(Q(user=request.user) | Q(friend=request.user)).aexists(), # type: ignore
-            FriendRequest.objects.only("user__id", "friend__id").filter(Q(user=request.user) | Q(friend=request.user)).aexists(),
+            FriendRequest.objects.only("user__id", "friend__id").filter(Q(user=request.user, friend=user) | Q(user = request.user, friend=user)).aexists(),
             sync_to_async(lambda: UserProfileSerializer(user).data)(),
             sync_to_async(lambda: PostSerializer(post_page, many=True).data)()
         )
@@ -108,9 +108,11 @@ class UserAuthAPI(APIView):
         
         if not user.is_active:
             return Response({"error": "This account is not Active, please contact us if you think this is a mistake"}, status=status.HTTP_403_FORBIDDEN)
+
+        if user.is_superuser or user.is_staff:
+            return Response({"error": "email or password not found"}, status=status.HTTP_400_BAD_REQUEST)
         
         refresh_token = RefreshToken.for_user(user)
-        auth.login(request._request, user)
         return Response(
             {
                 'access': str(refresh_token.access_token), 
@@ -164,7 +166,7 @@ class EditUserApi(APIView):
             user_serializer.validated_data.pop('password') # type: ignore
             user_serializer.save()
             refresh_token = RefreshToken.for_user(user)
-            return Response({'access': str(refresh_token.access_token), 'refresh': str(refresh_token), "username": user.username})
+            return Response({'access': str(refresh_token.access_token), 'refresh': str(refresh_token), "username": user.username, "profile_picture": user.profile_picture.url})
         else:
             return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

@@ -14,17 +14,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         try:
             self.user: SocialUser = self.scope['user']
-            if not self.user.is_authenticated:
-                await self.close()
             
-            self.to_user = await SocialUser.objects.aget(id=channel_id, username=channel_name)
-            self.chat_name = f"chat_{channel_name.strip().replace(' ', '_')}{channel_id}"
-            self.reverse_chat_name = f"chat_{self.user.username.strip().replace(' ', '_')}{self.user.id}" # type: ignore
-            self.online_user_obj: OnlineUser
-            
-            if self.user.is_anonymous:
+            if self.user.is_anonymous or not self.user.is_authenticated:
                 await self.close()
                 return
+            
+            self.to_user = await SocialUser.objects.aget(id=channel_id, username=channel_name)
+            self.chat_name = f"chat_{channel_name.strip().replace(' ', '_')}f_{channel_id}_t_{self.user.pk}"
+            self.reverse_chat_name = f"chat_{self.user.username.strip().replace(' ', '_')}{self.user.pk}"
+            self.online_user_obj: OnlineUser
+            
             
             self.online_user_obj, _ = await asyncio.gather(
                 OnlineUser.objects.acreate(user=self.user, channel_name=self.channel_name),
@@ -242,7 +241,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             await self.close()
             
         self.username = self.user.username.replace(" ", "")
-        self.user_channel = f"notif_{self.username}_{self.user.id}" # type: ignore
+        self.user_channel = f"notif_{self.username}_{self.user.pk}"
         
         await self.channel_layer.group_add(self.user_channel, self.channel_name) # type: ignore
         await self.accept(subprotocol=self.scope["org_subprotocols"])

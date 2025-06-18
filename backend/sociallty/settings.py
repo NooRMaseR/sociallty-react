@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'users',
     'main_page',
     'chat',
+    'APIs',
     'whitenoise',
     'phonenumber_field',
     'corsheaders',
@@ -175,8 +176,8 @@ USE_TZ = True
 CORS_ALLOWED_ORIGINS = (
     "http://localhost:5173",
     "http://localhost:4173",
-    "http://192.168.1.9:5173",
-    "http://192.168.1.9:4173",
+    "http://192.168.1.8:5173",
+    "http://192.168.1.8:4173",
 ) if DEBUG else os.getenv("ALLOWED_CORS", "").split("|")
     
 CORS_ALLOW_CREDENTIALS = True

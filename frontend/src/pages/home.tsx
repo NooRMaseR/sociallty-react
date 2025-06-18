@@ -126,24 +126,7 @@ export default function Home() {
         {!loaded ? (
           <SkelatonPlaceHolders />
         ) : (
-          <>
             <Posts posts={posts}/>
-            {/* <div>
-              {hasNext ? (
-                <Button
-                  type="button"
-                  variant="contained"
-                  loading={loading}
-                  loadingPosition="start"
-                  onClick={() => setPageNumber((prev) => prev + 1)}
-                >
-                  {loading ? "Please wait..." : "Load More"}
-                </Button>
-              ) : (
-                hasNext === false ? <p>No More Posts...</p> : null
-              )}
-            </div> */}
-          </>
         )}
       </Box>
     </main>

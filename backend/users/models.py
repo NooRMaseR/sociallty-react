@@ -63,12 +63,16 @@ class SocialUser(AbstractBaseUser, PermissionsMixin):
         phone
 
     """
-
+    class Gender(models.TextChoices):
+        MALE = "male"
+        FEMALE = "female"
+        
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
     username = models.CharField(max_length=150)
     password = models.CharField(max_length=255, validators=[MinLengthValidator(8)])
     email = models.EmailField(unique=True)
+    gender = models.CharField(max_length=10, choices=Gender, default=Gender.MALE)
     birth = models.DateField(null=True)
     bio = models.TextField(max_length=150, null=True, blank=True)
     profile_picture = models.ImageField(

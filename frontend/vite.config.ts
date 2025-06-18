@@ -61,17 +61,17 @@ export default defineConfig({
             "form_factor": "wide"
           },
           {
+            "src": "/Screenshot-Mobile.png",
+            "sizes": "502x1008",
+            "type": "image/png",
+            "label": "Sociality website Mobile style"
+          },
+          {
             "src": "/Screenshot-Desktop.png",
             "sizes": "931x1023",
             "type": "image/png",
             "label": "Sociality website Desktop style",
           },
-          {
-            "src": "/Screenshot-Mobile.png",
-            "sizes": "502x1008",
-            "type": "image/png",
-            "label": "Sociality website Mobile style"
-          }
         ],
         "theme_color": "#ffffff",
         "background_color": "#ffffff",
@@ -90,6 +90,12 @@ export default defineConfig({
             "icons": [{ "src": "/favicon-96x96.png", "sizes": "96x96" }]
           },
           {
+            "name": "Chats",
+            "short_name": "chats",
+            "url": "/chat",
+            "icons": [{ "src": "/favicon-96x96.png", "sizes": "96x96" }]
+          },
+          {
             "name": "Add a New Post",
             "short_name": "New Post",
             "url": "/make-post",
@@ -102,8 +108,6 @@ export default defineConfig({
             "icons": [{ "src": "/favicon-96x96.png", "sizes": "96x96" }]
           }
         ],
-        
-        // "permissions": ["notifications", "clipboard-write"]
       },
     })
   ],

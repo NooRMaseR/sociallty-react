@@ -79,7 +79,7 @@ export default function Login() {
         <FloatingLabelInput
           type="email"
           label="Email"
-          suffexIcon={<EmailIcon sx={{ color: "var(--text-color)" }} />}
+          preffexIcon={<EmailIcon sx={{ color: "var(--text-color)" }} />}
           {...register('email', {required: true})}
           autoComplete="email"
           disableDetectTextDir
@@ -88,7 +88,7 @@ export default function Login() {
         <FloatingLabelInput
           type="password"
           label="Password"
-          suffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
+          preffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
           autoComplete="current-password"
           slotProps={{
             htmlInput: {

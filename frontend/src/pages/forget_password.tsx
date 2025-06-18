@@ -196,7 +196,7 @@ export default function ForgetPasswordPage() {
             <FloatingLabelInput
               type="email"
               label="Email"
-              suffexIcon={<EmailIcon sx={{ color: "var(--text-color)" }} />}
+              preffexIcon={<EmailIcon sx={{ color: "var(--text-color)" }} />}
               autoComplete="email"
               inputProps={{
                 error: !!errors.email,
@@ -241,7 +241,7 @@ export default function ForgetPasswordPage() {
             <FloatingLabelInput
               type="password"
               label="New Password"
-              suffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
+              preffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
               slotProps={{ htmlInput: { minLength: 8 } }}
               inputProps={{
                 error: !!errors.passwordError,
@@ -253,7 +253,7 @@ export default function ForgetPasswordPage() {
             <FloatingLabelInput
               type="password"
               label="Confirm Password"
-              suffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
+              preffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
               slotProps={{ htmlInput: { minLength: 8 } }}
               inputProps={{
                 error: !!errors.passwordError,
