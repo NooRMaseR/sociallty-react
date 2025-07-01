@@ -38,20 +38,12 @@ main {
     }
 
     & #user-info {
-        width: 100%;
+        width: calc(100% - 1rem);
         display: flex;
-        justify-content: end;
-        align-items: end;
+        align-items: start;
         flex-direction: column-reverse;
         gap: 0.5rem;
-        margin-right: 1rem;
-
-        & > div {
-            display: flex;
-            align-items: end;
-            flex-direction: column;
-            text-align: end;
-        }
+        margin-left: 1rem;
 
     }
 }

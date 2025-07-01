@@ -9,8 +9,15 @@ import {
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { reactionsEmojis } from "../../utils/constants";
 import DeleteIcon from "@mui/icons-material/Delete";
+import ReplyIcon from "@mui/icons-material/Reply";
 import { ContextMenu } from "./message_bubble";
 import React from "react";
+
+interface MessageContextMenuProps extends ContextMenu {
+  handleDelete: (messageId: number) => void;
+  setOnReact: (msg_id: number, value: string) => void;
+  setOnReply: (msg_id: number) => void;
+}
 
 export default function MessageContextMenu({
   element,
@@ -20,10 +27,8 @@ export default function MessageContextMenu({
   myReaction,
   setOnReact,
   handleDelete,
-}: ContextMenu & {
-  handleDelete: (messageId: number) => void;
-  setOnReact: (msg_id: number, value: string) => void;
-}) {
+  setOnReply,
+}: MessageContextMenuProps) {
   const handelClose = React.useCallback(() => {
     setElementToContextMenu(null);
     element?.classList.remove("has-context-menu");
@@ -50,6 +55,11 @@ export default function MessageContextMenu({
     handelClose();
   }, [messageId, handelClose, handleDelete]);
 
+  const handelReply = React.useCallback(() => {
+    setOnReply(messageId ?? -1);
+    handelClose();
+  }, [handelClose, messageId, setOnReply])
+
   return (
     <Menu
       aria-hidden={!element}
@@ -70,6 +80,14 @@ export default function MessageContextMenu({
           </ToggleButton>
         ))}
       </ToggleButtonGroup>
+      
+      <MenuItem onClick={handelReply}>
+        <ListItemIcon>
+          <ReplyIcon fontSize="small" />
+        </ListItemIcon>
+        <ListItemText>Reply</ListItemText>
+      </MenuItem>
+
       <MenuItem onClick={handleCopy}>
         <ListItemIcon>
           <ContentCopyIcon fontSize="small" />

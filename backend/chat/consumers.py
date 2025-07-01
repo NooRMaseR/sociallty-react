@@ -1,5 +1,5 @@
 from .models import Message, MessageReact, MessageReactReceive, MessageReceiveForSend, MessageReciveForDelete, Notification, OnlineUser, Reactions
-from APIs.serializers import MessageReactSerializer, NotificationSerializer
+from APIs.serializers import MessageReactSerializer, NotificationSerializer, ReplySerializer
 from channels.generic.websocket import AsyncWebsocketConsumer
 from users.models import FriendRequest, SocialUser
 from asgiref.sync import sync_to_async
@@ -21,7 +21,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             
             self.to_user = await SocialUser.objects.aget(id=channel_id, username=channel_name)
             self.chat_name = f"chat_{channel_name.strip().replace(' ', '_')}f_{channel_id}_t_{self.user.pk}"
-            self.reverse_chat_name = f"chat_{self.user.username.strip().replace(' ', '_')}{self.user.pk}"
+            self.reverse_chat_name = f"chat_{self.user.username.strip().replace(' ', '_')}f_{self.user.pk}_t_{channel_id}"
             self.online_user_obj: OnlineUser
             
             
@@ -31,7 +31,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
             
         except Exception as e:
-            print(f"error: {e}")
+            print(f"CONNECT ERROR: {e}")
             await self.close()
             return
         
@@ -133,6 +133,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'id', 
                 'message', 
                 'sent_at', 
+                'replied_to',
                 'from_user__id', 
                 'from_user__username',
                 'from_user__profile_picture',
@@ -140,13 +141,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'to_user__username'
                 'to_user__profile_picture'
             )
+            .select_related("from_user", "to_user", "replied_to")
             .acreate(
                 from_user=self.user, 
                 to_user=self.to_user, 
-                message=validated_data.message
+                message=validated_data.message,
+                replied_to_id=None if validated_data.replying_to <= 0 else validated_data.replying_to
             )
         )
-        
+
         sending = {
             "event_type": "send",
             "from_user": message.from_user.username,
@@ -157,7 +160,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "to_user_profile_picture": message.to_user.profile_picture.url,
             "id": message.id, # type: ignore
             "message": message.message,
-            "sent_at": str(message.sent_at)
+            "sent_at": str(message.sent_at),
+            "replied_to": await sync_to_async(lambda: ReplySerializer(message.replied_to).data)(),
         }
         
         await asyncio.gather(
@@ -190,7 +194,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }
         
         await self.send_both(sending)
-            
+    
     async def receive(self, text_data: str | None =None, bytes_data=None):
         if not text_data:
             return

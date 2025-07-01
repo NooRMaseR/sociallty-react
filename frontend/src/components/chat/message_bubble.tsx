@@ -3,6 +3,7 @@ import { textDir, formatDate, formatNumbers } from "../../utils/functions";
 import { Badge, Box, Paper, Typography } from "@mui/material";
 import { UserNeededData } from "../../pages/Chat";
 import styles from "../../styles/chat.module.css";
+import ReplyBox, { ReplyBoxProps } from "./reply";
 import { LazyAvatar } from "../media_skelatons";
 import { styled } from "@mui/material/styles";
 
@@ -12,6 +13,7 @@ export interface MessageRecive {
   from_user: FullUser;
   to_user: FullUser;
   sent_at: string;
+  replied_to?: ReplyBoxProps["reply"];
 }
 
 export interface Reaction {
@@ -59,6 +61,7 @@ export interface MessageBubbleProps extends MessageCommonProps {
   message: MessageRecive;
   reactions: Reaction[];
   myReaction: string;
+  reply?: ReplyBoxProps["reply"];
 }
 
 function createReaction(reactions: Reaction[]): string {
@@ -110,6 +113,7 @@ export default function MessageBubble({
   username,
   reactions,
   myReaction,
+  reply,
 }: MessageBubbleProps) {
   const reacts: string = createReaction(reactions);
   const belongsToUser: boolean = message.from_user.id === user_id;
@@ -127,71 +131,94 @@ export default function MessageBubble({
       aria-haspopup="true"
       sx={{
         display: "flex",
-        alignItems: "flex-start",
         flexDirection: belongsToUser ? "row-reverse" : "row",
         userSelect: "none",
-        gap: 1,
       }}
     >
-      <LazyAvatar
-        src={`${MEDIA_URL}${message.from_user.profile_picture}`}
-        width="2.8rem"
-        height="2.8rem"
-        alt={message.from_user.username}
-      >
-        {belongsToUser
-          ? username[0].toUpperCase()
-          : message.from_user.username[0].toUpperCase()}
-      </LazyAvatar>
-      <Box
-        sx={{ width: "fit-content", maxWidth: "70%" }}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          setElementToContextMenu({
-            element: e.currentTarget,
-            messageId: message.id,
-            myMessage: belongsToUser,
-            myReaction: myReaction,
-          });
-        }}
-      >
-        {reacts ? (
-          <MessageBubbleReactionStyled
-            badgeContent={reacts} color="primary"
-            sender={belongsToUser ? "user" : "other"}
-            anchorOrigin={{
-              vertical: "top",
-              horizontal: belongsToUser ? "left" : "right",
+      <Box sx={{
+        display: 'flex',
+        justifyContent: "flex-start",
+        flexDirection: "column"
+      }}>
+        
+        <Box sx={{
+          display: "flex",
+          alignItems: "start",
+          flexDirection: belongsToUser ? "row-reverse" : "row",
+          userSelect: "none",
+          gap: 1,
+        }}>
+          <LazyAvatar
+            src={`${MEDIA_URL}${message.from_user.profile_picture}`}
+            width="2.8rem"
+            height="2.8rem"
+            alt={message.from_user.username}
+          >
+            {belongsToUser
+              ? username[0].toUpperCase()
+              : message.from_user.username[0].toUpperCase()}
+          </LazyAvatar>
+          <Box
+            sx={{ maxWidth: "70%" }}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setElementToContextMenu({
+                element: e.currentTarget,
+                messageId: message.id,
+                myMessage: belongsToUser,
+                myReaction: myReaction,
+              });
             }}
-          >
-            <MessageBubbleStyled
-              sender={belongsToUser ? "user" : "other"}
             >
-              <Typography dir={textDir(message.message)}>
-                {message.message}
+            {reacts ? (
+              <MessageBubbleReactionStyled
+              badgeContent={reacts} color="primary"
+              sender={belongsToUser ? "user" : "other"}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: belongsToUser ? "left" : "right",
+              }}
+              >
+                <MessageBubbleStyled
+                  sender={belongsToUser ? "user" : "other"}
+                  >
+                  {message?.replied_to ? <ReplyBox reply={reply} inTextBoxBox={false} /> : null}
+                  <Typography dir={textDir(message.message)}>
+                    {message.message}
+                  </Typography>
+                </MessageBubbleStyled>
+              </MessageBubbleReactionStyled>
+            ) : (
+              <MessageBubbleStyled
+              sender={belongsToUser ? "user" : "other"}
+              >
+                {message?.replied_to ? <ReplyBox reply={reply} inTextBoxBox={false} /> : null}
+                <Typography dir={textDir(message.message)}>
+                  {message.message}
+                </Typography>
+              </MessageBubbleStyled>
+            )}
+
+            <Box sx={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "end",
+            }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  display: "block",
+                  textAlign: belongsToUser ? "right" : "left",
+                  mt: 0.5,
+                  color: "#9e9e9e",
+                  textWrap: "nowrap"
+                }}
+              >
+                {formatDate(message.sent_at)}
               </Typography>
-            </MessageBubbleStyled>
-          </MessageBubbleReactionStyled>
-        ) : (
-          <MessageBubbleStyled
-            sender={belongsToUser ? "user" : "other"}
-          >
-            <Typography dir={textDir(message.message)}>
-              {message.message}
-            </Typography>
-          </MessageBubbleStyled>
-        )}
-        <Typography
-          variant="caption"
-          sx={{
-            display: "block",
-            textAlign: belongsToUser ? "right" : "left",
-            mt: 0.5,
-            color: "#9e9e9e",
-          }}
-        >
-          {formatDate(message.sent_at)}
-        </Typography>
+            </Box>
+          </Box>
+      </Box>
       </Box>
     </Box>
   );

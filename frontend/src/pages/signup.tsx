@@ -4,6 +4,7 @@ import { ChangeEvent, memo, useCallback, useEffect, useRef, useState } from "rea
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import FloatingLabelInput from "../components/floating_input_label";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { PasswordField } from "../components/password_field";
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LazyAvatar } from "../components/media_skelatons";
 import { FieldErrors, useForm } from "react-hook-form";
@@ -22,7 +23,6 @@ import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import CakeIcon from "@mui/icons-material/Cake";
 import InfoIcon from "@mui/icons-material/Info";
-import LockIcon from "@mui/icons-material/Lock";
 import WcIcon from '@mui/icons-material/Wc';
 import "../styles/signup.css";
 
@@ -217,22 +217,14 @@ export default function Signup() {
               disableDetectTextDir
               required
             />
-            <FloatingLabelInput
-              type="password"
+            <PasswordField
               label="Password"
-              preffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
-              autoComplete="current-password"
+              autoComplete="new-password"
               {...register("password", {required: true})}
               inputProps={{
                 error: !!errors.password,
                 helperText: errors.password?.message,
               }}
-              slotProps={{
-                htmlInput: {
-                  minLength: 8,
-                },
-              }}
-              required
             />
           </>
         );

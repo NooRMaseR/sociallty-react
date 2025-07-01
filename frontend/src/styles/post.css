@@ -107,7 +107,6 @@
     & div {
         justify-content: center;
         align-items: center;
-        margin-top: 2rem;
         gap: 1rem;
         color: var(--text-color);
 
@@ -146,7 +145,15 @@
     
     .btns div {
         font-size: 12px;
-        
+    }
+    .post-content img {
+        max-height: 30rem;
+    }
+}
+
+@media (max-width: 580px) {
+    .post-content img {
+        max-height: 20rem;
     }
 }
 

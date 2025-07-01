@@ -7,9 +7,9 @@ import React, {
   useState,
 } from "react";
 import { CardsSkelaton } from "../components/users_skelaton";
+import { Box, Button, Typography } from "@mui/material";
 import { ApiUrls, FullUser } from "../utils/constants";
 import { useLoadingBar } from "react-top-loading-bar";
-import { Box, Button } from "@mui/material";
 import { Helmet } from "react-helmet";
 import api from "../utils/api";
 
@@ -20,7 +20,9 @@ const Cards = memo(({ users }: { users: FullUser[] }) => {
     users.map((user) => (
       <LazyAccountCard user={user} key={user.id} forFriends forAcceptRequests />
     )), [users]);
-  return <Suspense fallback={<CardsSkelaton />}>{renderCards}</Suspense>;
+  if (users.length > 0) {
+      return <Suspense fallback={<CardsSkelaton />}>{renderCards}</Suspense>;
+  } else return <Typography sx={{textAlign: "center", width: "calc(100vw - 10%)"}}>No Requests Found</Typography>
 });
 
 export default function SeeUserFriendsRequestsPage() {
@@ -88,9 +90,7 @@ export default function SeeUserFriendsRequestsPage() {
               >
                 {buttonLoading ? "Please wait..." : "Load More"}
               </Button>
-            ) : (
-              <p>No Friend Requests...</p>
-            )}
+            ) : null}
           </Box>
         </>
       )}

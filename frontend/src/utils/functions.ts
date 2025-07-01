@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ACCESS, ApiUrls, AR } from "./constants";
-import api from "./api";
 import dayjs from "dayjs";
+import api from "./api";
 
 interface ShareOptions {
   text?: string;
@@ -33,6 +33,11 @@ export async function share(postId?: number, options: ShareOptions = { title: 'P
   }
 }
 
+/**
+ * a function to send a request to add a friend
+ * @param friendID the friend id to add
+ * @returns `FriendRequest`
+ */
 export async function addFriend(friendID: number): Promise<FriendRequest> {
   try {
     const res = await api.post(ApiUrls.see_friends_requests, { friendID });
@@ -50,6 +55,12 @@ export async function addFriend(friendID: number): Promise<FriendRequest> {
   }
 };
 
+
+/**
+ * a function to send a request to remove a friend
+ * @param friendID the friend id to add
+ * @returns `FriendRequest`
+ */
 export async function removeFriend(friendID: number): Promise<FriendRequest> {
   try {
     const res = await api.delete(ApiUrls.see_user_friends, { data: { friendID } });
@@ -67,6 +78,12 @@ export async function removeFriend(friendID: number): Promise<FriendRequest> {
   }
 };
 
+
+/**
+ * a function to send a request to Delete friend request
+ * @param friendID the friend id to add
+ * @returns `FriendRequest`
+ */
 export async function deleteRequest(friendID: number): Promise<FriendRequest> {
   
   try {
@@ -95,10 +112,20 @@ export async function deleteRequest(friendID: number): Promise<FriendRequest> {
 
 }
 
+/**
+ * a function to prevent the page from scrolling, `Toggle` scrolling
+ * @param disable default `true` if `false` then enable the page to scroll
+ */
 export function disablePageScroll(disable: boolean = true) {
-  document.body.style.overflow = disable === true ? "hidden" : 'initial';
+  document.body.style.overflow = disable ? "hidden" : 'initial';
 };
 
+
+/**
+ * a function to long numbers to readable format
+ * @param value the number to format
+ * @returns the formated number like 1K 2M 3B
+ */
 export function formatNumbers(value: number): string {
   if (value < 1000) {
     return value.toString();
@@ -114,19 +141,45 @@ export function formatNumbers(value: number): string {
   }
 }
 
+
+/**
+ * a function for adding extra security to the token, adding like first 5 letters to the end
+ * @param token the token to format it
+ * @param from_ add from `index`
+ * @param to  add until `index`
+ * @returns the new token in formated shape
+ */
 export function formatToken(token:string, from_: number = 0, to: number = 5): string {
   return token + token.substring(from_, to)
 }
 
+
+/**
+ * a function the get the current token in a formated shape
+ * @returns the formated token
+ */
 export function getFormatedToken(): string {
   return formatToken(localStorage.getItem(ACCESS) ?? "")
 }
 
+
+/**
+ * a function is used to detect the text `dir`
+ * @param text the text to detect `dir`
+ * @returns the text `dir`
+ */
 export function textDir(text: string): "rtl" | "ltr" {
   if (text.length > 0 && AR.includes(text[0].toLowerCase())) return "rtl";
   else return "ltr";
 };
 
+
+/**
+ * a function to format date
+ * @param date the date to format
+ * @param format the formated shape you need
+ * @returns new formated date as `string`
+ */
 export function formatDate(date: string, format: string = "YYYY/MM/DD hh:mm A"): string {
   return dayjs(date).format(format);
 }

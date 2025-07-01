@@ -81,9 +81,7 @@ export default function SocialFriendsPage() {
             {buttonloading ? "Please wait..." : "Load More"}
           </Button>
         </Box>
-      ) : (
-        <p>No More Users...</p>
-      )}
+      ) : null}
     </>
   );
 }

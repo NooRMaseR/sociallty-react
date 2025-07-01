@@ -32,8 +32,8 @@ const Transition = React.forwardRef(
       direction="up"
       ref={ref}
       {...props}
-      timeout={1000}
-      easing={{ enter: easing.easeInOut, exit: easing.easeInOut }}
+      timeout={800}
+      easing={{ enter: easing.sharp, exit: easing.sharp }}
     />
   )
 );
@@ -128,7 +128,7 @@ export default function CommentsSlider() {
       fullScreen
       open={opened}
       onClose={closeSlide}
-      TransitionComponent={Transition}
+      slots={{transition: Transition}}
       keepMounted
     >
       <Box sx={{ placeContent: "end", width: "100%" }}>

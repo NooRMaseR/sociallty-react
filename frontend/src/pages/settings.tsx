@@ -10,16 +10,16 @@ import {
   DialogTitle,
   FormControlLabel,
   Switch,
-  TextField
 } from "@mui/material";
-import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { PasswordField } from "../components/password_field";
 import { ApiUrls, UserSettings } from "../utils/constants";
 import { useLoadingBar } from "react-top-loading-bar";
+import InfoButton from "../components/info_button";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import api from "../utils/api";
-import InfoButton from "../components/info_button";
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<UserSettings>({
@@ -112,12 +112,10 @@ export default function SettingsPage() {
               <DialogContentText>
                 Please Confirm Your Password.
               </DialogContentText>
-              <TextField
+              <PasswordField
                 ref={passwordInputRef}
                 label="Password"
-                type="password"
-                variant="filled"
-                onChange={(e) =>
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   passwordInputRef.current &&
                   (passwordInputRef.current.value = e.target.value)
                 }

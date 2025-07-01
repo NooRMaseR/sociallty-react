@@ -1,11 +1,11 @@
 import { ACCESS, ApiUrls, REFRESH, TokenResponse } from "../utils/constants";
 import FloatingLabelInput from "../components/floating_input_label";
+import { PasswordField } from "../components/password_field";
 import { LazyAvatar } from "../components/media_skelatons";
 import { useCallback, useEffect, useState } from "react";
 import { useLoadingBar } from "react-top-loading-bar";
 import { Link, useNavigate } from "react-router-dom";
 import EmailIcon from "@mui/icons-material/Email";
-import LockIcon from "@mui/icons-material/Lock";
 import { setHasToken } from "../utils/store";
 import { Box, Button } from "@mui/material";
 import { useDispatch } from "react-redux";
@@ -85,19 +85,7 @@ export default function Login() {
           disableDetectTextDir
           required
         />
-        <FloatingLabelInput
-          type="password"
-          label="Password"
-          preffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
-          autoComplete="current-password"
-          slotProps={{
-            htmlInput: {
-              minLength: 8,
-            },
-          }}
-          {...register('password', { required: true })}
-          required
-        />
+        <PasswordField {...register('password', { required: true })}/>
         {errors.length != 0 ? (
           <ul>
             {errors.map((value, index) => (

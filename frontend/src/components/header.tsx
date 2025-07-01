@@ -266,23 +266,23 @@ export default function Header() {
 
   const create_notification = useCallback(
     async (notification: Notification) => {
-      if (location.pathname.includes(`chat/${notification.from_user.id}`))
-        return await Promise.resolve();
+      if (location.pathname.includes(`chat/${notification.from_user.id}`)) {
+        return await Promise.reject("you can't show notifications in chat page");
+      };
+
       try {
         // Check if the browser supports notifications
         if (!("Notification" in window)) {
-          console.error("This browser does not support notifications");
-          return;
-        }
+          return await Promise.reject("This browser does not support notifications");
+        };
 
         // Request permission if not already granted
         if (Notification.permission !== "granted") {
           const permission = await Notification.requestPermission();
           if (permission !== "granted") {
-            console.log("Notification permission denied");
-            return;
-          }
-        }
+            return await Promise.reject("Notification permission denied");
+          };
+        };
 
         // Create and show the notification
         const noti = new Notification(notification.from_user.username, {
@@ -304,7 +304,7 @@ export default function Header() {
           console.error("Error while creating notification:", error);
         };
       } catch (error) {
-        console.error("Error in create_notification:", error);
+        return Promise.reject(`Error in create_notification: ${error}`);
       }
     },
     [navigate, location.pathname]
@@ -340,13 +340,15 @@ export default function Header() {
             for (let i = 0; i < data.notifications.length; i++) {
               const noti = data.notifications[i];
               notisToSend.push(create_notification(noti));
-            }
-            await Promise.all(notisToSend);
+            };
+            const allPromises = await Promise.allSettled(notisToSend);
 
             for (let i = 0; i < data.notifications.length; i++) {
               const noti = data.notifications[i];
-              notisToDelete.push(noti.id);
-            }
+              if (allPromises[i].status === "fulfilled") {
+                notisToDelete.push(noti.id);
+              };
+            };
             if (notisToDelete.length > 0) {
               newWs?.send(
                 JSON.stringify({
@@ -354,7 +356,7 @@ export default function Header() {
                   ids: notisToDelete,
                 })
               );
-            }
+            };
 
             break;
           }
@@ -395,7 +397,7 @@ export default function Header() {
     [current_route]
   );
 
-  if (current_route.startsWith("/chat/")) return <></>;
+  if (current_route.startsWith("/chat/")) return null;
   return (
     <header>
       <nav className={menuOpened ? "show-nav" : ""}>

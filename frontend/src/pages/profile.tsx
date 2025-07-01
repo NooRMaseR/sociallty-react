@@ -203,7 +203,7 @@ export default function ProfilePage() {
         <meta property="og:type" content="profile" />
       </Helmet>
       {error ? (
-        <Typography variant="h1" className="text-white">{error}</Typography>
+        <Typography variant="h2" className="text-white">{error}</Typography>
       ) : (
           <main>
             <Dialog open={openDeleteUserConfirm}>
@@ -243,7 +243,7 @@ export default function ProfilePage() {
                 <div id={styles["user-info"]}>
                   <div>
                     <h1>{user.username}</h1>
-                    <Typography>{user.bio}</Typography>
+                    <Typography sx={{whiteSpace: "pre-wrap"}}>{user.bio}</Typography>
                   </div>
 
                   {/* check if the user is seeing his own profile to let him edit his profile */}
@@ -268,7 +268,7 @@ export default function ProfilePage() {
                     <ButtonGroup
                       variant="contained"
                       className="d-flex gap-3"
-                      sx={{ flexDirection: "row-reverse !important" }}
+                      sx={{ flexDirection: "row-reverse !important", flexWrap: "wrap" }}
                     >
                       <Button onClick={openConfirmRemoveFriend}>Remove Friend</Button>
                       <Button onClick={() => setOpenQr(true)}>

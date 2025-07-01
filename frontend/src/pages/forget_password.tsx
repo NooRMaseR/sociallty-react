@@ -1,5 +1,6 @@
 import FloatingLabelInput from "../components/floating_input_label";
 import Stepper, { Step } from "../components/Stepper/Stepper";
+import { PasswordField } from "../components/password_field";
 import { ApiUrls, TokenResponse } from "../utils/constants";
 import { LazyAvatar } from "../components/media_skelatons";
 import styles from "../styles/forget_password.module.css";
@@ -7,7 +8,6 @@ import { useCallback, useEffect, useState } from "react";
 import VerificationInput from "react-verification-input";
 import { useLoadingBar } from "react-top-loading-bar";
 import EmailIcon from "@mui/icons-material/Email";
-import LockIcon from "@mui/icons-material/Lock";
 import { Box, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -238,29 +238,22 @@ export default function ForgetPasswordPage() {
               </Typography>
               <LazyAvatar src="/favicon.ico" width="10rem" height="10rem" />
             </Box>
-            <FloatingLabelInput
-              type="password"
+            <PasswordField
               label="New Password"
-              preffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
-              slotProps={{ htmlInput: { minLength: 8 } }}
               inputProps={{
                 error: !!errors.passwordError,
                 helperText: errors.passwordError,
               }}
               {...register("password")}
-              required
             />
-            <FloatingLabelInput
-              type="password"
+            <PasswordField
               label="Confirm Password"
-              preffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
-              slotProps={{ htmlInput: { minLength: 8 } }}
               inputProps={{
                 error: !!errors.passwordError,
                 helperText: errors.passwordError,
               }}
               {...register("confirm_password")}
-              required
+              
             />
           </Step>
         </Stepper>

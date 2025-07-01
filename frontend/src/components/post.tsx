@@ -129,7 +129,7 @@ const MediaContent = memo(
         variant="masonry"
         cols={posts_media.length > 2 ? 2 : posts_media.length}
         gap={8}
-        sx={{ width: "100%" }}
+        sx={{ width: "100%"}}
       >
         {posts_media}
       </ImageList>
@@ -234,9 +234,9 @@ export default function Post({ post }: { post: PostProps }) {
           </div>
 
           {/* post description */}
-          <div className="desc">
-            <Typography dir={textDir(post.description)}>{post.description}</Typography>
-          </div>
+          <Box className="desc">
+            <Typography dir={textDir(post.description)} sx={{whiteSpace: "pre-wrap"}}>{post.description}</Typography>
+          </Box>
 
           {/* the post media */}
           <div className="post-content">

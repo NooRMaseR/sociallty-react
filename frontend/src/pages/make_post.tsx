@@ -101,9 +101,7 @@ export default function MakePostPage() {
         </DialogActions>
       </Dialog>
       <form onSubmit={handleSubmit(formSubmit)} encType="multipart/form-data">
-        <FilePicker
-          onChangeMethod={(e) => handelFiles(e.target.files)}
-        />
+        <FilePicker onChangeMethod={handelFiles}/>
         <Box sx={{display: 'flex', placeItems: 'center', flexDirection: 'column', gap: '1rem'}}>
           <MediaComponent media={media} />
         </Box>

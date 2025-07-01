@@ -115,10 +115,18 @@ class MessageReactSerializer(serializers.ModelSerializer):
         model = MessageReact
         fields = "__all__"
 
+class ReplySerializer(serializers.ModelSerializer):
+    from_user = SocialUserOnlySerializer(read_only=True)
+    to_user = SocialUserOnlySerializer(read_only=True)
+    class Meta:
+        model = Message
+        exclude = ("replied_to", )
+
 class MessageSerializer(serializers.ModelSerializer):
     from_user = SocialUserOnlySerializer(read_only=True)
     to_user = SocialUserOnlySerializer(read_only=True)
     reactions = MessageReactSerializer(read_only=True, many=True)
+    replied_to = ReplySerializer(read_only=True)
     class Meta:
         model = Message
         fields = "__all__"

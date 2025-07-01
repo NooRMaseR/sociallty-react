@@ -1,13 +1,13 @@
-import { Box, Container, Typography, List, ListItem, ListItemAvatar, ListItemText, Divider, IconButton, Button } from '@mui/material';
+import { Box, Container, Typography, List, ListItem, ListItemAvatar, ListItemText, Divider, IconButton, Button, CircularProgress } from '@mui/material';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { ApiUrls, FullUser, MEDIA_URL } from '../utils/constants';
+import { LazyAvatar } from '../components/media_skelatons';
 import { useLoadingBar } from 'react-top-loading-bar';
 import MessageIcon from '@mui/icons-material/Message';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import styled from '@emotion/styled';
 import api from '../utils/api';
-import { LazyAvatar } from '../components/media_skelatons';
 
 const StyledListItem = styled(ListItem)`
   &:hover {
@@ -121,13 +121,14 @@ export default function Chats() {
         <Box sx={{ mt: 2 }}>
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-              <Typography sx={{color: 'var(--text-color)'}}>Loading...</Typography>
+              <CircularProgress />
             </Box>
           ) : users.length > 0 ? (
             <UserList users={users as UserListProps['users']} onUserClick={handleUserClick} />
           ) : (
             <Typography variant="body1" align="center" sx={{ mt: 4, color: 'var(--text-color)' }}>
-              No friends found. Add some friends to start chatting!
+                  No friends ?
+                  Add some friends to start chating!
             </Typography>
           )}
         </Box>
@@ -142,9 +143,7 @@ export default function Chats() {
           >
             {buttonLoading ? "Please wait..." : "Load More"}
           </Button>
-        ) : (
-          <p>No More Friends...</p>
-        )}
+        ) : null}
       </Box>
     </>
   );

@@ -31,6 +31,7 @@ import { useParams, useNavigate, NavigateFunction } from "react-router-dom";
 import MessageContextMenu from "../components/chat/message_context_menu";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import FloatingLabelInput from "../components/floating_input_label";
+import ReplyBox, { ReplyBoxProps } from "../components/chat/reply";
 import { LazyAvatar } from "../components/media_skelatons";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -42,7 +43,6 @@ import api from "../utils/api";
 interface FullUserWithReport extends FullUser {
   reported: boolean;
 }
-
 
 interface WSMessageSend {
   from_user: string;
@@ -56,6 +56,7 @@ interface WSMessageSend {
   id: number;
   message: string;
   sent_at: string;
+  replied_to: ReplyBoxProps["reply"]
 }
 
 interface WSMessageReact {
@@ -80,6 +81,7 @@ interface UserMessageOnly {
   to_user: UserNeededData;
   sent_at: string;
   reactions: Reaction[];
+  replied_to?: ReplyBoxProps["reply"];
 }
 
 interface MessagesProps extends MessageCommonProps {
@@ -110,12 +112,12 @@ const UserMenuOptions = React.memo(
     const handelReport = useCallback(() => {
       handelOnReportClick(true);
       handleClose();
-    }, [handelOnReportClick, handleClose])
-    
+    }, [handelOnReportClick, handleClose]);
+
     const handelUnfriend = useCallback(() => {
       handelUnfriendClick(true);
       handleClose();
-    }, [handelUnfriendClick, handleClose])
+    }, [handelUnfriendClick, handleClose]);
 
     return (
       <Menu open={!!element} anchorEl={element} onClose={handleClose}>
@@ -123,10 +125,10 @@ const UserMenuOptions = React.memo(
           <ListItemText>Show Profile</ListItemText>
         </MenuItem>
         <MenuItem onClick={handelUnfriend}>
-          <ListItemText sx={{color: 'red'}}>UnFriend</ListItemText>
+          <ListItemText sx={{ color: "red" }}>UnFriend</ListItemText>
         </MenuItem>
         <MenuItem onClick={handelReport}>
-          <ListItemText sx={{color: "red"}}>Report</ListItemText>
+          <ListItemText sx={{ color: "red" }}>Report</ListItemText>
         </MenuItem>
       </Menu>
     );
@@ -142,7 +144,8 @@ const Messages = React.memo(
     setElementToContextMenu,
   }: MessagesProps) =>
     messages
-      .map((message) => (
+      .map((message) => {
+        return (
         <MessageBubble
           key={message.id}
           message={message as unknown as MessageRecive}
@@ -156,9 +159,10 @@ const Messages = React.memo(
               (reaction) => reaction.from_user.id === user_id
             )?.reaction ?? ""
           }
-        />
-      ))
-      .reverse()
+          reply={message.replied_to}
+          />
+        )
+      }).reverse()
 );
 
 export default function Chat() {
@@ -171,6 +175,7 @@ export default function Chat() {
   const [isUnfriendReady, setIsUnfriendReady] = useState<boolean>(false);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [userMenu, setUserMenu] = useState<HTMLElement | null>(null);
+  const [msgIdFromRelpy, setMsgIdFromRelpy] = useState<number>(0);
   const ws = useRef<WebSocket | null>(null);
 
   const [elementToContextMenu, setElementToContextMenu] = useState<{
@@ -179,7 +184,7 @@ export default function Chat() {
     myMessage: boolean;
     myReaction: string;
   } | null>(null);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isScrolled = useRef<boolean>(false);
   const hasMore = useRef<boolean>(false);
@@ -245,6 +250,7 @@ export default function Chat() {
               },
               sent_at: data.sent_at,
               reactions: [],
+              replied_to: data.replied_to?.id ? data.replied_to : undefined,
             },
             ...msgs,
           ]);
@@ -253,7 +259,7 @@ export default function Chat() {
         }
 
         case "delete": {
-          const data: {id: number} = check_data;
+          const data: { id: number } = check_data;
           setMessages((msgs) => msgs.filter((msg) => msg.id !== data.id));
           break;
         }
@@ -316,13 +322,12 @@ export default function Chat() {
     }
     document.body.addEventListener("contextmenu", (e) => e.preventDefault());
     start();
-    
+
     return () => {
       window.removeEventListener("contextmenu", (e) => e.preventDefault());
     };
   }, [scrollToBottom]);
 
-  
   useEffect(() => {
     if (userToChat) {
       if (!ws.current) {
@@ -350,7 +355,7 @@ export default function Chat() {
         setPageNumber((num) => num + 1);
       }
     };
-    
+
     // Adding a small delay to ensure DOM is loaded
     const timer = setTimeout(() => {
       if (pageNumber === 1) scrollToBottom();
@@ -375,12 +380,14 @@ export default function Chat() {
           message: newMessage,
           to_user: parseInt(send_to_id ?? "-1"),
           from_user: user_id,
+          replying_to: msgIdFromRelpy,
         })
       );
       setNewMessage("");
+      setMsgIdFromRelpy(0)
       scrollToBottom();
     }
-  }, [newMessage, send_to_id, user_id, scrollToBottom]);
+  }, [newMessage, send_to_id, user_id, scrollToBottom, msgIdFromRelpy]);
 
   const handleKeyPress = useCallback(
     (event: React.KeyboardEvent) => {
@@ -414,6 +421,20 @@ export default function Chat() {
     [send_to_id, user_id]
   );
 
+  const getReplyObject = useCallback(() => {
+    const m = messages.find(msg => msg.id === msgIdFromRelpy);
+    return {
+      id: m?.id ?? 0,
+      message: m?.message ?? "",
+      to_user: m?.to_user ?? {} as UserNeededData,
+      from_user: m?.from_user ?? {} as UserNeededData,
+    }
+  }, [messages, msgIdFromRelpy])
+
+  const handelOnReply = useCallback((msg_id: number) => {
+    setMsgIdFromRelpy(msg_id);
+  }, [])
+
   const handleOpenUserMenu = useCallback((e: React.MouseEvent<HTMLElement>) => {
     setUserMenu(e.currentTarget);
   }, []);
@@ -433,29 +454,29 @@ export default function Chat() {
   }, []);
 
   const reportUser = useCallback(async () => {
-      try {
-        const res = await api.post(ApiUrls.report, {
-          user_id: userToChat?.id,
-          reason: reportReason
-        });
+    try {
+      const res = await api.post(ApiUrls.report, {
+        user_id: userToChat?.id,
+        reason: reportReason,
+      });
 
-        if (res.status === 201) {
-          navigate("/chat");
-        } else if (res.status === 208) {
-          setIsReportReady(false);
-        }
-      } catch (error) {
-        console.error(error);
+      if (res.status === 201) {
+        navigate("/chat");
+      } else if (res.status === 208) {
+        setIsReportReady(false);
       }
-    }, [userToChat?.id, reportReason])
+    } catch (error) {
+      console.error(error);
+    }
+  }, [userToChat?.id, reportReason]);
 
   const UnfriendUser = useCallback(async () => {
     const res = await removeFriend(userToChat?.id ?? 0);
     if (res.success) {
       navigate("/chat");
     }
-  }, [userToChat?.id])
-  
+  }, [userToChat?.id]);
+
   return (
     <Box
       className="d-flex align-items-center flex-column"
@@ -492,37 +513,54 @@ export default function Chat() {
       </Box>
 
       <Dialog open={isReportReady}>
-        {userToChat?.reported
-          ? <>
+        {userToChat?.reported ? (
+          <>
             <DialogTitle>{userToChat?.username} Aready Reported</DialogTitle>
             <DialogContent>
-              <DialogContentText>You Have Already Reported {userToChat?.username}, you can't Report {userToChat?.gender === "male" ? "him" : "her"} Twice</DialogContentText>
+              <DialogContentText>
+                You Have Already Reported {userToChat?.username}, you can't
+                Report {userToChat?.gender === "male" ? "him" : "her"} Twice
+              </DialogContentText>
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setIsReportReady(false)}>Ok</Button>
             </DialogActions>
-          </> : <>
-              <DialogTitle>Report {userToChat?.username}</DialogTitle>
-              <DialogContent>
-                <DialogContentText>Tell Us Why you want to Report {userToChat?.username}</DialogContentText>
-                <FloatingLabelInput label="Reason" onChangeUpdater={setReportReason} inputProps={{multiline: true}}/>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={() => setIsReportReady(false)}>cancel</Button>
-                <Button color="error" variant="outlined" onClick={reportUser}>Report</Button>
-              </DialogActions>
-          </>}
+          </>
+        ) : (
+          <>
+            <DialogTitle>Report {userToChat?.username}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Tell Us Why you want to Report {userToChat?.username}
+              </DialogContentText>
+              <FloatingLabelInput
+                label="Reason"
+                onChangeUpdater={setReportReason}
+                inputProps={{ multiline: true }}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setIsReportReady(false)}>cancel</Button>
+              <Button color="error" variant="outlined" onClick={reportUser}>
+                Report
+              </Button>
+            </DialogActions>
+          </>
+        )}
       </Dialog>
-      
-      
+
       <Dialog open={isUnfriendReady}>
         <DialogTitle>UnFreind {userToChat?.username}?</DialogTitle>
         <DialogContent>
-          <DialogContentText>Are you sure that you want to UnFreind {userToChat?.username}?</DialogContentText>
+          <DialogContentText>
+            Are you sure that you want to UnFreind {userToChat?.username}?
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsUnfriendReady(false)}>Cancel</Button>
-          <Button color="error" variant="outlined" onClick={UnfriendUser}>Unfrend</Button>
+          <Button color="error" variant="outlined" onClick={UnfriendUser}>
+            Unfrend
+          </Button>
         </DialogActions>
       </Dialog>
 
@@ -534,6 +572,7 @@ export default function Chat() {
           setElementToContextMenu={setElementToContextMenu}
           handleDelete={handleDelete}
           setOnReact={handelOnReact}
+          setOnReply={handelOnReply}
           myReaction={elementToContextMenu?.myReaction ?? ""}
         />
         <Box id={styles["message-container"]}>
@@ -563,27 +602,33 @@ export default function Chat() {
           borderTop: "1px solid #333",
         }}
       >
-        <FloatingLabelInput
-          label="Message"
-          value={newMessage}
-          onChangeUpdater={(value: string) => setNewMessage(value)}
-          onKeyUp={handleKeyPress}
-          boxSx={{ width: "80vw" }}
-          inputProps={{
-            multiline: true,
-          }}
-        />
-        <Tooltip title="Send Message">
-          <span>
-            <IconButton
-              color="primary"
-              onClick={handleSendMessage}
-              disabled={!newMessage.trim()}
-            >
-              <SendIcon />
-            </IconButton>
-          </span>
-        </Tooltip>
+        <Box>
+          {msgIdFromRelpy > 0 ? <ReplyBox reply={getReplyObject()} onClose={() => setMsgIdFromRelpy(0)} /> : null}
+
+          <Box sx={{display: "flex", justifyContent: "center", alignItems: "center",}}>
+            <FloatingLabelInput
+              label="Message"
+              value={newMessage}
+              onChangeUpdater={setNewMessage}
+              onKeyUp={handleKeyPress}
+              boxSx={{ width: "80vw" }}
+              inputProps={{
+                multiline: true,
+              }}
+            />
+            <Tooltip title="Send Message">
+              <span>
+                <IconButton
+                  color="primary"
+                  onClick={handleSendMessage}
+                  disabled={!newMessage.trim()}
+                >
+                  <SendIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+        </Box>
       </Box>
     </Box>
   );

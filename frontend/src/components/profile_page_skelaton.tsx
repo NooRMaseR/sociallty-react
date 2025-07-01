@@ -9,7 +9,7 @@ export default function Profileskeleton() {
           <Skeleton
             variant="rounded"
             animation={animationType}
-            sx={{ width: "80%", height: "35rem", mb: "2rem" }}
+            sx={{ width: "80%", height: "50svh", mb: "2rem" }}
           />
         </div>
         <div id={styles["info"]}>

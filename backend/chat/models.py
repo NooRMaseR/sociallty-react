@@ -1,4 +1,5 @@
-from typing import Literal
+from typing import Annotated, Literal
+import annotated_types
 from django.db import models
 from main_page.models import SocialUser
 from pydantic import BaseModel, PositiveInt
@@ -11,6 +12,7 @@ class OnlineUser(models.Model):
 class Message(models.Model):
     from_user = models.ForeignKey(SocialUser, on_delete=models.CASCADE, related_name="from_user")
     to_user = models.ForeignKey(SocialUser, on_delete=models.CASCADE, related_name="to_user")
+    replied_to = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="reply")
     message = models.TextField(max_length=3000)
     sent_at = models.DateTimeField(auto_now_add=True)
     
@@ -48,6 +50,7 @@ class BaseMessageRecive(BaseModel):
 class MessageReceiveForSend(BaseMessageRecive):
     event_type: Literal['send']
     message: str
+    replying_to: Annotated[int, annotated_types.Ge(0)] = 0
     
 class MessageReciveForDelete(BaseMessageRecive):
     event_type: Literal['delete']

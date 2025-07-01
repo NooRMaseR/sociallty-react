@@ -3,16 +3,16 @@ __pycache__
 
 media
 static_files
+dev-dist
 users.txt
 .env
 .venv
 db.sqlite3
-test.rest
+http.rest
 test.py
 uv.lock
 .python-version
 pyproject.toml
-frontend/dev-test/
 
 # Logs
 logs

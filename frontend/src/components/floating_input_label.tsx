@@ -7,6 +7,7 @@ interface FloatingLabelInputProps {
   type?: react.HTMLInputTypeAttribute;
   label?: string;
   preffexIcon?: react.ReactNode;
+  suffexIcon?: react.ReactNode;
   onChangeUpdater?: (value: string) => void;
   variant?: TextFieldVariants;
   autoComplete?: react.HTMLInputAutoCompleteAttribute;
@@ -27,7 +28,8 @@ export default function FloatingLabelInput({
   label,
   onChangeUpdater: updater,
   variant = "filled",
-  preffexIcon: suffexIcon,
+  preffexIcon,
+  suffexIcon,
   required = false,
   autoComplete,
   inputProps,
@@ -40,7 +42,7 @@ export default function FloatingLabelInput({
 }: FloatingLabelInputProps) {
   return (
     <Box className="d-flex align-items-center gap-2" sx={boxSx}>
-      {suffexIcon}
+      {preffexIcon}
       <LangTextField
         fullWidth
         placeholder=""
@@ -59,6 +61,7 @@ export default function FloatingLabelInput({
       >
         {children}
       </LangTextField>
+      {suffexIcon}
     </Box>
   );
 }

@@ -47,7 +47,7 @@ export default function EditPostPage() {
     setLoading(false);
   };
 
-  const handleFiles = useCallback((event: FileList) => {
+  const handleFiles = useCallback((event: FileList | null) => {
     const selectedFiles = Array.from(event || []);
     setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
 
@@ -234,11 +234,7 @@ export default function EditPostPage() {
                   }}
                 />
               </div>
-              <FilePicker
-                onChangeMethod={(e) =>
-                  e.target.files && handleFiles(e.target.files)
-                }
-              />
+              <FilePicker onChangeMethod={handleFiles} />
               <div className={styles["post-content"]}>
                 <PostMedia />
               </div>

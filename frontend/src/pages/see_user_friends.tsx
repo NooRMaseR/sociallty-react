@@ -90,9 +90,7 @@ export default function SeeUserFriendsPage() {
               >
                 {buttonLoading ? "Please wait..." : "Load More"}
               </Button>
-            ) : (
-              <p>No More Friends...</p>
-            )}
+            ) : null}
           </Box>
         </>
       )}

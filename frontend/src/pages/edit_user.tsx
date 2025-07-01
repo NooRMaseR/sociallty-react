@@ -1,6 +1,7 @@
 import { ACCESS, MEDIA_URL, ApiUrls, FullUser, REFRESH, TokenResponse} from "../utils/constants";
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import FloatingLabelInput from "../components/floating_input_label";
+import { PasswordField } from "../components/password_field";
 import { LazyAvatar } from "../components/media_skelatons";
 import { Box, Button, MenuItem } from "@mui/material";
 import { useLoadingBar } from "react-top-loading-bar";
@@ -19,7 +20,6 @@ import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import CakeIcon from "@mui/icons-material/Cake";
 import InfoIcon from "@mui/icons-material/Info";
-import LockIcon from "@mui/icons-material/Lock";
 import WcIcon from '@mui/icons-material/Wc';
 import "../styles/signup.css";
 
@@ -48,8 +48,10 @@ export default function EditUserPage() {
     
     Object.keys(e).forEach(key => {
       const typedKey = key as keyof UserSignupProps;
+      
       if (key == "profile_picture") {
-        if (key.length > 0) {
+        
+        if ((e[typedKey] as File)?.name?.length > 0) {
           formData.set(key, e[typedKey] as Blob | string);
         }
       } else {
@@ -83,8 +85,8 @@ export default function EditUserPage() {
 
   const getUserData = useCallback(async () => {
     try {
-      const res = await api.get<FullUser>(ApiUrls.edit_user);
-
+      const res = await api.get<FullUser>(ApiUrls.edit_user)
+      
       if (res.status === 200) {
         setUser(res.data);
         const data: Partial<UserSignupProps> = {}
@@ -97,9 +99,12 @@ export default function EditUserPage() {
           }
           reset(data);
         });
+        
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
+      console.error("error: ", error);
+      
       setErrors(error.response.data);
     }
     complete();
@@ -129,7 +134,9 @@ export default function EditUserPage() {
               src={`${MEDIA_URL}${user?.profile_picture ?? "/unknown.png"}`}
               slotProps={{ img: { ref: avatarRef } }}
               alt="user"
-              sx={{ width: "7rem", height: "7rem", cursor: 'pointer' }}
+              width="10rem"
+              height="10rem"
+              sx={{ width: "10rem", height: "10rem", cursor: 'pointer' }}
             />
             <input
               type="file"
@@ -175,19 +182,7 @@ export default function EditUserPage() {
           inputProps={{ inputMode: "email" }}
           required
         />
-        <FloatingLabelInput
-          type="password"
-          label="Password"
-          preffexIcon={<LockIcon sx={{ color: "var(--text-color)" }} />}
-          autoComplete="current-password"
-          {...register("password", {required: true})}
-          slotProps={{
-            htmlInput: {
-              minLength: 8,
-            },
-          }}
-          required
-        />
+        <PasswordField {...register("password", {required: true})}/>
         <FloatingLabelInput
           type="date"
           preffexIcon={<CakeIcon sx={{ color: "var(--text-color)" }} />}
