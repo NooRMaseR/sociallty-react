@@ -1,5 +1,3 @@
-from django.core.management import call_command
-from django.dispatch import receiver
 from users.models import SocialUser
 from PIL import Image as pilImage
 from django.conf import settings
@@ -9,8 +7,8 @@ import os
 
 # Create your models here.
 if not settings.DEBUG:
-    from cloudinary_storage.storage import VideoMediaCloudinaryStorage
-    from cloudinary_storage.validators import validate_video
+    from cloudinary_storage.storage import VideoMediaCloudinaryStorage # type: ignore
+    from cloudinary_storage.validators import validate_video # type: ignore
 
 class Post(models.Model):
     "Post Module for storing user post"
@@ -20,11 +18,12 @@ class Post(models.Model):
         FRIENDS_ONLY = "friends only"
     user = models.ForeignKey(SocialUser, on_delete=models.CASCADE, related_name="posts")
     description = models.TextField(null=True, blank=True)
+    ready = models.BooleanField(default=True, help_text="if the post is ready to be displayed")
     visibility = models.CharField(max_length=13, choices=PostVisibility, default=PostVisibility.PUBLIC)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return f"{self.description}"
+        return f"Post from {self.user}"
 
 
 class Like(models.Model):
@@ -108,40 +107,4 @@ class PostContent(models.Model):
 
     def __str__(self) -> str:
         return f"content description - {self.post}"
-
-
-if not settings.DEBUG:
-    @receiver(models.signals.post_delete, sender=Post)
-    @receiver(models.signals.post_delete, sender=PostContent)
-    def auto_delete_post_files(sender, instance, **kwargs):
-        """
-        Deletes associated files when a post is deleted.
-        """
-        call_command("deleteorphanedmedia", no_input=True)
-        
-else:
-    @receiver(models.signals.post_delete, sender=Post)
-    def auto_delete_post_files(sender, instance: Post, **kwargs):
-        """
-        Deletes associated files when a post is deleted.
-        """
-
-        for post in instance.media.all(): # type: ignore
-            if post.content and os.path.isfile(post.content.path):
-                os.remove(post.content.path)
-                
-            if post.poster and os.path.isfile(post.poster.path):
-                os.remove(post.poster.path)
-
-
-    @receiver(models.signals.pre_delete, sender=PostContent)
-    def auto_delete_post_content_files(sender, instance: PostContent, **kwargs):
-        """
-        Deletes associated content when the media is deleted.
-        """
-        if instance.image and os.path.isfile(instance.image.path):
-            os.remove(instance.image.path)
-        
-        if instance.video and os.path.isfile(instance.video.path):
-            os.remove(instance.video.path)
             

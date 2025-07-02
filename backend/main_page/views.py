@@ -33,7 +33,9 @@ class PostsApi(APIView):
         posts = Post.objects.select_related("user").prefetch_related("media").filter(
             Q(visibility=Post.PostVisibility.PUBLIC)  # get all posts with visibillty public or
             | Q(user=request.user)  # get the user itself posts or
-            | (Q(user__id__in=friends_ids) & Q(visibility=Post.PostVisibility.FRIENDS_ONLY))  # get the friends posts and check if the visibility is friends only, the public posts is already defined
+            | (Q(user__id__in=friends_ids) & Q(visibility=Post.PostVisibility.FRIENDS_ONLY)), # get the friends posts and check if the visibility is friends only, the public posts is already defined
+            
+            ready=True # only get the posts that are ready
         ).annotate(
             comments_count=Count('comments', distinct=True),
             likes_count=Count('likes', distinct=True)

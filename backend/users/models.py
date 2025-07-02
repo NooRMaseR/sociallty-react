@@ -1,9 +1,6 @@
-import os
 from typing import Any
-from django.conf import settings
 from django.db import models
-from django.dispatch import receiver
-from django.db.models import Q, signals
+from django.conf import settings
 from django.core.validators import MinLengthValidator
 from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth.models import AbstractBaseUser, UserManager, PermissionsMixin
@@ -125,20 +122,3 @@ class SocialUserSettings(models.Model):
     
     def __str__(self) -> str:
         return f"{self.user} Settings"
-    
-@receiver(signals.post_delete, sender=SocialUser)
-def auto_delete_profile_pic(sender, instance, **kwargs) -> None:
-    "Deletes the user profile picture when the Account is deleted"
-
-    if instance.profile_picture:
-        if (os.path.isfile(instance.profile_picture.path) and instance.profile_picture != "profile_pictures/unknown.png"):
-            os.remove(instance.profile_picture.path)
-    
-    Friend.objects.filter(Q(user=instance) | Q(friend=instance)).delete()
-    UserCode.objects.filter(user=instance).delete()
-
-@receiver(signals.post_save, sender=SocialUser)
-def create_user_settings(sender, instance, created, **kwargs) -> None:
-    
-    if created:
-        SocialUserSettings.objects.create(user=instance)

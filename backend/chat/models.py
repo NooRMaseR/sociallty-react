@@ -1,6 +1,6 @@
-from typing import Annotated, Literal
 import annotated_types
 from django.db import models
+from typing import Annotated, Literal
 from main_page.models import SocialUser
 from pydantic import BaseModel, PositiveInt
 

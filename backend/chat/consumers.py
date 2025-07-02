@@ -19,13 +19,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.close()
                 return
             
-            self.to_user = await SocialUser.objects.aget(id=channel_id, username=channel_name)
             self.chat_name = f"chat_{channel_name.strip().replace(' ', '_')}f_{channel_id}_t_{self.user.pk}"
             self.reverse_chat_name = f"chat_{self.user.username.strip().replace(' ', '_')}f_{self.user.pk}_t_{channel_id}"
             self.online_user_obj: OnlineUser
             
             
-            self.online_user_obj, _ = await asyncio.gather(
+            self.to_user, self.online_user_obj, _ = await asyncio.gather(
+                SocialUser.objects.aget(id=channel_id, username=channel_name),
                 OnlineUser.objects.acreate(user=self.user, channel_name=self.channel_name),
                 self.channel_layer.group_add(self.chat_name, self.channel_name) # type: ignore
             )
@@ -52,7 +52,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def create_notification(self, message: str):
         "a function to create a notification for the connected user"
         
-        if not await OnlineUser.objects.filter(user=self.to_user, channel_name=self.channel_name).aexists():
+        if not await OnlineUser.objects.filter(user=self.to_user).aexists():
             await Notification.objects.acreate(to_user=self.to_user, from_user=self.user, content=message)
         
     async def react_message_from_users(self, data):
@@ -79,8 +79,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 message_id=validated_data.message_id,
                 reaction=validated_data.reaction
             )
-        except IntegrityError as e:
-            print(repr(e))
+        except IntegrityError: # triggered when the message already exists with different reaction
             try:
                 reaction = await MessageReact.objects.aget(
                     from_user=self.user,
@@ -243,18 +242,22 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         self.user: SocialUser = self.scope['user']
         if not self.user.is_authenticated:
             await self.close()
-            
+            return
+        
         self.username = self.user.username.replace(" ", "")
         self.user_channel = f"notif_{self.username}_{self.user.pk}"
-        
         await self.channel_layer.group_add(self.user_channel, self.channel_name) # type: ignore
         await self.accept(subprotocol=self.scope["org_subprotocols"])
         
     async def disconnect(self, code):
-        await asyncio.gather(
-            self.channel_layer.group_discard(self.user_channel, self.channel_name), # type: ignore
-            self.close()
-        )
+        try:
+            await asyncio.gather(
+                self.channel_layer.group_discard(self.user_channel, self.channel_name), # type: ignore
+                self.close()
+            )
+        except Exception as e:
+            print(f"Error disconnecting: {e}")
+            await self.close()
         
     async def receive(self, text_data: str | None=None, bytes_data=None):
         if not text_data:
@@ -284,7 +287,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
                     }
                 )
 
-    async def notifi_send(self, event):
+    async def notifi_send(self, _):
         friends_requests_count, notifications = await asyncio.gather(
             FriendRequest.objects.filter(friend=self.user).acount(),
             sync_to_async(lambda: Notification.objects.filter(to_user=self.user).order_by('-created_at'))()
@@ -308,5 +311,13 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             event["data"]["status"] = False
         finally:
             await self.send(json.dumps(event["data"]))
+            
+    async def post_ready(self, event: dict):
+        """A function to send a notification when a post is ready"""
+        await self.send(json.dumps({
+            "event_type": "post_ready",
+            "message": event.get("message"),
+            "post_id": event.get("post_id")
+        }))
         
         

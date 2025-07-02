@@ -1,5 +1,7 @@
+from django.core.files.uploadedfile import UploadedFile
 from users.models import UserCode
-import random
+from .dtypes import encoded_files
+import random, base64
 
 def __generate_random_code() -> int:
     "generate a random code"
@@ -22,3 +24,26 @@ def generate_verify_code() -> int | None:
         attempts += 1
     
     return None
+
+
+def encode_uploaded_files(uploaded_files: list[UploadedFile]) -> encoded_files:
+    """Encode uploaded files to base64 format for storage in the database.
+
+    Args:
+        uploaded_files (list[UploadedFile]): A list of uploaded files to encode.
+
+    Returns:
+        encoded_files: the new encoded files in a list of dictionaries,
+        where each dictionary contains the file name, base64 encoded content, and content type.
+    """
+    
+    files: encoded_files = []
+    for f in uploaded_files:
+        content = f.read()
+        encoded = base64.b64encode(content).decode()
+        files.append({
+            "name": f.name,
+            "base64": encoded,
+            "content_type": f.content_type,
+        })
+    return files

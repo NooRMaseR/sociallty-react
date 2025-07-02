@@ -62,7 +62,7 @@ INSTALLED_APPS = [
 if not DEBUG:
     INSTALLED_APPS.extend(('cloudinary_storage','cloudinary'))
 if DEBUG:
-    INSTALLED_APPS.extend(("django_extensions", 'drf_yasg', "debug_toolbar"))
+    INSTALLED_APPS.append('drf_yasg')
     INTERNAL_IPS = (
         "127.0.0.1",
     )
@@ -82,7 +82,6 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = (
-    # "debug_toolbar.middleware.DebugToolbarMiddleware", #! remove in production
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -196,19 +195,29 @@ SIMPLE_JWT = {
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    } if DEBUG else {
-       "BACKEND": "channels_redis.core.RedisChannelLayer",
-       "CONFIG": {
-           "hosts": [("redis", 6379)],
-           "expiry": 3600,  # Key expiration in seconds
-           "group_expiry": 86400,  # Group expiration
-           "capacity": 1000,  # Default 100
-           "channel_capacity": {
-               "specific.channel": 2000  # Higher capacity for important channels
-           }
-       }
-   }
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis" if not DEBUG else "localhost", 6379)],
+            # "hosts": [("redis", 6379)],
+            "expiry": 3600,  # Key expiration in seconds
+            "group_expiry": 86400,  # Group expiration
+            "capacity": 1000,  # Default 100
+            "channel_capacity": {
+                "specific.channel": 2000  # Higher capacity for important channels
+            }
+        }
+    }
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "IGNORE_EXCEPTIONS": True,
+        },
+    }
 }
 
 # Static files (CSS, JavaScript, Images)
@@ -253,6 +262,11 @@ UNFOLD = {
         },
     ),
 }
+
+CELERY_RESULT_BACKEND = "redis://redis:6379/0" if not DEBUG else "redis://localhost:6379/0"
+CELERY_BROKER_URL = "redis://redis:6379/0" if not DEBUG else "redis://localhost:6379/0"
+# CELERY_RESULT_BACKEND = "redis://redis:6379/0"
+# CELERY_BROKER_URL = "redis://redis:6379/0"
 
 # configs
 if not DEBUG:

@@ -224,12 +224,12 @@ export default function Chat() {
     if (!userToChat?.username || !userToChat?.id) return null;
 
     const token = localStorage.getItem(ACCESS);
-    const sw = new WebSocket(
+    ws.current = new WebSocket(
       `${WEBSOCKET_URL}/chat/${userToChat.username}/${userToChat.id}/`,
       token ? [token + token.substring(0, 5)] : undefined
     );
 
-    sw.onmessage = (e) => {
+    ws.current.onmessage = (e) => {
       const check_data = JSON.parse(e.data);
       switch (check_data.event_type) {
         case "send": {
@@ -312,8 +312,8 @@ export default function Chat() {
           break;
       }
     };
-    return sw;
-  }, [userToChat?.id, userToChat?.username, scrollToBottom, messages]);
+    return ws.current;
+  }, [userToChat?.id, userToChat?.username, scrollToBottom]);
 
   useEffect(() => {
     async function start() {
@@ -329,14 +329,10 @@ export default function Chat() {
   }, [scrollToBottom]);
 
   useEffect(() => {
-    if (userToChat) {
-      if (!ws.current) {
-        const newWs = connect_socket();
-        if (newWs) {
-          ws.current = newWs;
-        }
-      }
-    }
+    if (userToChat && !ws.current) {
+      connect_socket();
+    };
+    return () => ws.current?.close();
   }, [connect_socket]);
 
   useEffect(() => {

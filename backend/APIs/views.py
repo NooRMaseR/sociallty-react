@@ -13,8 +13,10 @@ from rest_framework import status
 
 # my imports
 from main_page.models import Post, PostContent, Comment
+from utils.main_utils import encode_uploaded_files
 from APIs.serializers import CommentSerializer
 from drf_yasg.utils import swagger_auto_schema
+from .tasks import save_post_media_content
 from users.models import SocialUser
 from drf_yasg import openapi
 from .models import Report
@@ -23,41 +25,6 @@ from .models import Report
 class PostApi(APIView):
     "`restful API` for handling post apis `POST` for adding a post `PUT` for updating the post `DELETE` for deleting the post"
     parser_classes = (MultiPartParser, JSONParser)
-    
-    def save_content(self, files: list[UploadedFile], post: Post) -> Response | None:
-        """A Function to save the `PostContent`
-
-        Args:
-            files (list[UploadedFile]): the `Media` to add to he `PostContent`
-            post (Post): The `Post` itself to change
-
-        Returns:
-            Response: `415` if no files found in the post, else `None`
-        """
-        
-        try:
-            contents: list[PostContent] = []
-            for file in files:
-                is_image: bool = file.content_type != None and file.content_type.startswith("image")
-                is_video: bool = file.content_type != None and file.content_type.startswith("video")
-                
-                if file.content_type and not (is_image or is_video):
-                    return Response(status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
-                
-                contents.append(
-                    PostContent(
-                        post=post,
-                        image=file if is_image else None,
-                        video=file if is_video else None,
-                        content_type=PostContent.MediaType.IMAGE if is_image else PostContent.MediaType.VIDEO,
-                        full_content_type=file.content_type
-                    )
-                )
-            PostContent.objects.bulk_create(contents)
-            
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-    
     
     @swagger_auto_schema(
         request_body=openapi.Schema(
@@ -82,7 +49,7 @@ class PostApi(APIView):
             }
         ),
         responses={
-            201: openapi.Response(description="Post created successfully"),
+            200: openapi.Response(description="Post is creating in the background"),
             400: openapi.Response(description="Invalid request"),
             415: openapi.Response(description="Unsupported media type"),
         }
@@ -102,12 +69,11 @@ class PostApi(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
             
         my_user: SocialUser = SocialUser.objects.get(id=request.user.id, username=request.user)  # type: ignore
-        post: Post = Post.objects.create(user=my_user, description=desc, visibility=Post.PostVisibility(visibility))
+        post: Post = Post.objects.create(user=my_user, description=desc, visibility=Post.PostVisibility(visibility), ready=False)
 
-        if (res := self.save_content(files, post)) is Response:
-            return res
+        save_post_media_content.delay(encode_uploaded_files(files), post.id)  # type: ignore
         
-        return Response(status=status.HTTP_201_CREATED)
+        return Response({"details": "creating in the background"}, status=status.HTTP_200_OK)
 
 
     @swagger_auto_schema(
@@ -179,35 +145,33 @@ class PostApi(APIView):
         if visibility is not None:
             post.visibility = Post.PostVisibility(visibility)  # type: ignore
 
-        if (res := self.save_content(mediaID_to_add, post)) is Response:
-            return res
-        
-        post.save()
+        save_post_media_content.delay(encode_uploaded_files(mediaID_to_add), post.id)  # type: ignore
         return Response(status=status.HTTP_200_OK)
     
     
-    # @swagger_auto_schema(
-    #     manual_parameters=[
-    #         openapi.Parameter(
-    #             "postID",
-    #             openapi.IN_FORM,
-    #             type=openapi.TYPE_INTEGER,
-    #             description="The ID of the post to delete",
-    #             required=True
-    #         )
-    #     ],
-    #     responses={
-    #         200: openapi.Response(
-    #             description="Post deleted successfully",
-    #         ),
-    #         404: openapi.Response(
-    #             description="Post not found",
-    #         ),
-    #         500: openapi.Response(
-    #             description="Internal server error",
-    #         )
-    #     }
-    # )
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["postID"],
+            properties={
+                "postID": openapi.Schema(
+                    type=openapi.TYPE_INTEGER,
+                    description="The ID of the post to delete",
+                )
+            }
+        ),
+        responses={
+            200: openapi.Response(
+                description="Post deleted successfully",
+            ),
+            404: openapi.Response(
+                description="Post not found",
+            ),
+            500: openapi.Response(
+                description="Internal server error",
+            )
+        }
+    )
     @transaction.atomic
     def delete(self, request: Request) -> Response:
         "`(API)` for removing a post using the post id"

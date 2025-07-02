@@ -35,4 +35,4 @@ def create_user(**user_data) -> SocialUser:
     user.save()
     return user
 
-authorization_header = lambda token: {'Authorization': f'Bearer {token}'}
+authorization_header = lambda token: {'authorization': f'Bearer {token}'}

@@ -1,4 +1,4 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, MenuItem } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, MenuItem, Snackbar } from "@mui/material";
 import { ApiUrls, PostFormProps, Visibility } from "../utils/constants";
 import FloatingLabelInput from "../components/floating_input_label";
 import { memo, useCallback, useEffect, useState } from "react";
@@ -22,6 +22,7 @@ export default function MakePostPage() {
   const { register, handleSubmit, setValue } = useForm<PostFormProps>();
   const [loading, setLoading] = useState<boolean>(false);
   const [openDlg, setOpenDlg] = useState<boolean>(false);
+  const [snackOptions, setSnackOptions] = useState<{open: boolean, message: string}>({open: false, message: ""});
   const [media, setMedia] = useState<{type: string, src: string}[]>([]);
   const { start, complete } = useLoadingBar();
   const navigate = useNavigate();
@@ -34,17 +35,20 @@ export default function MakePostPage() {
     data?.files?.forEach((file) => form_data.append("files", file));
 
     try {
+      setSnackOptions({ open: true, message: "Posting..." });
       const res = await api.post(ApiUrls.post, form_data);
-
-      if (res.status === 201) {
+      
+      if (res.status === 200) {
         start();
         navigate("/");
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
+      setSnackOptions({ open: false, message: "" });
       console.error(error);
     }
     setLoading(false);
+    setSnackOptions({ open: false, message: "" });
   }, [navigate, start]);
 
   const handelFiles = useCallback((event: FileList | null) => {
@@ -91,6 +95,14 @@ export default function MakePostPage() {
         <title>Create New Post</title>
         <meta name="description" content="Create a New Post and get some reactions and reviews" />
       </Helmet>
+
+      <Snackbar
+        open={snackOptions.open}
+        message={snackOptions.message}
+        onClose={() => setSnackOptions({ open: false, message: "" })}
+        autoHideDuration={5000}
+      />
+
       <Dialog open={openDlg}>
         <DialogTitle>Big File</DialogTitle>
         <DialogContent>
@@ -100,6 +112,7 @@ export default function MakePostPage() {
           <Button onClick={closeDlg}>Ok</Button>
         </DialogActions>
       </Dialog>
+
       <form onSubmit={handleSubmit(formSubmit)} encType="multipart/form-data">
         <FilePicker onChangeMethod={handelFiles}/>
         <Box sx={{display: 'flex', placeItems: 'center', flexDirection: 'column', gap: '1rem'}}>

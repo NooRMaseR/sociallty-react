@@ -21,7 +21,7 @@ import {
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { set_current_active_route, setCount } from "../utils/store";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Badge, Box, Tooltip, Typography } from "@mui/material";
+import { Badge, Box, Snackbar, Tooltip, Typography } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
 import { getFormatedToken } from "../utils/functions";
 import { useLoadingBar } from "react-top-loading-bar";
@@ -46,7 +46,7 @@ interface Notification {
 }
 
 interface NotificationProps {
-  event_type: "notifi_recived" | "notifi_deleted";
+  event_type: "notifi_recived" | "notifi_deleted" | "post_ready";
   friends_requests_count: number;
   notifications: Notification[];
 }
@@ -247,6 +247,7 @@ const CheckHead = memo(
 
 export default function Header() {
   const [menuOpened, setMenuOpened] = useState<boolean>(false);
+  const [snackOptions, setSnackOptions] = useState<{open: boolean, message: string}>({open: false, message: ""});
   const ws = useRef<WebSocket | null>(null);
   const interRef = useRef<NodeJS.Timeout | null>(null);
   const dispatch = useDispatch();
@@ -319,7 +320,7 @@ export default function Header() {
       clearInterval(interRef.current ?? undefined);
       if (ws.current?.readyState === ws.current?.OPEN) ws.current?.close();
       return;
-    } else if (ws.current?.readyState && ws.current.readyState === ws.current.OPEN) {
+    } else if (ws.current?.readyState && ws.current.readyState === ws.current?.OPEN) {
       return;
     }
     try {
@@ -329,7 +330,7 @@ export default function Header() {
       );
       ws.current = newWs;
 
-      newWs.onmessage = async (e) => {
+      ws.current.onmessage = async (e) => {
         const data: NotificationProps = JSON.parse(e.data);
 
         switch (data.event_type) {
@@ -350,7 +351,7 @@ export default function Header() {
               };
             };
             if (notisToDelete.length > 0) {
-              newWs?.send(
+              ws.current?.send(
                 JSON.stringify({
                   event_type: "delete_notifi",
                   ids: notisToDelete,
@@ -364,13 +365,19 @@ export default function Header() {
           case "notifi_deleted": {
             break;
           }
+            
+          case "post_ready": {
+            const postWS = data as unknown as { post_id: number, message: string };
+            setSnackOptions({open: true, message: postWS.message});
+            break;
+          }
         }
       };
 
-      newWs.onopen = () => {
+      ws.current.onopen = () => {
         interRef.current = setInterval(() => {
-          if (newWs.readyState === WebSocket.OPEN) {
-            newWs.send(
+          if (ws.current?.readyState === WebSocket.OPEN) {
+            ws.current?.send(
               JSON.stringify({
                 event_type: "get_notifi",
               })
@@ -381,8 +388,12 @@ export default function Header() {
     } catch {
       return;
     }
-    return () =>
-      ws.current?.OPEN && clearInterval(interRef.current ?? undefined) && ws.current?.close();
+    return () => {
+      if (ws.current?.readyState === ws.current?.CLOSED) {
+        clearInterval(interRef.current ?? undefined);
+      };
+    }
+    
   }, [location.pathname, create_notification, dispatch]);
 
   useEffect(() => {
@@ -400,6 +411,12 @@ export default function Header() {
   if (current_route.startsWith("/chat/")) return null;
   return (
     <header>
+      <Snackbar
+        open={snackOptions.open}
+        message={snackOptions.message}
+        onClose={() => setSnackOptions({ open: false, message: "" })}
+        autoHideDuration={5000}
+      />
       <nav className={menuOpened ? "show-nav" : ""}>
         <Box sx={{ display: "flex", gap: "1rem" }}>
           <LazyAvatar

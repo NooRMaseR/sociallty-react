@@ -24,8 +24,39 @@ services:
       - CLOUD_API_SECRET=${CLOUD_API_SECRET}
       - PYTHONBUFFERED=1
       - PYTHONDONTWRITEBYTECODE=1
+      - CAN_MIGRATE=0
+      - CAN_COLLECTSTATIC=1
+    entrypoint: ["bash", "entrypoint.sh", "web"]
 
   redis:
     image: "redis:alpine"
     ports:
       - "6379:6379"
+  
+
+  celery:
+    build: .
+    command: celery -A sociallty worker -l INFO
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - web
+    environment:
+      - SOCIALLTY_KEY=${SOCIALLTY_KEY}
+      - ALLOWED_CORS=${ALLOWED_CORS}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+      - CLOUD_NAME=${CLOUD_NAME}
+      - CLOUD_API_KEY=${CLOUD_API_KEY}
+      - CLOUD_API_SECRET=${CLOUD_API_SECRET}
+      - PYTHONBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    entrypoint: ["bash", "entrypoint.sh", "celery"]
+    

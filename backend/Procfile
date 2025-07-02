@@ -1,1 +1,0 @@
-web: uv sync --no-dev --group production && uv run --no-dev manage.py collectstatic --noinput && uv run --no-dev daphne sociallty.asgi:application -b 0.0.0.0 -p 8000
